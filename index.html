@@ -222,10 +222,10 @@ const CAST = {
   tie:{ name:'鐵叔', role:'工地主任', helmet:0xf2f2f2, vest:0xf07a1a, skin:0xd9a577, feat:{mustache:true},
     bio:'做外牆三十年。嗓門大，罵完會偷偷買飲料放你桌上。最恨「圖上可以、現場不行」。', quote:'「圖上畫得出來，不代表手伸得進去。」',
     chat:['看我幹嘛？料在後面，自己去拿。','我年輕的時候，一張圖要用手描三天。你們現在按一下就出來，更要想清楚再按。','中午便當我訂雞腿。你那份我也訂了，別客氣。'] },
-  lin:{ name:'琳姊', role:'品管', helmet:0xd83a3a, vest:0xe6df3c, skin:0xf3d1b0, feat:{glasses:true, ponytail:true},
+  lin:{ name:'琳姊', role:'品管', helmet:0xd83a3a, vest:0xe6df3c, skin:0xf3d1b0, feat:{glasses:true, ponytail:true, bangs:true},
     bio:'永遠夾著一塊板夾。開異常單不眨眼，但每一張都寫得讓你心服口服。', quote:'「我不是找你麻煩，我是在找麻煩。」',
     chat:['沒事不要靠近我，我的筆會自己動。','異常單不是罰單，是下一個人的保命符。','你做對的時候，我其實都有看到。'] },
-  an:{ name:'小安', role:'設計部學姊', helmet:0x3b8fe0, vest:0x8a5bd6, skin:0xf5d3b5, feat:{glasses:true},
+  an:{ name:'小安', role:'設計部學姊', helmet:0x3b8fe0, vest:0x8a5bd6, skin:0xf5d3b5, feat:{glasses:true, bob:true, bangs:true},
     bio:'大你兩屆。Revit 快捷鍵用得比筷子熟。曾把鋁料切成一百多段再黏回去，白做兩天，從此立誓。', quote:'「直的永遠贏。」',
     chat:['交接的地方有縫，十次有九次是有人一刀切平。','我的螢幕上貼著一張紙：不准切碎。','加油，我當年比你慘多了。'] },
   kun:{ name:'阿坤師', role:'板工班師傅', helmet:0x2fa866, vest:0x5b6675, skin:0xc99668, feat:{towel:true, stubble:true},
@@ -1146,11 +1146,12 @@ function robeMat(){ if(_robe) return _robe; const c=document.createElement('canv
   const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(2,2); return _robe=std(0xffffff,{map:t}); }
 // 小人：瘦長、眼神死、有眼袋的上班族。身高約 1.8。臉朝 +z。
 function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};                     // off＝在辦公室：不戴安全帽、不穿背心和工作靴，造型也不顯示
-  const g=new THREE.Group(), f = off ? {mustache:cf.mustache, glasses:cf.glasses, ponytail:cf.ponytail, stubble:cf.stubble} : cf, fx=[], skin=std(c.skin), trim=std(c.trim||0xf4f4f4);
+  const g=new THREE.Group(), f = off ? {mustache:cf.mustache, glasses:cf.glasses, ponytail:cf.ponytail, stubble:cf.stubble, bob:cf.bob, bangs:cf.bangs} : cf, fx=[], skin=std(c.skin), trim=std(c.trim||0xf4f4f4);
   const vest = off ? std(c.shirt||0xf4f6fa) : c.vestKind==='leopard' ? leopardMat() : c.vestKind==='sequin' ? std(0xffc61f,{emissive:0x3a2600}) : c.vestKind==='robe' ? robeMat() : std(c.vest);
   const hel=std(c.helmet, c.helmetMetal ? {emissive:0x3a2600} : {}), bootM = off ? std(0x2b2f36) : f.boots ? std(0xff4fd8,{emissive:0x551144}) : mat.boot, soleM = f.boots ? std(0xffffff,{emissive:0x888888}) : mat.dark;
   // 長腿＋鞋
-  const mk=sx=>{ const l=new THREE.Group(); l.position.set(sx*0.09,0.8,0); l.add(cyl(0.068,0.7,'y',0,-0.35,0,mat.pants,10)); l.add(ball(0.1,bootM,0,-0.71,0.04,1,0.7,1.5)); l.add(box(0.17,0.035,0.3,0,-0.78,0.045,soleM)); g.add(l); return l; };
+  const mk=sx=>{ const l=new THREE.Group(); l.position.set(sx*0.09,0.8,0); l.add(cyl(0.068,0.36,'y',0,-0.18,0,mat.pants,10));   /* 大腿 */
+    const kn=new THREE.Group(); kn.position.y=-0.35; kn.add(ball(0.068,mat.pants,0,0,0)); kn.add(cyl(0.068,0.35,'y',0,-0.175,0,mat.pants,10)); kn.add(ball(0.1,bootM,0,-0.36,0.04,1,0.7,1.5)); kn.add(box(0.17,0.035,0.3,0,-0.43,0.045,soleM)); l.add(kn); l.userData.knee=kn; g.add(l); return l; };   /* 膝蓋以下：小腿、鞋 */
   const legL=mk(-1), legR=mk(1);
   // 身體：窄窄的一截
   const torso=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.165,0.6,16), vest); torso.position.y=1.1; torso.scale.z=0.72; torso.castShadow=true; g.add(torso);
@@ -1176,7 +1177,13 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
   // 人物特徵
   if(f.mustache){ [-1,1].forEach(sd=>g.add(ball(0.04,mat.dark,sd*0.04,1.49,0.192,1.25,0.5,0.5))); }
   if(f.glasses){ [-1,1].forEach(sd=>{ const r=new THREE.Mesh(new THREE.TorusGeometry(0.058,0.009,6,18),mat.dark); r.position.set(sd*0.078,1.585,0.2); g.add(r); }); g.add(box(0.05,0.01,0.01,0,1.59,0.206,mat.dark)); }
-  if(f.ponytail){ g.add(ball(0.08,mat.dark,0,1.5,-0.21)); g.add(ball(0.055,mat.dark,0,1.38,-0.25)); }
+  const hm=std(c.hair||0x2a2320);
+  if(f.bob){ const bk=new THREE.Mesh(new THREE.CylinderGeometry(0.212,0.24,0.33,22,1,true,Math.PI/2-0.75,Math.PI+1.5), std(c.hair||0x2a2320,{side:THREE.DoubleSide})); bk.position.set(0,1.455,0.0); bk.castShadow=true; g.add(bk);   // 鮑伯頭：後腦和兩側的頭髮垂到下巴，下緣往外翹一點
+    const rim=new THREE.Mesh(new THREE.TorusGeometry(0.235,0.022,6,22,Math.PI+1.5), hm); rim.rotation.x=Math.PI/2; rim.rotation.z=Math.PI-0.75; rim.position.set(0,1.295,0); g.add(rim); }
+  if(f.ponytail){ g.add(ball(0.06,mat.red,0,1.66,-0.2)); const pt=new THREE.Group(); pt.position.set(0,1.66,-0.22); pt.rotation.x=0.35;   // 高馬尾：紅色髮圈綁在後腦上方，馬尾往下垂到肩膀
+    pt.add(ball(0.075,hm,0,-0.02,-0.04,1,1,1)); pt.add(ball(0.07,hm,0,-0.16,-0.06,1,1.8,0.9)); pt.add(ball(0.05,hm,0,-0.3,-0.05,1,1.5,0.85)); g.add(pt); }
+  if(f.bangs){ const bg=new THREE.Mesh(new THREE.SphereGeometry(0.219,22,8,Math.PI*0.1,Math.PI*0.8,0.45,0.73), hm); bg.position.set(0,1.585,0.012); g.add(bg);   // 瀏海：蓋在額頭上，到眼鏡上面
+    [-1,1].forEach(sd=>{ const lk=box(0.07, f.bob?0.2:0.36, 0.09, sd*0.19, f.bob?1.5:1.42, 0.05, hm); lk.rotation.z=sd*0.08; g.add(lk); }); }   // 兩側垂下來的頭髮：長髮垂到肩膀（鮑伯頭只到下巴）
   if(f.stubble){ const sb=new THREE.Mesh(new THREE.SphereGeometry(0.203,20,10,0,Math.PI*2,1.85,0.75), new THREE.MeshBasicMaterial({color:0x5a4a40, transparent:true, opacity:.3})); sb.position.set(0,1.57,0.01); g.add(sb); }
   if(f.towel){ const tw=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.04,8,22),mat.white); tw.rotation.x=Math.PI/2; tw.position.y=1.4; g.add(tw); g.add(box(0.07,0.18,0.03,0.1,1.3,0.15,mat.white)); }
   // 造型配件
@@ -1199,7 +1206,7 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
 const TOUCH=matchMedia('(pointer:coarse)').matches;                                     // 手機、平板：用手指操作
 const SIT=0.36;                                                                        // 坐下來，身體降低多少
 function seat(a){ const g=a.g, ch=std(0x3b6fd0), dk=std(0x3a4350); a.seated=true; a.deskFace = a.x>L.cx ? Math.PI/2 : -Math.PI/2; a.face=a.deskFace;       // 坐在工位上：椅子跟著人，可以滑
-  [box(0.5,0.08,0.5, 0,0.74,-0.02, ch), box(0.5,0.55,0.08, 0,1.06,-0.28, ch), cyl(0.04,0.34,'y', 0,0.55,-0.02, dk,8), box(0.56,0.05,0.08, 0,SIT+0.03,-0.02, dk), box(0.08,0.05,0.56, 0,SIT+0.03,-0.02, dk)].forEach(m=>g.add(m));
+  [box(0.5,0.08,0.5, 0,0.69,-0.02, ch), box(0.5,0.55,0.08, 0,1.0,-0.28, ch), cyl(0.04,0.3,'y', 0,0.5,-0.02, dk,8),   /* 椅墊頂面在大腿下面，大腿壓在椅墊上 */ box(0.56,0.05,0.08, 0,SIT+0.03,-0.02, dk), box(0.08,0.05,0.56, 0,SIT+0.03,-0.02, dk)].forEach(m=>g.add(m));
   g.traverse(o=>{ if(o.userData.blob) o.position.y=SIT+0.014; }); }
 function makeActor(who,x,z){ const c=CAST[who], g=makePerson(c); LV.group.add(g);
   const bl=new THREE.Mesh(new THREE.CircleGeometry(0.38,20), mat.blob); bl.rotation.x=-Math.PI/2; bl.position.y=0.014; bl.userData.blob=true; bl.raycast=()=>{}; g.add(bl);   // 腳下貼地的影子：太陽的影子落在背後，從正面看不到，人會像飄著
@@ -1237,7 +1244,8 @@ function stepActor(a,dt,t){ let moving=false;
   if(a.wob>0){ a.wob=Math.max(0,a.wob-dt*2.2); a.g.rotation.z=Math.sin(a.wob*18)*0.22*a.wob; } else a.g.rotation.z=0;
   if(a.atWork && !moving && u.clip){ u.armL.rotation.x=-1.15; u.armL.rotation.z=0.3; u.armR.rotation.x=-1.0+Math.sin(t*7+a.ph)*0.1; u.armR.rotation.z=-0.38; }   // 在忙：左手拿板夾，右手在上面寫
   if(u.clip) u.clip.visible = !a.carry;
-  if(a.seated){ u.legL.rotation.x=u.legR.rotation.x=-1.12;   /* 坐姿：腳斜斜踩在地上，不是整條伸直、也不插進地板 */ const typ = a.atDesk && !moving; u.armL.rotation.x = typ ? -1.22+Math.sin(t*11+a.ph)*0.05 : -0.5; u.armR.rotation.x = typ ? -1.22+Math.sin(t*11+a.ph+1.7)*0.05 : -0.5;   /* 打字：手往前伸、放在鍵盤上，兩手往內收到鍵盤的寬度 */
+  [u.legL,u.legR].forEach(l=>{ const kn=l.userData.knee; if(kn) kn.rotation.x = a.seated ? Math.PI/2 : 0; });
+  if(a.seated){ u.legL.rotation.x=u.legR.rotation.x=-Math.PI/2;   /* 坐姿：大腿平放在椅墊上，膝蓋彎下去，小腿垂直踩在地上 */ const typ = a.atDesk && !moving; u.armL.rotation.x = typ ? -1.22+Math.sin(t*11+a.ph)*0.05 : -0.5; u.armR.rotation.x = typ ? -1.22+Math.sin(t*11+a.ph+1.7)*0.05 : -0.5;   /* 打字：手往前伸、放在鍵盤上，兩手往內收到鍵盤的寬度 */
     u.armL.rotation.z = typ ? 0.13 : 0; u.armR.rotation.z = typ ? -0.13 : 0; }   // 坐姿；在位子上就打字
   if(a.swing && a.swing.id==='drink'){ const sw2=a.swing, w=Math.min(1,sw2.t/0.35); sw2.t+=dt; u.armR.rotation.x=-2.0*w; u.armR.rotation.z=-0.3*w; a.g.rotation.x=-0.13*w*(0.6+0.4*Math.sin(sw2.t*9));   // 喝：手舉到嘴邊（不超過頭），仰頭灌
     if(sw2.t>0.7 && !sw2.hit){ sw2.hit=true; bubble(sw2.target.who,'欸！上班時間喝什麼！',true); } if(sw2.t>2.0){ a.g.rotation.x=0; a.swing=null; sw2.done(); } }
@@ -1258,10 +1266,13 @@ function drawFace(cv, who, mood){ const c=CAST[who], g=cv.getContext('2d'), W=cv
   if(off){ g.save(); g.strokeStyle='#2f6fd0'; g.lineWidth=4; g.beginPath(); g.moveTo(78,138); g.lineTo(96,170); g.lineTo(114,138); g.stroke(); g.restore(); g.fillStyle='#fff'; g.fillRect(86,166,20,24); g.fillStyle='#2f6fd0'; g.fillRect(90,170,12,5); }
   if(!off){ g.fillStyle='#e8e8e8'; g.fillRect(52,164,88,8); }
   if(!off && c.feat.towel){ g.fillStyle='#f3f3f3'; g.fillRect(58,128,76,16); }
-  if(c.feat.ponytail){ g.fillStyle='#2a2320'; g.beginPath(); g.ellipse(150,104,12,30,0.3,0,7); g.fill(); }
+  const hc=hex(c.hair||0x2a2320);
+  if(c.feat.ponytail){ g.fillStyle=hc; g.beginPath(); g.ellipse(146,90,13,34,0.35,0,7); g.fill(); g.fillStyle='#d83a3a'; g.beginPath(); g.arc(136,62,7,0,7); g.fill(); }   // 高馬尾＋紅髮圈
+  if(c.feat.bob){ g.fillStyle=hc; g.beginPath(); g.moveTo(50,80); g.lineTo(46,124); g.quadraticCurveTo(58,130,70,124); g.lineTo(66,82); g.fill(); g.beginPath(); g.moveTo(142,80); g.lineTo(146,124); g.quadraticCurveTo(134,130,122,124); g.lineTo(126,82); g.fill(); }   // 鮑伯頭：兩側垂到下巴
   if(!off && c.feat.halo){ g.save(); g.strokeStyle='#ffd84a'; g.lineWidth=7; g.beginPath(); g.arc(96,82,64,0,7); g.stroke(); g.restore(); }
   g.fillStyle=hex(c.skin); g.fillRect(84,118,24,22); g.beginPath(); g.arc(96,92,42,0,7); g.fill();
-  if(off){ g.fillStyle=hex(c.hair||0x2a2320); g.beginPath(); g.arc(96,80,45,Math.PI,0); g.fill(); g.beginPath(); g.ellipse(96,80,45,9,0,0,Math.PI); g.fill(); }   // 頭髮
+  if(off){ g.fillStyle=hex(c.hair||0x2a2320); g.beginPath(); g.arc(96,80,45,Math.PI,0); g.fill(); g.beginPath(); g.ellipse(96,80,45,9,0,0,Math.PI); g.fill();   // 頭髮
+    if(c.feat.bangs){ g.beginPath(); g.moveTo(58,78); g.quadraticCurveTo(96,58,134,78); g.lineTo(134,86); g.quadraticCurveTo(116,80,104,90); g.quadraticCurveTo(90,78,72,90); g.quadraticCurveTo(64,84,58,88); g.fill(); } }   // 瀏海
   else { if(c.helmetFx==='rainbow'){ const rg=g.createLinearGradient(50,0,142,0); ['#ff3b3b','#ffb13b','#f7f03b','#3bff6e','#3bb7ff','#b03bff'].forEach((cl,i)=>rg.addColorStop(i/5,cl)); g.fillStyle=rg; } else g.fillStyle=hex(c.helmet);
   g.beginPath(); g.arc(96,78,46,Math.PI,0); g.fill(); g.fillRect(44,74,104,10); g.fillRect(40,80,112,7);
   g.fillStyle='rgba(0,0,0,.12)'; g.fillRect(92,34,8,44);
