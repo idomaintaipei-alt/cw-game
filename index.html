@@ -12,7 +12,7 @@
   :root { --bg:#14181d; --panel:rgba(30,36,43,.94); --line:#3a4350; --txt:#e8ecf1; --dim:#9aa4b1; --ok:#3ddc84; --bad:#ff5c5c; --acc:#4da3ff; }
   * { box-sizing:border-box; }
   html,body { margin:0; height:100%; overflow:hidden; background:var(--bg); color:var(--txt); font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; }
-  #view { position:fixed; inset:0; }
+  #view { position:fixed; inset:0; } #view canvas { touch-action:none; }   /* 手機：手指拖曳交給遊戲，不讓瀏覽器捲動或放大 */
   button { background:#2a323c; color:var(--txt); border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-size:14px; cursor:pointer; font-family:inherit; }
   button:hover { border-color:var(--acc); }
   button.primary { background:#1d4f86; border-color:#4da3ff; }
@@ -105,6 +105,17 @@
   #ticker b { color:#ffb020; margin-right:8px; } #tickTxt { transition:opacity .35s; }
   #fade { position:fixed; inset:0; background:#000; opacity:0; pointer-events:none; transition:opacity .18s; z-index:1; }
   #nameIn { width:100%; padding:10px; font-size:16px; background:#11161b; color:var(--txt); border:1px solid var(--line); border-radius:6px; font-family:inherit; }
+  /* 手機（窄螢幕）：上面一條工具列、一條公司廣播、目標框，操作說明放到最下面 */
+  @media (max-width:700px){
+    header { padding:6px 8px; } header h1 { font-size:14px; } #stats { gap:6px; font-size:12px; } #stats button { padding:3px 7px; font-size:12px; }
+    #ticker { left:8px; right:8px; top:calc(var(--topH,64px) + 6px); max-width:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; padding:4px 8px; }
+    #side { left:8px; right:8px; width:auto; max-width:none; top:calc(var(--topH,64px) + 38px); } #side .card { padding:8px 10px; } #goal { font-size:13px; }
+    #help { left:8px; right:8px; top:auto; bottom:8px; max-width:none; font-size:11px; }
+    #testTag { bottom:44px !important; font-size:11px !important; }
+    #toasts { top:auto; bottom:42%; left:8px; }
+    .bub { font-size:12px; padding:4px 8px; }
+    #trayCard { position:fixed; left:8px; right:8px; bottom:54px; } #trayCard h2 { display:none; } #tray button { padding:6px 4px; font-size:12px; }   /* 工作台：工具盤放到下面，中間留給要看的東西 */
+  }
 </style>
 </head>
 <body>
@@ -147,6 +158,7 @@
   <h2>外牆菜鳥的五天</h2>
   <p class="sub" id="menuSub"></p>
   <p class="sub" style="margin-top:-6px">本遊戲純屬虛構。如有雷同，你也辛苦了。</p>
+  <p class="sub" id="rotHint" style="display:none; color:#ffb020">手機橫著拿，畫面比較大、比較好玩。</p>
   <div id="lvList"></div>
   <div class="row"><button id="mLocker">置物櫃</button><button id="mCast">人物介紹</button><button id="mTroph">獎盃</button><button id="mName">改名字</button></div>
 </div></div>
@@ -288,9 +300,9 @@ Object.assign(sun.shadow.camera,{left:-8,right:8,top:8,bottom:-8}); sun.shadow.b
 const toonGrad = (()=>{ const t=new THREE.DataTexture(new Uint8Array([110,185,255]),3,1,THREE.LuminanceFormat); t.minFilter=t.magFilter=THREE.NearestFilter; t.needsUpdate=true; return t; })();
 const std = (c,o={}) => { const q=Object.assign({ color:c, gradientMap:toonGrad }, o); delete q.roughness; delete q.metalness; return new THREE.MeshToonMaterial(q); };
 const mat = {
-  rc:std(0xaab2bd), rcSee:std(0x76808d,{transparent:true, opacity:.46, depthWrite:false}), rcEdge:new THREE.MeshBasicMaterial({color:0x2c333d}), floor:std(0xffffff),
+  rc:std(0xc2bdb1), rcSee:std(0x76808d,{transparent:true, opacity:.46, depthWrite:false}), rcEdge:new THREE.MeshBasicMaterial({color:0x2c333d}), floor:std(0xffffff),
   anchor:std(0xffd166,{metalness:.6, roughness:.3}), steel:std(0xc0c7d1,{metalness:.7, roughness:.35}), steelDark:std(0x59616c,{metalness:.6, roughness:.4}),
-  girtBad:std(0xd9534f,{metalness:.5, roughness:.4}), alu:std(0xa9b4c2,{metalness:.6, roughness:.35}), alu2:std(0x8c98a8,{metalness:.6, roughness:.35}),
+  girtBad:std(0xd9534f,{metalness:.5, roughness:.4}), alu:std(0x56677a,{metalness:.6, roughness:.35}), alu2:std(0x7a8ca0,{metalness:.6, roughness:.35}),
   glass:std(0x78beff,{transparent:true, opacity:.32, metalness:.1, roughness:.05}), seal:std(0x4a4a4a), gasket:std(0x161616), mortar:std(0x9b9a92),
   hole:new THREE.MeshBasicMaterial({color:0x050505}), resin:std(0xa3161a), resinCured:std(0x5c0c0e), brush:std(0x3b7dd8), card:std(0xd8d2c4),
   face:std(0xdfe3e8,{metalness:.35, roughness:.45}), foam:std(0xe6c86e,{roughness:.9}), film:std(0x7fc4ff,{transparent:true, opacity:.55, roughness:.3}),
@@ -1118,6 +1130,7 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
   g.userData={legL,legR,armL,armR,hold,fx};
   return g;
 }
+const TOUCH=matchMedia('(pointer:coarse)').matches;                                     // 手機、平板：用手指操作
 const SIT=0.36;                                                                        // 坐下來，身體降低多少
 function seat(a){ const g=a.g, ch=std(0x3b6fd0), dk=std(0x3a4350); a.seated=true; a.deskFace = a.x>L.cx ? Math.PI/2 : -Math.PI/2; a.face=a.deskFace;       // 坐在工位上：椅子跟著人，可以滑
   [box(0.5,0.08,0.5, 0,0.74,-0.02, ch), box(0.5,0.55,0.08, 0,1.06,-0.28, ch), cyl(0.04,0.34,'y', 0,0.55,-0.02, dk,8), box(0.56,0.05,0.08, 0,SIT+0.03,-0.02, dk), box(0.08,0.05,0.56, 0,SIT+0.03,-0.02, dk)].forEach(m=>g.add(m));
@@ -1254,8 +1267,18 @@ function placeCam(){ const dx=Math.sin(phi)*Math.sin(theta), dz=Math.sin(phi)*Ma
   if(R){ const m=0.4; if(dx>1e-4) d=Math.min(d,(R.x1-m-target.x)/dx); else if(dx<-1e-4) d=Math.min(d,(R.x0+m-target.x)/dx); if(dz>1e-4) d=Math.min(d,(R.z1-m-target.z)/dz); else if(dz<-1e-4) d=Math.min(d,(R.z0+m-target.z)/dz); d=Math.max(0.8,d); }   // 室內：鏡頭碰到牆之前先拉近
   camera.position.set(target.x+d*dx, target.y+d*Math.cos(phi), target.z+d*dz); camera.lookAt(target); }
 let pd=null, dragged=false; const cvs=renderer.domElement;
-cvs.addEventListener('pointerdown',e=>{ pd={x:e.clientX,y:e.clientY,pan:e.button!==0||e.shiftKey}; dragged=false; cvs.setPointerCapture(e.pointerId); });   // 右鍵（或中鍵、Shift＋左鍵）拖曳＝平移
+cvs.addEventListener('pointerdown',e=>{ pd={x:e.clientX,y:e.clientY,pan:e.button!==0||e.shiftKey}; dragged=false; try{ cvs.setPointerCapture(e.pointerId); }catch(_){} });   // 右鍵（或中鍵、Shift＋左鍵）拖曳＝平移
 cvs.addEventListener('contextmenu',e=>e.preventDefault());
+const touches=new Map(); let pinch=null;                                                // 兩指：捏合＝縮放，一起移動＝平移
+function panBy(dx,dy){ if(!camHome) return; const k=dist*0.0016, sn=Math.sin(theta), cs=Math.cos(theta), lim=(v,c)=>Math.min(c+18,Math.max(c-18,v));
+  target.x=lim(target.x-(cs*dx+sn*dy)*k, camHome.t[0]); target.z=lim(target.z+(sn*dx-cs*dy)*k, camHome.t[2]);
+  if(LV.room){ const R=LV.room; target.x=Math.min(R.x1-1.3,Math.max(R.x0+1.3,target.x)); target.z=Math.min(R.z1-1.3,Math.max(R.z0+1.3,target.z)); } }
+cvs.addEventListener('pointerdown',e=>{ if(e.pointerType!=='touch') return; touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(touches.size===2){ const [a,b]=[...touches.values()]; pinch={d:Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)), dist, mx:(a.x+b.x)/2, my:(a.y+b.y)/2}; pd=null; dragged=true; } });
+cvs.addEventListener('pointermove',e=>{ if(!touches.has(e.pointerId)) return; touches.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(!pinch || touches.size<2) return;
+  const [a,b]=[...touches.values()], d=Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)), mx=(a.x+b.x)/2, my=(a.y+b.y)/2; camGoal=null; if(talkCam) talkCam.free=true;
+  dist=Math.min(maxD,Math.max(minD,pinch.dist*pinch.d/d)); panBy(mx-pinch.mx, my-pinch.my); pinch.mx=mx; pinch.my=my; });
+['pointerup','pointercancel'].forEach(ev=>cvs.addEventListener(ev,e=>{ touches.delete(e.pointerId); if(touches.size<2) pinch=null; }));
 let camHome=null; function camReset(){ if(!camHome) return; target.set(...camHome.t); camGoal={theta:camHome.theta, phi:camHome.phi, dist:camHome.dist}; }   // 鏡頭回正
 cvs.addEventListener('pointermove',e=>{ if(!pd) return; const dx=e.clientX-pd.x, dy=e.clientY-pd.y; if(!dragged && Math.hypot(dx,dy)<5) return; dragged=true; camGoal=null; if(talkCam) talkCam.free=true;
   if(pd.pan && camHome){ const k=dist*0.0016, sn=Math.sin(theta), cs=Math.cos(theta), lim=(v,c)=>Math.min(c+18,Math.max(c-18,v));                   // 平移：畫面跟著滑鼠走，離原位最多 18 公尺
@@ -1467,7 +1490,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
   resetGroup(); L.build(); sun.castShadow=!L.noShadow; scene.background.set(L.office||L.indoor?0x262b32:0x9aa5b0); CLOUDS.forEach(c=>c.visible=!L.office&&!L.indoor);
   $('#card').style.display='none'; $('#card').classList.remove('on'); cardNext=null;
   if(L.bench){ const c=L.cam; target.set(...c.t); theta=c.theta; phi=c.phi; dist=c.dist; minD=dist*0.35; maxD=dist*2.5;
-    $('#help').textContent='點右邊工具盤＝做那一步　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
+    $('#help').textContent = TOUCH ? '點工具盤＝做那一步　一指拖曳＝轉視角　兩指＝縮放、平移' : '點右邊工具盤＝做那一步　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   else { const n=L.tray.length, per=Math.ceil(n/2);
     if(L.office) L.tray.forEach((id,k)=>makePallet(stepOf(id), L.cx+(k-(n-1)/2)*0.95, 1.6));                                 // 辦公室：立牌在你面前排成一排，跟螢幕在同一個畫面
     else L.tray.forEach((id,k)=>{ const row=k<per?0:1, j=row?k-per:k, cnt=row?n-per:per; makePallet(stepOf(id), L.cx+(j-(cnt-1)/2)*1.5+(row && cnt===per ? 0.75 : 0), 3.4+row*1.9); });   // 兩排拉開、錯開半格，長料才不會頭尾相接
@@ -1479,8 +1502,9 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
     LV.pick.push(spot.userData.disc);
     if(L.view){ target.set(...L.view.t); theta=L.view.theta; phi=L.view.phi; dist=L.view.dist; } else { target.set(L.cx, L.gy+1.3, 2.5); theta=0.5; phi=1.08; dist=12; }
     minD=4; maxD=24;
-    $('#help').textContent='點地板＝走路（WASD 也行）　點棧板＝拿材料　點藍色圈圈＝安裝　點同事＝聊天　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
+    $('#help').textContent = TOUCH ? '點地板＝走路　點棧板＝拿材料　點藍圈＝安裝　點同事＝聊天　一指拖曳＝轉視角　兩指＝縮放、平移' : '點地板＝走路（WASD 也行）　點棧板＝拿材料　點藍色圈圈＝安裝　點同事＝聊天　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   if(LV.room) maxD=Math.min(maxD,15);
+  if(innerWidth<innerHeight){ dist=Math.min(maxD, dist*1.35); if(LV.room) phi=Math.min(phi,0.78); }   // 手機直著拿：畫面窄，鏡頭拉遠一點；室內被牆擋住拉不遠，就改成從高一點往下看
   camHome={t:[target.x,target.y,target.z], theta, phi, dist};
   $('#lvTitle').textContent=L.name; $('#stepN').textContent=L.steps.length; hideDayEnd(); $('#menu').style.display='none';
   clearBubbles(); nextIdle=performance.now()+9000; lastAct=performance.now();
@@ -1587,7 +1611,8 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
 setInterval(()=>{ if(done||!L) return; const s=Math.round((Date.now()-t0)/1000); $('#timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },500);
 
 // ===================== 選關、人物、獎盃、名字 =====================
-function openMenu(){ const best=store.get('cwstory_best',{}), list=$('#lvList'); list.innerHTML='';
+function openMenu(){ $('#rotHint').style.display = TOUCH && innerWidth<innerHeight ? 'block' : 'none';   /* 手機直著拿：提醒可以橫過來 */
+  const best=store.get('cwstory_best',{}), list=$('#lvList'); list.innerHTML='';
   $('#menuSub').textContent=`你是${cname('you')}，設計部新人。週一在辦公室把第一份施工圖送審，接下來四天跟著去工地，對著圖，親手裝一次。薪水面議，責任制。`;
   LEVELS.forEach((lv,i)=>{ const d=document.createElement('div'); d.className='lv'; const info=document.createElement('div');
     const n=document.createElement('div'); n.className='n'; n.textContent=lv.name; const ds=document.createElement('div'); ds.className='d'; ds.textContent=lv.desc; info.append(n,ds);
@@ -1642,6 +1667,7 @@ const TICK = [
 let tickI=Math.floor(Math.random()*TICK.length);
 function tickNext(){ const el=$('#tickTxt'); el.style.opacity=0; setTimeout(()=>{ el.textContent=TICK[tickI++%TICK.length]; el.style.opacity=1; }, 350); }
 tickNext(); setInterval(tickNext, 9000);
+{ const hd=document.querySelector('header'), fitTop=()=>document.documentElement.style.setProperty('--topH', hd.offsetHeight+'px'); fitTop(); addEventListener('resize',fitTop); if(window.ResizeObserver) new ResizeObserver(fitTop).observe(hd); }   // 手機上工具列會折成兩行，下面的東西跟著往下排
 trCount(); startLevel(0,true);
 if(playerName) openMenu(); else askName();
 requestAnimationFrame(tick);
