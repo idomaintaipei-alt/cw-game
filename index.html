@@ -472,9 +472,22 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
     [[-0.58,-0.58],[0.58,-0.58],[-0.58,0.58],[0.58,0.58]].forEach(([a,b])=>cg.add(box(0.06,2.3,0.06, a,1.15,b, yl)));                              // 四根角柱
     cg.add(box(0.04,1.1,1.16, 0.6,0.6,0, yl)); cg.add(box(1.16,1.1,0.04, 0,0.6,0.6, yl)); cg.add(box(1.16,0.04,0.04, 0,1.15,-0.6, yl)); cg.add(box(0.04,0.04,1.16, -0.6,1.15,0, yl));   // 東、北兩面圍板；西、南兩面是門口，只有一支橫桿
     cg.add(board(['施工電梯','（限乘 8 人）'], 0.63,0.7,0,Math.PI/2,0.9,'#f2cf1d','#1b1e24'));   /* 牌子掛在東面圍板上 */ stat(cg);
-    S(box(1.2,0.04,0.3, hx,T-0.025,8.62, dk));   /* 頂面比平台地面低半公分，不會跟地面搶著顯示 */                                                                                                    // 四樓：車廂和平台之間的接板
+    S(box(1.2,0.04,0.3, hx,T-0.025,8.62, dk));
+    // 電機箱：立在電梯東邊的地上（寬 0.9、深 1.2、高 1.8 公尺），兩扇門朝南；頂上一台排風扇會轉；一條電纜從箱子接到桁架
+    { const mx=hx+1.25, mz=hz+0.85, gw=0.9, gd=1.2, gh=1.8, body=std(0x4f5d57), trim=std(0x3a4440), mg=new THREE.Group(); mg.position.set(mx,Y,mz);
+      mg.add(box(gw+0.1,0.12,gd+0.1, 0,0.06,0, mat.rc)); mg.add(box(gw,gh,gd, 0,0.12+gh/2,0, body)); mg.add(box(gw+0.06,0.05,gd+0.06, 0,0.12+gh+0.025,0, trim));   // 水泥墩、箱體、頂蓋
+      const fz=-gd/2-0.006; [-0.215,0.215].forEach(x=>{ mg.add(box(0.42,1.5,0.012, x,0.95,fz, std(0x56655e))); mg.add(box(0.03,0.16,0.02, x+(x<0?0.17:-0.17),0.95,fz-0.01, mat.chrome)); });   // 兩扇門＋門把（朝南，對著樓）
+      mg.add(box(0.012,1.5,0.02, 0,0.95,fz-0.004, trim));
+      const warn=board(['高壓危險','非操作人員勿近'], 0,1.45,fz-0.012,Math.PI,0.4,'#f2cf1d','#1b1e24'); mg.add(warn);
+      for(let i=0;i<6;i++) mg.add(box(0.012,0.03,0.5, gw/2+0.006,0.55+i*0.09,0.1, trim));   // 東側的通風百葉
+      const fan=new THREE.Group(); fan.position.set(0,0.12+gh+0.05,0.15); fan.add(cyl(0.3,0.22,'y', 0,0.11,0, std(0x6b7671),20)); fan.add(cyl(0.31,0.03,'y', 0,0.23,0, trim,20));   // 排風扇：圓筒外殼、上緣
+      const blades=new THREE.Group(); blades.position.y=0.2; for(let k=0;k<4;k++){ const b=box(0.5,0.012,0.09, 0,0,0, std(0xc9cfcc)); b.rotation.y=k*Math.PI/2; b.rotation.x=0.3; blades.add(b); } blades.add(cyl(0.05,0.04,'y',0,0,0,dk,12)); fan.add(blades);
+      for(let k=-2;k<=2;k++) fan.add(box(0.6,0.012,0.012, 0,0.245,k*0.11, dk));   // 護網
+      mg.add(fan); stat(mg); LV.fx.push(dt=>{ blades.rotation.y+=dt*9; });
+      S(box(0.05,0.05,0.9, mx-gw/2-0.3,Y+0.03,hz+0.95, dk)); S(box(0.38,0.05,0.05, mx-gw/2-0.12,Y+0.03,hz+0.5, dk));   // 地上的電纜：從箱子接到桁架腳
+      LV.obs.push({x:mx, z:mz, hx:gw/2+0.05, hz:gd/2+0.05}); }   /* 頂面比平台地面低半公分，不會跟地面搶著顯示 */                                                                                                    // 四樓：車廂和平台之間的接板
     { const c=document.createElement('canvas'); c.width=128; c.height=172; const g=c.getContext('2d'); g.fillStyle='#b9b4a8'; g.fillRect(0,0,128,172);   // 地面：電梯的基座（包住車廂和桁架腳）畫在地上（水泥色＋黃黑警示框），沒有高度，不會跟車廂地板疊在一起
-      for(let i=-12;i<16;i++){ g.fillStyle=i%2?'#1b1e24':'#f2c230'; g.beginPath(); g.moveTo(i*16,0); g.lineTo(i*16+16,0); g.lineTo(i*16+16-172,172); g.lineTo(i*16-172,172); g.fill(); }
+      for(let i=-2;i<20;i++){ g.fillStyle=i%2?'#1b1e24':'#f2c230';   /* 斜條紋要畫滿整張（右下角也要），框的四個角才接得起來 */ g.beginPath(); g.moveTo(i*16,0); g.lineTo(i*16+16,0); g.lineTo(i*16+16-172,172); g.lineTo(i*16-172,172); g.fill(); }
       g.fillStyle='#b9b4a8'; g.fillRect(12,12,104,148);
       const pad=new THREE.Mesh(new THREE.PlaneGeometry(1.8,2.42), std(0xffffff,{map:new THREE.CanvasTexture(c), polygonOffset:true, polygonOffsetFactor:-2, polygonOffsetUnits:-2})); pad.rotation.x=-Math.PI/2; pad.position.set(hx,Y+0.005,hz+0.46); pad.receiveShadow=true; stat(pad); }
     LV.hoist={cage:cg, x:hx, z:hz, Y, T, t:0, run:false};
@@ -584,7 +597,7 @@ function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas')
 const LV = { group:null, parts:{}, refs:{}, pallets:{}, pick:[], actors:{} };
 const anims = [];
 function resetGroup(){ if(LV.group){ scene.remove(LV.group); LV.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
+  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
 function part(id){ return LV.parts[id] || (LV.parts[id]={meshes:[],ghosts:[]}); }
 function ghostOf(id, mesh){ if(mesh.isSprite) return; const gh=new THREE.Mesh(mesh.geometry, mat.ghost); gh.position.copy(mesh.position); gh.rotation.copy(mesh.rotation); gh.visible=false; (LV.host||LV.group).add(gh); part(id).ghosts.push(gh); }
 function add(id, mesh){ mesh.visible=false; mesh.userData.home=mesh.position.clone(); (LV.host||LV.group).add(mesh); part(id).meshes.push(mesh); ghostOf(id,mesh); return mesh; }
@@ -1219,7 +1232,7 @@ const SIT=0.36;                                                                 
 function seat(a){ const g=a.g, ch=std(0x3b6fd0), dk=std(0x3a4350); a.seated=true; a.deskFace = a.x>L.cx ? Math.PI/2 : -Math.PI/2; a.face=a.deskFace;       // 坐在工位上：椅子跟著人，可以滑
   [box(0.5,0.08,0.5, 0,0.69,-0.02, ch), box(0.5,0.55,0.08, 0,1.0,-0.28, ch), cyl(0.04,0.3,'y', 0,0.5,-0.02, dk,8),   /* 椅墊頂面在大腿下面，大腿壓在椅墊上 */ box(0.56,0.05,0.08, 0,SIT+0.03,-0.02, dk), box(0.08,0.05,0.56, 0,SIT+0.03,-0.02, dk)].forEach(m=>g.add(m));
   g.traverse(o=>{ if(o.userData.blob) o.position.y=SIT+0.014; }); }
-function makeActor(who,x,z){ const c=CAST[who], g=makePerson(c); LV.group.add(g);
+function makeActor(who,x,z){ const c=CAST[who], g=makePerson(c); g.rotation.order='YXZ'; LV.group.add(g);   /* 先轉向、再彎腰：鞠躬、仰頭喝、揮棒都照人自己面對的方向彎，不是照場景的方向 */
   const bl=new THREE.Mesh(new THREE.CircleGeometry(0.38,20), mat.blob); bl.rotation.x=-Math.PI/2; bl.position.y=0.014; bl.userData.blob=true; bl.raycast=()=>{}; g.add(bl);   // 腳下貼地的影子：太陽的影子落在背後，從正面看不到，人會像飄著
   const tag=label(cname(who), who==='you'?'#1d4f86':'#374151', 0,2.1,0,0.17); g.add(tag);
   const a={who,g,x,z,home:{x,z},dest:null,onArrive:null,speed: who==='you'?3.0:4.2, face:Math.PI, ph:Math.random()*6, carry:null, wob:0, bumps:0, touching:false, pushT:0, backAt:0, fined:false};
@@ -1242,6 +1255,7 @@ function stepActor(a,dt,t){ let moving=false;
     a.atDesk=busy; a.atWork = free && !a.seated && !L.office && Math.hypot(a.x-a.home.x,a.z-a.home.z)<0.9 && Math.hypot(p.x-a.x,p.z-a.z)>1.6;                 // 工地：在自己的位置、你沒走近、沒在講話＝在忙
     a.face = busy ? a.deskFace : a.atWork ? Math.atan2(L.cx-a.x, 0.2-a.z) : a.waiting ? a.face : Math.atan2(p.x-a.x,p.z-a.z); }   // 坐著的人平常面向螢幕，講話或被叫才轉過來
   pushOut(a, moving);
+  if(a.follower && a.liftY===undefined) for(const k in LV.actors){ const o=LV.actors[k]; if(o===a || o.liftY!==undefined || !o.g.visible) continue; const dx=a.x-o.x, dz=a.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ a.x+=dx/d*(0.55-d); a.z+=dz/d*(0.55-d); pushOut(a); } }   /* 小弟走完這一步，跟任何人都保持 55 公分（走路途中也不會擦撞） */
   if(moving && a.dest){ const d=Math.hypot(a.dest.x-a.x,a.dest.z-a.z); if(d<a.bestD-0.015){ a.bestD=d; a.stuck=0; } else a.stuck+=dt;
     if(a.stuck>0.4){ a.dest=null; a.restUntil=t+0.9; moving=false; const f=a.onArrive; a.onArrive=null; if(f) f(); } }   // 一直沒有更靠近目標＝被擋住：停下，不要原地踏步
   a.g.position.set(a.x, (a.liftY!==undefined ? a.liftY : gyAt(a.x,a.z))+(a.seated ? -SIT : moving?Math.abs(Math.sin(t*10+a.ph))*0.035:0), a.z);
@@ -1457,6 +1471,7 @@ function escortFx(dt,t){ const E=LV.escort; if(!E) return; const me=LV.actors.yo
     if(H && H.run){ f.dest=null; f.x=H.x+sd*0.62; f.z=H.z+0.3; f.liftY=H.cage.position.y+0.02; f.face=Math.PI; return; }                // 一起搭電梯
     if(f.liftY!==undefined && f.z<8.45) f.liftY=undefined;
     const tx=me.x-Math.sin(me.face)*0.8+Math.cos(me.face)*sd, tz=me.z-Math.cos(me.face)*0.8-Math.sin(me.face)*sd; if(Math.hypot(f.x-tx,f.z-tz)>0.3) f.dest={x:tx,z:tz}; });   // 跟在主角後面
+  E.fs.forEach(f=>{ if(f.liftY!==undefined) return; Object.values(LV.actors).forEach(o=>{ if(o===f || o.liftY!==undefined || !o.g.visible) return; const dx=f.x-o.x, dz=f.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ f.x+=dx/d*(0.55-d); f.z+=dz/d*(0.55-d); } }); pushOut(f); });   /* 小弟跟任何人都保持 55 公分，不會撞在一起、也不會撞到同事 */
   if(H && H.board){ H.bt+=dt; if(H.bt>1.2 || E.fs.every(f=>!f.waiting && Math.hypot(f.x-(H.x+(f===E.fs[0]?-0.55:0.55)*0.62),f.z-(H.z+0.3))<0.08)){ H.board=false; H.run=true; } }   // 小弟都進來了（或等了 3 秒）就開
   if(E.started && (!cut || cut.stage>=2)){ E.fs.forEach(f=>{ f.liftY=undefined; f.waiting=false; f.bow=0; f.g.rotation.x=0; }); LV.escort=null; } }
 function heliWelcome(){ const E=LV.escort; if(!E || !E.carpet) return; const C=E.carpet, y=yardY(), P=E.P; C.go=true; chime('platinum');   // 直升機落地：紅地毯滾出去、彩帶、號角
@@ -1712,7 +1727,7 @@ function crowd(dt,now){ const p=LV.actors.you; if(!p) return;
     let fi=0; for(const k in LV.actors){ const f=LV.actors[k]; if(!f.follower) continue; const sd=fi++ ? 0.6 : -0.6, tx=p.x-Math.sin(p.face)*1.15+Math.cos(p.face)*sd, tz=p.z-Math.cos(p.face)*1.15-Math.sin(p.face)*sd;
       if(blocked(tx,tz) || now/1000<(f.restUntil||0)) f.dest=null;
       else if(Math.hypot(f.x-tx,f.z-tz)>0.45){ const w=plan(f, clampXZ(tx,tz))[0]; if(!f.dest || Math.hypot(f.dest.x-w.x,f.dest.z-w.z)>0.3) f.dest=w; }
-      for(const k2 in LV.actors){ const o=LV.actors[k2]; if(o===f||o===p) continue; const dx=f.x-o.x, dz=f.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.5){ f.x+=dx/d*(0.5-d); f.z+=dz/d*(0.5-d); } } const fc=clampXZ(f.x,f.z); f.x=fc.x; f.z=fc.z; pushOut(f); }   // 被擠開之後再確認一次：不出界、不站在牆上、不進障礙物
+      for(const k2 in LV.actors){ const o=LV.actors[k2]; if(o===f||o===p) continue; const dx=f.x-o.x, dz=f.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ f.x+=dx/d*(0.55-d); f.z+=dz/d*(0.55-d); } } const fc=clampXZ(f.x,f.z); f.x=fc.x; f.z=fc.z; pushOut(f); }   // 被擠開之後再確認一次：不出界、不站在牆上、不進障礙物
     for(const k in LV.actors){ const a=LV.actors[k]; if(a===p) continue; const dx=a.x-p.x, dz=a.z-p.z, d=Math.hypot(dx,dz)||0.001;
       if(d<0.55){ const side = a.dest && !moving ? 0.03 : 0;   // 同事走回原位被你擋到：往旁邊滑開，不要卡住
         const c=clampXZ(a.x+dx/d*(0.55-d)-dz/d*side, a.z+dz/d*(0.55-d)+dx/d*side); a.x=c.x; a.z=c.z; pushOut(a); a.backAt=now+1600;
