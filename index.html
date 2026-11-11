@@ -288,7 +288,7 @@ const fill = s => s.replace(/\{P\}/g, cname('you'));
 // ===================== 3D 基本 =====================
 const view = document.getElementById('view');
 const renderer = new THREE.WebGLRenderer({ antialias:true });
-renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(innerWidth, innerHeight); renderer.shadowMap.enabled = true;
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(innerWidth, innerHeight); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 view.appendChild(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x9aa5b0);
 const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.05, 160);
@@ -1288,8 +1288,9 @@ const ping=new THREE.Mesh(new THREE.RingGeometry(0.1,0.14,24), mat.ping); ping.r
 
 // ===================== 視角 =====================
 const target=new THREE.Vector3(); let theta=0, phi=1.2, dist=6, keyTheta=0, camGoal=null, minD=2, maxD=14;
-function followSun(){ const sx=Math.round(target.x/4)*4, sy=Math.round(target.y/4)*4, sz=Math.round(target.z/4)*4;   // 太陽和影子範圍跟著鏡頭看的地方（每 4 公尺跳一次，影子不會抖）
-  if(sun.target.position.x!==sx || sun.target.position.y!==sy || sun.target.position.z!==sz){ sun.target.position.set(sx,sy,sz); sun.position.set(sx+15,sy+27,sz+21); sun.target.updateMatrixWorld(); } }
+const SUN_D=new THREE.Vector3(15,27,21).normalize(), SUN_R=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),SUN_D).normalize(), SUN_U=new THREE.Vector3().crossVectors(SUN_D,SUN_R), SUN_TEX=28/2048;
+function followSun(p=target){ const r=Math.round(p.dot(SUN_R)/SUN_TEX)*SUN_TEX, u=Math.round(p.dot(SUN_U)/SUN_TEX)*SUN_TEX, f=p.dot(SUN_D);   // 太陽和影子範圍跟著鏡頭看的地方；位置對齊影子貼圖的格子，鏡頭移動時影子的邊不會抖
+  sun.target.position.copy(SUN_R).multiplyScalar(r).addScaledVector(SUN_U,u).addScaledVector(SUN_D,f); sun.position.copy(sun.target.position).addScaledVector(SUN_D,37.6); sun.target.updateMatrixWorld(); }
 function placeCam(){ followSun(); const dx=Math.sin(phi)*Math.sin(theta), dz=Math.sin(phi)*Math.cos(theta), R=LV.room; let d=dist;
   if(R){ const m=0.4; if(dx>1e-4) d=Math.min(d,(R.x1-m-target.x)/dx); else if(dx<-1e-4) d=Math.min(d,(R.x0+m-target.x)/dx); if(dz>1e-4) d=Math.min(d,(R.z1-m-target.z)/dz); else if(dz<-1e-4) d=Math.min(d,(R.z0+m-target.z)/dz); d=Math.max(0.8,d); }   // 室內：鏡頭碰到牆之前先拉近
   camera.position.set(target.x+d*dx, target.y+d*Math.cos(phi), target.z+d*dz); camera.lookAt(target);
@@ -1539,6 +1540,9 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
   clearBubbles(); nextIdle=performance.now()+9000; lastAct=performance.now();
   cut=null; prank=null; multiN=0; patience=100; failed=false; warned=false; $('#fail').style.display='none'; $('#patWrap').style.display=L.bench?'none':''; patUI();
   stats(); buildTray(); setGoal(); if(quiet) return;
+  if(!L.bench && !L.office && !L.indoor){ const rd=skinState().ride, heli=rd==='r_heli';                    // 要進場的關卡：一開始就把人藏起來、鏡頭放在進場的位置，字卡淡出時不會先看到人站在工作區
+    if(rd!=='r_walk'){ LV.actors.you.g.visible=false; camGoal=null; target.set(heli || L.yard!==undefined ? L.cx-8 : L.cx-4.5, yardY()+(heli?3.2:1.3), 2.5); theta = L.yard!==undefined ? -0.25 : 0.1; phi=1.05; dist=22; }
+    else if(L.yard!==undefined){ LV.actors.you.g.visible=false; camGoal=null; target.set(L.cx-7, yardY()+1.0, 14); dist=13; } }
   let intro=L.intro; if(li===0){ const r=nameRoast(), k=L.roastAt||1; if(r.length){ intro=L.intro.slice(0,k).concat(r, L.intro.slice(k)); award('misc.name'); } }   // 第一天、鐵叔自我介紹之後開虧
   const gr=greet(); if(gr.length) intro=[intro[0]].concat(gr, intro.slice(1));
   if(Object.values(LV.actors).some(a=>a.follower)) award('misc.fan');
