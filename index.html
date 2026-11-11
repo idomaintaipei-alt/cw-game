@@ -330,7 +330,16 @@ mat.bag=new THREE.MeshBasicMaterial({color:0x5a4860, transparent:true, opacity:.
 { const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'), gr=g.createRadialGradient(32,32,2,32,32,31); gr.addColorStop(0,'rgba(0,0,0,.5)'); gr.addColorStop(0.6,'rgba(0,0,0,.28)'); gr.addColorStop(1,'rgba(0,0,0,0)');
   g.fillStyle=gr; g.fillRect(0,0,64,64); mat.blob=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c), transparent:true, depthWrite:false}); }                                  // 腳下貼地的影子
 { const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'); g.strokeStyle='#f2c230'; g.lineWidth=7; g.strokeRect(3,3,58,58); g.beginPath(); g.moveTo(3,3); g.lineTo(61,61); g.moveTo(61,3); g.lineTo(3,61); g.stroke();
-  const tex=new THREE.CanvasTexture(c); mat.lattice=(rx,ry)=>{ const t=tex.clone(); t.needsUpdate=true; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rx,ry); return new THREE.MeshBasicMaterial({map:t, transparent:true, alphaTest:.4, side:THREE.DoubleSide}); }; }   // 塔吊的桁架
+  const tex=new THREE.CanvasTexture(c); mat.lattice=(rx,ry)=>{ const t=tex.clone(); t.needsUpdate=true; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rx,ry); return new THREE.MeshBasicMaterial({map:t, transparent:true, alphaTest:.4, side:THREE.DoubleSide}); }; }   // 塔吊的桁架（遠處、橫的吊臂用貼圖）
+// 直立的桁架：真的鐵管。寬 w、深 d、高 h，n 節；底部在 y=0、中心在原點。每支桿子是同一個方塊拉長轉向，全部用一個 InstancedMesh 畫
+function truss(w,d,h,n,m,t=0.05){ const bars=[], V=(x,y,z)=>new THREE.Vector3(x,y,z), cs=[[-w/2,-d/2],[w/2,-d/2],[w/2,d/2],[-w/2,d/2]], sh=h/n;
+  cs.forEach(([x,z])=>bars.push([V(x,0,z),V(x,h,z),t*1.3]));                                                                  // 四根角柱
+  for(let k=0;k<=n;k++) for(let i=0;i<4;i++){ const a=cs[i], b=cs[(i+1)%4]; bars.push([V(a[0],k*sh,a[1]),V(b[0],k*sh,b[1]),t]); }   // 每節的橫桿
+  for(let k=0;k<n;k++) for(let i=0;i<4;i++){ const a=cs[i], b=cs[(i+1)%4]; bars.push([V(a[0],k*sh,a[1]),V(b[0],(k+1)*sh,b[1]),t*0.8]); bars.push([V(b[0],k*sh,b[1]),V(a[0],(k+1)*sh,a[1]),t*0.8]); }   // 每面的 X 斜撐
+  const im=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1), m, bars.length), M=new THREE.Matrix4(), q=new THREE.Quaternion(), up=V(0,1,0);
+  bars.forEach(([a,b,r],i)=>{ const dir=b.clone().sub(a), L=dir.length(); q.setFromUnitVectors(up, dir.normalize()); M.compose(a.clone().add(b).multiplyScalar(0.5), q, V(r,L,r)); im.setMatrixAt(i,M); });
+  const bb=new THREE.Box3(V(-w/2-t,-t,-d/2-t), V(w/2+t,h+t,d/2+t)); im.geometry.boundingBox=bb; im.geometry.boundingSphere=bb.getBoundingSphere(new THREE.Sphere());   /* 範圍設成整支桁架：鏡頭只看到上半段也照樣畫出來 */
+  im.castShadow=false; im.receiveShadow=true; return im; }
 mat.road=std(0x8b8780,{polygonOffset:true, polygonOffsetFactor:-2, polygonOffsetUnits:-2}); mat.carpet=std(0xb3141c,{polygonOffset:true, polygonOffsetFactor:-4, polygonOffsetUnits:-4}); mat.carpetEdge=std(0xe8b923,{emissive:0x4a3500, polygonOffset:true, polygonOffsetFactor:-6, polygonOffsetUnits:-6});   /* 紅地毯鋪在路面上：推得比路面更前面，才不會被路面蓋掉 */   /* 路面貼在地上：往前推一點，不跟地面搶 */ mat.rebar=std(0x9a5230); mat.net=new THREE.MeshBasicMaterial({color:0x2f9a55, transparent:true, opacity:.62, side:THREE.DoubleSide}); mat.far=[0x7d8896,0x87929f,0x76818f].map(c=>new THREE.MeshBasicMaterial({color:c}));
 { const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'); g.fillStyle='#bdbab2'; g.fillRect(0,0,128,128); g.strokeStyle='#a9a69e'; g.lineWidth=3; g.strokeRect(0,0,128,128);   // 屋頂平台的地面：有分割縫的混凝土
   for(let i=0;i<70;i++){ g.fillStyle=i%2?'#b3b0a8':'#c6c3bb'; g.fillRect(Math.random()*128, Math.random()*128, 2, 2); } const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(14,7); mat.deck=std(0xffffff); mat.deck.map=t; }                 // 一格 1.2 公尺
@@ -452,22 +461,25 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
   for(let k=0;k<6;k++) S(cyl(0.04,4,'x', 7.6,T+0.14,7.78+k*0.082, mat.rebar,6));   /* 一根挨著一根放在墊木上 */ [6.2,9.0].forEach(x=>S(box(0.12,0.1,0.9, x,T+0.05,8.0, mat.wood)));   // 平台上的料堆（讓開樓梯口）
   S(box(1.2,0.45,2.4, 11.6,T+0.225,2.0, mat.wood)); for(let l=0;l<3;l++) for(let i=0;i<2;i++) S(box(0.62,0.16,0.42, 9.0+i*0.66-(l%2)*0.1,T+0.08+l*0.165,0.7, std(0xcfc8b6)));
   // 塔吊：立在樓裡面，塔身從樓板的預留孔穿出來（不會自己孤零零立在空地上）
-  const cr=new THREE.Group(), yl=std(0xf2c230), kx=8.9, kz=5.9; cr.position.set(kx,Y,kz); cr.add(box(1.1,26,1.1, 0,13.5,0, mat.lattice(1,24))); cr.add(box(1.5,1.4,1.5, 0,27.2,0, yl));
+  const cr=new THREE.Group(), yl=std(0xf2c230), kx=8.9, kz=5.9; cr.position.set(kx,Y,kz); { const tm=truss(1.1,1.1,26,24,std(0xf2c230),0.06); tm.position.y=0.5; cr.add(tm); }   /* 塔身：真的鐵管，不用貼圖（貼圖的細線會閃） */ cr.add(box(1.5,1.4,1.5, 0,27.2,0, yl));
   const top=new THREE.Group(); top.position.y=27.9; top.rotation.y=-0.45; top.add(box(22,1.0,1.0, -11,0.5,0, mat.lattice(20,1))); top.add(box(7,0.8,1.0, 4.2,0.4,0, mat.lattice(7,1))); top.add(box(2.4,1.6,1.4, 6.6,-0.2,0, mat.steelDark));
   top.add(box(1.0,4,1.0, 0,2.6,0, mat.lattice(1,4))); top.add(box(1.3,1.3,1.5, -1.3,-0.5,0.95, mat.white)); top.add(cyl(0.025,8,'y', -13,-4,0, mat.dark,4)); top.add(box(0.5,0.6,0.3, -13,-8.2,0, yl)); cr.add(top); cr.traverse(o=>{ o.castShadow=false; }); stat(cr);
   S(box(1.5,0.02,1.5, kx,T+0.012,kz, mat.dark)); [[0,-0.78,1.6,0.06],[0,0.78,1.6,0.06],[-0.78,0,0.06,1.6],[0.78,0,0.06,1.6]].forEach(([a,b,w,d])=>S(box(w,0.22,d, kx+a,T+0.11,kz+b, mat.wood)));   // 樓板的預留孔和擋板
   // 施工電梯：貼在樓的北面，桁架從地面一路到四樓上方；車廂西邊進、南邊出（出口接四樓平台）
-  { const hx=-1.5, hz=9.35, yl=std(0xf0b323), dk=std(0x3a4350), mast=box(0.8,T-Y+3.2,0.8, hx,Y+(T-Y+3.2)/2,hz+1.0, mat.lattice(1,Math.round(T-Y+3))); mast.castShadow=false; stat(mast);
+  { const hx=-1.5, hz=9.35, yl=std(0xf0b323), dk=std(0x3a4350), mast=truss(0.8,0.8,T-Y+3.2,Math.round(T-Y+3),yl,0.045); mast.position.set(hx,Y,hz+1.0); stat(mast);   /* 桁架：真的鐵管，不用貼圖（貼圖的細線會閃） */
     for(let k=1;k<=3;k++) S(box(0.08,0.08,1.0, hx,Y+3.6*k,hz+0.1, dk));                                                                          // 每層一支繫牆桿，把桁架拉在樓上
-    const cg=new THREE.Group(); cg.position.set(hx,Y,hz); cg.add(box(1.2,0.08,1.2, 0,0.04,0, dk)); cg.add(box(1.2,0.08,1.2, 0,2.3,0, yl));   // 車廂：地板、頂板
+    const cg=new THREE.Group(); cg.position.set(hx,Y,hz); cg.add(box(1.2,0.02,1.2, 0,0.01,0, dk));   /* 車廂地板：2 公分薄板 */ cg.add(box(1.2,0.08,1.2, 0,2.3,0, yl));   // 車廂：地板、頂板
     [[-0.58,-0.58],[0.58,-0.58],[-0.58,0.58],[0.58,0.58]].forEach(([a,b])=>cg.add(box(0.06,2.3,0.06, a,1.15,b, yl)));                              // 四根角柱
     cg.add(box(0.04,1.1,1.16, 0.6,0.6,0, yl)); cg.add(box(1.16,1.1,0.04, 0,0.6,0.6, yl)); cg.add(box(1.16,0.04,0.04, 0,1.15,-0.6, yl)); cg.add(box(0.04,0.04,1.16, -0.6,1.15,0, yl));   // 東、北兩面圍板；西、南兩面是門口，只有一支橫桿
     cg.add(board(['施工電梯','（限乘 8 人）'], 0.63,0.7,0,Math.PI/2,0.9,'#f2cf1d','#1b1e24'));   /* 牌子掛在東面圍板上 */ stat(cg);
-    S(box(1.2,0.04,0.3, hx,T-0.02,8.62, dk));                                                                                                    // 四樓：車廂和平台之間的接板
-    S(box(1.6,0.05,1.6, hx,Y+0.025,hz, mat.rc));   /* 地面：電梯的基座（5 公分）。比車廂地板（8 公分）矮，兩個頂面不在同一個高度，才不會互相搶著顯示、一直閃 */
+    S(box(1.2,0.04,0.3, hx,T-0.025,8.62, dk));   /* 頂面比平台地面低半公分，不會跟地面搶著顯示 */                                                                                                    // 四樓：車廂和平台之間的接板
+    { const c=document.createElement('canvas'); c.width=128; c.height=172; const g=c.getContext('2d'); g.fillStyle='#b9b4a8'; g.fillRect(0,0,128,172);   // 地面：電梯的基座（包住車廂和桁架腳）畫在地上（水泥色＋黃黑警示框），沒有高度，不會跟車廂地板疊在一起
+      for(let i=-12;i<16;i++){ g.fillStyle=i%2?'#1b1e24':'#f2c230'; g.beginPath(); g.moveTo(i*16,0); g.lineTo(i*16+16,0); g.lineTo(i*16+16-172,172); g.lineTo(i*16-172,172); g.fill(); }
+      g.fillStyle='#b9b4a8'; g.fillRect(12,12,104,148);
+      const pad=new THREE.Mesh(new THREE.PlaneGeometry(1.8,2.42), std(0xffffff,{map:new THREE.CanvasTexture(c), polygonOffset:true, polygonOffsetFactor:-2, polygonOffsetUnits:-2})); pad.rotation.x=-Math.PI/2; pad.position.set(hx,Y+0.005,hz+0.46); pad.receiveShadow=true; stat(pad); }
     LV.hoist={cage:cg, x:hx, z:hz, Y, T, t:0, run:false};
     LV.fx.push((dt,t)=>{ const me=LV.actors.you, H=LV.hoist; if(!LV.hoisting || !me) return; camGoal=null;
-      if(H.run){ H.t+=dt; const k=Math.min(1,H.t/4.5), e=k*k*(3-2*k); H.cage.position.y=H.Y+(H.T-H.Y)*e; me.liftY=H.cage.position.y+0.08; me.face=Math.PI;   // 電梯往上，人跟著車廂
+      if(H.run){ H.t+=dt; const k=Math.min(1,H.t/4.5), e=k*k*(3-2*k); H.cage.position.y=H.Y+(H.T-H.Y)*e; me.liftY=H.cage.position.y+0.02; me.face=Math.PI;   // 電梯往上，人跟著車廂
         if(k>=1){ H.run=false; me.liftY=H.T; me.dest={x:H.x,z:8.0}; me.onArrive=()=>{ me.liftY=undefined; me.dest={x:L.cx,z:2.4}; me.onArrive=()=>{ LV.hoisting=false; camGoal={theta:0.5, phi:1.08, dist:12}; }; }; } }
       const q=Math.min(1,dt*2.5); target.x+=(me.x-target.x)*q; target.y+=(me.g.position.y+1.0-target.y)*q; target.z+=(me.z-target.z)*q; dist+=(13-dist)*q; });   // 鏡頭跟著人
   }
@@ -1414,7 +1426,7 @@ function dropIn(id,temp,from=0,to=1e9){ const p=LV.parts[id]; if(!p) return; con
   if(temp) setTimeout(()=>p.meshes.forEach(m=>m.visible=false),1500); }
 const insideOK = () => !!L && L.id==='L1' && placed.has('pour');                     // 週一灌漿之後，可以走到樓板上（室內側）
 const STAIR={x:10.95, z0:4.6, z1:7.2};                                                // 四樓那一關的樓梯間：最上面那一段樓梯
-const gyAt = (x,z) => (L.yard!==undefined && LV.hoist && Math.abs(x-LV.hoist.x)<0.8 && Math.abs(z-LV.hoist.z)<0.8) ? L.yard+(Math.abs(x-LV.hoist.x)<0.6 && Math.abs(z-LV.hoist.z)<0.6 && LV.hoist.cage.position.y<L.yard+0.01 ? 0.08 : 0.05) :   /* 站在電梯底座上：車廂在一樓時踩車廂地板，其他地方踩底座 */ (L.yard!==undefined && (x<-3.5 || x>13.1 || z>8.5 || z<-10.8)) ? L.yard : (insideOK() && x>-3.5 && x<13.1 && z<0 && z>-10.8) ? 0 : (L.yard!==undefined && x>10.3 && x<11.6 && z>STAIR.z0 && z<7.4) ? L.gy-(z-STAIR.z0)*(1.8/2.6) : L.gy;
+const gyAt = (x,z) => (L.yard!==undefined && LV.hoist && Math.abs(x-LV.hoist.x)<0.8 && Math.abs(z-LV.hoist.z)<0.8) ? L.yard+(Math.abs(x-LV.hoist.x)<0.6 && Math.abs(z-LV.hoist.z)<0.6 && LV.hoist.cage.position.y<L.yard+0.01 ? 0.02 : 0) :   /* 車廂在一樓時，踩在 2 公分的車廂地板上；底座只是畫在地上的圖案 */ (L.yard!==undefined && (x<-3.5 || x>13.1 || z>8.5 || z<-10.8)) ? L.yard : (insideOK() && x>-3.5 && x<13.1 && z<0 && z>-10.8) ? 0 : (L.yard!==undefined && x>10.3 && x<11.6 && z>STAIR.z0 && z<7.4) ? L.gy-(z-STAIR.z0)*(1.8/2.6) : L.gy;
 // 進場路線：起點（下車的地方或大門）→ 一路走到工作區（四樓那一關經過施工電梯）
 function entryPath(kind){ const H=LV.hoist, door = kind==='walk' ? {x:L.cx-7.0, z:15.0} : kind==='heli' ? {x:L.cx-13.5+1.7, z:7.9} : {x:(L.yard!==undefined ? L.cx-11.2 : L.cx-6.4)+1.7, z:4.0};
   return L.yard!==undefined ? (kind==='heli' ? [door,{x:-3.0,z:H.z},{x:H.x,z:H.z}] : [door,{x:-4.6,z:10.4},{x:-3.0,z:H.z},{x:H.x,z:H.z}]) : [door,{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}]; }   /* 直升機：從機門直直走到電梯門口（紅地毯是一整條，不轉彎） */
@@ -1442,7 +1454,7 @@ function escortFx(dt,t){ const E=LV.escort; if(!E) return; const me=LV.actors.yo
     if(f.waiting){ f.dest=null; if(me.g.visible && Math.hypot(me.x-f.x,me.z-f.z)<2.2){ f.waiting=false; f.bow=0.9; if(!E.hi){ E.hi=true; bubble(f.who, E.kind==='heli' ? '恭迎學長！紅地毯鋪好了！' : '學長早！我們陪你上去！', true); } } else return; }
     if(f.bow>0){ f.bow=Math.max(0,f.bow-dt); f.g.rotation.x = f.bow>0 ? 0.6*Math.sin(Math.PI*(1-f.bow/0.9)) : 0; f.dest=null; return; }   // 鞠躬
     if(H && H.board){ const bx=H.x+sd*0.62, bz=H.z+0.3; if(Math.hypot(f.x-bx,f.z-bz)>0.05) f.dest={x:bx,z:bz}; return; }                  // 走進電梯
-    if(H && H.run){ f.dest=null; f.x=H.x+sd*0.62; f.z=H.z+0.3; f.liftY=H.cage.position.y+0.08; f.face=Math.PI; return; }                // 一起搭電梯
+    if(H && H.run){ f.dest=null; f.x=H.x+sd*0.62; f.z=H.z+0.3; f.liftY=H.cage.position.y+0.02; f.face=Math.PI; return; }                // 一起搭電梯
     if(f.liftY!==undefined && f.z<8.45) f.liftY=undefined;
     const tx=me.x-Math.sin(me.face)*0.8+Math.cos(me.face)*sd, tz=me.z-Math.cos(me.face)*0.8-Math.sin(me.face)*sd; if(Math.hypot(f.x-tx,f.z-tz)>0.3) f.dest={x:tx,z:tz}; });   // 跟在主角後面
   if(H && H.board){ H.bt+=dt; if(H.bt>3 || E.fs.every(f=>!f.waiting && Math.hypot(f.x-(H.x+(f===E.fs[0]?-0.55:0.55)*0.62),f.z-(H.z+0.3))<0.08)){ H.board=false; H.run=true; } }   // 小弟都進來了（或等了 3 秒）就開
