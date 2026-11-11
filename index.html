@@ -48,6 +48,9 @@
   #dName { font-size:15px; font-weight:bold; } #dName span { font-weight:normal; font-size:12px; color:var(--dim); margin-left:8px; }
   #dText { font-size:15px; line-height:1.6; margin-top:4px; min-height:48px; white-space:pre-wrap; }
   #dSrc { font-size:12px; color:var(--dim); margin-top:4px; display:none; }
+  #dText .hi, #goal .hi { color:#ffd166; font-weight:bold; border-bottom:2px solid rgba(255,209,102,.55); }   /* 對話裡的重點 */
+  #dGloss { display:none; margin-top:6px; padding:6px 9px; background:rgba(255,209,102,.09); border-left:3px solid #ffd166; border-radius:4px; font-size:13px; line-height:1.55; color:#e9e3cc; }
+  #dGloss b { color:#ffd166; }
   #dOpts button { display:block; width:100%; text-align:left; margin-top:6px; }
   #dBar { display:flex; justify-content:flex-end; gap:6px; margin-top:6px; }
   #dBar button { padding:4px 10px; font-size:12px; }
@@ -148,6 +151,7 @@
   <div id="dMain">
     <div id="dName"></div>
     <div id="dText"></div>
+    <div id="dGloss"></div>
     <div id="dSrc"></div>
     <div id="dOpts"></div>
     <div id="dBar"><button id="dSkip">跳過</button><button id="dNext" class="primary">繼續 ▶</button></div>
@@ -210,6 +214,7 @@ const SRC = {
   site:'現場做法（2026/11/11 口述，尚無書面文件）',
   ifc:'International Firestop Council 圖說（©2004 IFC，睿怡實業提供）',
   ifc90:'International Firestop Council 圖說（©2004 IFC，睿怡實業提供）；窗間牆 90 公分：科鐽工程顧問簡報講義第 5 頁',
+  wind:'佑捷設計 林文昌〈淺談帷幕牆設計作業順序及方法〉5.a 風雨試驗圖；風雨試驗室流程：現場做法（2026/11/11 口述）', yj5b:'佑捷設計 林文昌〈淺談帷幕牆設計作業順序及方法〉5.b 視覺模型圖',
   yj2:'佑捷設計 林文昌〈淺談帷幕牆設計作業順序及方法〉1.3、1.4、2.1～2.3', yj3:'佑捷設計 林文昌〈淺談帷幕牆設計作業順序及方法〉3. 圖面修改', yj5d:'佑捷設計 林文昌〈淺談帷幕牆設計作業順序及方法〉5.d 預埋圖',
   pkd15:'科鐽工程顧問 陳郁潔〈帷幕牆設計與工程〉（臺北市建築師公會講堂，2024/03/25）講義第 15 頁：放樣與繫件', pkd16:'科鐽工程顧問 陳郁潔〈帷幕牆設計與工程〉（臺北市建築師公會講堂，2024/03/25）講義第 16 頁：框架式',
   atas5:'ATAS Isoleren 三明治板安裝手冊 第 5 頁', atas6:'ATAS Isoleren 三明治板安裝手冊 第 6 頁', atas7:'ATAS Isoleren 三明治板安裝手冊 第 7 頁',
@@ -288,6 +293,32 @@ Object.assign(CAST.you,{hair:0x3a2a20, shirt:0xf4f6fa}); Object.assign(CAST.tie,
 Object.assign(CAST.an,{hair:0x6a4630, shirt:0xdfe9ff}); Object.assign(CAST.kun,{hair:0x3a332e, shirt:0xe3e3e3}); Object.assign(CAST.di,{hair:0x2a2320, shirt:0xe6f3e0}); Object.assign(CAST.hao,{hair:0x2a2320, shirt:0xe0f1f4});
 const cname = id => { const c=CAST[id]; return typeof c.name==='function' ? c.name() : c.name; };
 const fill = s => s.replace(/\{P\}/g, cname('you'));
+// 對話裡的重點：用 **…** 包起來。重點剛好是這裡的名詞，對話框下面就會自動出現白話解釋
+const GLOSS = {
+  '風雨試驗':'到風雨試驗室，照設計做一片樣品牆，用風壓和噴水去測，看會不會漏水、漏風。通過之後，工廠才正式下料，工地才開始組裝。',
+  '視覺模型':'做一小片實體樣品，給建築師和業主確認外觀、材料和顏色。它看的是好不好看，不測漏水。',
+  '標準部分':'整面帷幕牆裡重複最多次的那一段。整個案子成不成功看它，所以給最有經驗的設計師畫。',
+  '預埋件':'灌漿前先放進樓板鋼筋裡的鐵件。灌完漿就固定在混凝土裡，之後帷幕牆的托架鎖在它上面。',
+  '預埋圖':'標出每個預埋件放哪裡、什麼型式、幾個的圖。照工地樓層的進度給工地。',
+  '化學錨栓':'事後在混凝土上鑽孔、注膠、插螺桿，等膠硬了來固定。是漏埋預埋件時的補救做法。',
+  '放樣':'先量建築物、比對結構體的誤差，在樓板上畫出基準線，之後的東西都照這條線放。',
+  '托架':'鎖在預埋件上的鐵件，帷幕牆的直料掛在它上面。',
+  '直通橫斷':'直料一整支不剪；橫料（下框、中橫料、上框）照直料的斷面形狀剪口去接它。',
+  '接頭防水':'直料和橫料交接的地方，在裝玻璃之前先打膠防水。',
+  '接縫防水':'玻璃或板片之間的縫，最後一道打膠防水。',
+  '背襯板':'樓板那一段、玻璃後面的鐵板，讓外面看不到樓板和防火材。',
+  '窗間牆防火隔熱材':'上下兩層窗之間那一段，內側裝的防火、隔熱棉板。',
+  '層間塞防火岩棉':'塞在樓板邊和帷幕牆之間那道縫的岩棉，擋火從這道縫竄到樓上。',
+  '防火阻煙膠':'塗在層間塞防火岩棉上面的膠，擋煙從縫裡竄上去。',
+  '拉拔':'用儀器把錨栓往外拉，量它撐得住多少力。這裡是請 SGS 來做。',
+  '原廠最小埋深':'錨栓至少要埋進混凝土多深，原廠表上寫的下限。M10 是 60mm；實際埋深照結構計算。',
+  '崁補':'窗框四周和牆之間填的水泥砂漿，就是窗框的邊界。',
+  '料頭接法':'中橫料本體伸進直料的溝裡，再照形狀剪口；還是一整支料，不另外做料頭。',
+};
+const segsOf = t => t.split(/\*\*(.+?)\*\*/).map((x,i)=>({t:x, hi:i%2===1})).filter(q=>q.t);   // 把 **重點** 拆成一段一段
+function richText(el, sg, n=1e9){ el.textContent=''; let left=n; for(const q of sg){ if(left<=0) break; const piece=q.t.slice(0,left); left-=piece.length;   // 只顯示前 n 個字（打字效果）
+  if(q.hi){ const sp=document.createElement('span'); sp.className='hi'; sp.textContent=piece; el.append(sp); } else el.append(piece); } }
+const plain = t => t.replace(/\*\*/g,'');
 
 // ===================== 3D 基本 =====================
 const view = document.getElementById('view');
@@ -364,7 +395,7 @@ function board(lines,x,y,z,ry,w,bg,fg){ const c=document.createElement('canvas')
     const k=Math.min(1,(c.width-60)/Math.max(1,g.measureText(t).width)); fit=Math.min(fit,k); g.font=font(Math.floor(base*k)); g.fillText(t,256,512*(0.18+0.21*i)); });
   const h=w*c.height/c.width, m=new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c), side:THREE.DoubleSide})); m.position.set(x,y,z); m.rotation.y=ry; m.userData.h=h; m.userData.lines=lines; m.userData.fit=fit; return m; }
 function standBoard(lines,x,z,ry,w,bg,fg,yb){ const y0 = yb===undefined ? L.gy : yb, b=board(lines,x,y0+2.2,z,ry,w,bg,fg); stat(b);                 // 立在地上的看板：兩支腳
-  [-1,1].forEach(e=>stat(box(0.07,2.2+b.userData.h/2,0.07, x+e*Math.cos(ry)*(w/2-0.1)-Math.sin(ry)*0.06, y0+(2.2+b.userData.h/2)/2, z-e*Math.sin(ry)*(w/2-0.1)-Math.cos(ry)*0.06, mat.steelDark))); }   // 兩支腳在牌子後面，不擋到字
+  [-1,1].forEach(e=>stat(box(0.07,2.2+b.userData.h/2,0.07, x+e*Math.cos(ry)*(w/2-0.1)-Math.sin(ry)*0.04, y0+(2.2+b.userData.h/2)/2, z-e*Math.sin(ry)*(w/2-0.1)-Math.cos(ry)*0.04, mat.steelDark))); }   /* 腳貼著牌子背面（不留縫） */   // 兩支腳在牌子後面，不擋到字
 // 工地的外圍：都擺在走不到的地方，避開座駕和壓送車走的便道、直升機降落的位置，中間（x -3.5～13.1、z -10.8～8.5）留給週二那棟樓
 const yardY = () => L.yard!==undefined ? L.yard : L.gy;                                                    // 地面的高度
 // 背景的工人：會做事。kind：tie＝彎腰綁鋼筋、hammer＝敲模板、write＝在板夾上寫、walk＝在 a、b 兩點之間來回走（carry：扛東西）
@@ -635,10 +666,10 @@ function plantWorld(){ const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShad
   [[-44,-50,14,12,20],[-20,-56,10,10,28],[2,-52,16,10,15],[24,-58,12,12,24],[48,-44,14,12,19],[58,-10,12,16,22],[-56,-20,12,16,18],[-58,10,14,14,25],[-30,48,16,10,20],[10,52,12,12,26],[40,46,14,12,17]]
     .forEach(([x,z,w,d,h],k)=>{ const b=box(w,h,d, cx+x,y0+h/2,z, mat.far[k%3]); b.receiveShadow=false; S(b); }); }
 function siteSigns(){ const cx=L.cx;
-  const g1 = L.yard!==undefined;   /* 四樓那一關：立牌插在一樓的地上（大樓北面、大廳左邊），不擺在四樓平台 */
-  standBoard(['安全第一','進度也是第一','品質還是第一','（預算最後）'], g1?cx-2.2:cx+5.8, g1?13.4:2.3, g1?0.25:-0.6,2.6,'#f2cf1d','#1b1e24', g1?yardY():undefined);
+  const g1 = L.yard!==undefined;   /* 四樓那一關：立牌插在一樓、北邊大門兩側的圍籬外面，面向馬路（工地這種牌子都放在大門口），不會被隔音帆布擋住 */
+  standBoard(['安全第一','進度也是第一','品質還是第一','（預算最後）'], g1?cx-12.0:cx+5.8, g1?16.4:2.3, g1?0:-0.6,2.6,'#f2cf1d','#1b1e24', g1?yardY():undefined);
   standBoard(['距離完工','3 天','目前進度 41%'], cx-10.2,0.5,0.5,2.0,'#12161b','#ff5c3a', yardY());
-  standBoard(['工安零事故','第 3 天','最高紀錄：5 天'], g1?cx+1.0:cx+6.0, g1?13.9:4.9, g1?-0.1:-0.9,1.9,'#1f7a3d','#ffffff', g1?yardY():undefined); }
+  standBoard(['工安零事故','第 3 天','最高紀錄：5 天'], g1?cx-1.6:cx+6.0, g1?16.4:4.9, g1?0:-0.9,1.9,'#1f7a3d','#ffffff', g1?yardY():undefined); }
 function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas'); const w=Math.max(200, 60+text.length*56); c.width=w; c.height=110; const g=c.getContext('2d');
   g.fillStyle=color; g.fillRect(0,0,w,110); g.fillStyle='#fff'; g.font='bold 52px "Microsoft JhengHei",sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,w/2,58);
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c)})); sp.scale.set(h*w/110,h,1); sp.position.set(x,y,z); return sp; }
@@ -727,52 +758,52 @@ const LEVELS = [
     {who:'tie', t:'{P}，來了？昨天在辦公室看的是圖，今天看的是真的。'},
     {who:'tie', t:'你昨天檢討的那面轉角牆，今天自己裝一次。裝得起來，才叫圖。'},
     {who:'you', t:'（吞口水）……好。'},
-    {who:'tie', t:'先看樓板。鋼筋還在綁，還沒灌漿。帷幕牆的第一步不在牆上，在這裡。'},
-    {who:'tie', t:'預埋件要趁板筋綁紮的時候放進去，跟著一起灌。漏掉了，就只能事後打化學錨栓補。那是補救，不是做法。'},
+    {who:'tie', t:'先看樓板。鋼筋還在綁，還沒灌漿。**帷幕牆的第一步不在牆上**，在這裡。'},
+    {who:'tie', t:'**預埋件**要趁**板筋綁紮的時候**放進去，跟著一起灌。漏掉了，就只能事後打**化學錨栓**補。那是補救，不是做法。'},
     {who:'tie', t:'材料在後面棧板上。點棧板去拿，扛到藍色圈圈那邊裝。順序自己想。'},
     {who:'tie', t:'先講好，選錯的話，那邊戴紅帽子的琳姊會過來找你。'},
     {who:'lin', t:'我不是找你麻煩，我是在找麻煩。'} ],
   outroGood:[ {who:'tie', t:'零異常。嗯……還行。明天七點，別遲到。', mood:'smile'}, {who:'you', t:'（他剛剛是不是笑了一下？）'} ],
   outroBad:[ {who:'tie', t:'裝是裝起來了，異常單也拿了 {N} 張。'}, {who:'lin', t:'我幫你夾好了，回去貼在座位上。'}, {who:'tie', t:'明天七點，別遲到。'} ],
   steps:[
-    { id:'layout', name:'放樣', tr:'量了才算', spot:[0.6,1.0], hint:'第一步不是放料，是放樣：先量、先畫線，預埋件才知道放哪裡。',
+    { id:'layout', name:'放樣', tr:'量了才算', spot:[0.6,1.0], hint:'第一步不是放料，是**放樣**：先量、先畫線，預埋件才知道放哪裡。',
       q:{ by:'lin', title:'預埋件要放在哪裡，照什麼來定？', body:'樓板的鋼筋綁好了，還沒灌漿。', src:SRC.pkd15, opts:[
         {t:'照圖上的尺寸，從柱子邊直接量過去', ok:false, exp:'蓋出來的結構體跟圖會有誤差，所以要先比對，再定基準。'},
-        {t:'先放樣：量建築物、比對結構體的誤差，定出預埋的基準', ok:true, exp:'順序是：覆核建築物幾何、比對結構體誤差、定出預埋基準，然後才是預埋件施工、混凝土澆置。'} ] } },
+        {t:'先放樣：量建築物、比對結構體的誤差，定出預埋的基準', ok:true, exp:'順序是：**覆核建築物幾何、比對結構體誤差、定出預埋基準**，然後才是預埋件施工、混凝土澆置。'} ] } },
     { id:'anchor', name:'預埋件', tr:'地基不是用喊的', spot:[0,1.0], multi:[[0,1.0],[1.2,1.0],[2.4,1.0]], hint:'線畫好了。樓板的鋼筋還在綁，趁現在把預埋件一個一個放進去：轉角這三個你來放，其他的整圈大家一起放。等一下跟著一起灌漿。',
       q:{ title:'預埋件什麼時候放？', body:'樓板的鋼筋正在綁，準備灌漿。', src:SRC.site, opts:[
-        {t:'板筋綁紮的時候就放好，跟著灌漿', ok:true, exp:'傳統式帷幕就是這樣做。灌完漿，預埋件已經在裡面，後面的托架才有地方鎖。'},
-        {t:'先灌漿，之後再打化學錨栓就好', ok:false, exp:'全部靠化學錨栓，代表一開始沒埋到，那是事後補救，不是正常做法。'} ] } },
+        {t:'板筋綁紮的時候就放好，跟著灌漿', ok:true, exp:'傳統式帷幕就是這樣做。灌完漿，預埋件已經在裡面，後面的**托架**才有地方鎖。'},
+        {t:'先灌漿，之後再打化學錨栓就好', ok:false, exp:'全部靠化學錨栓，代表一開始沒埋到，那是**事後補救**，不是正常做法。'} ] } },
     { id:'pour', name:'聯絡灌漿廠', tr:'灌下去就定了', spot:[1.2,1.0], hint:'預埋件都放好了，才能聯絡灌漿廠。灌漿是灌漿廠的車和工人來做，不是我們自己灌。' },
     { id:'bracket', name:'托架', tr:'手伸得進去', spot:[0.3,1.0], hint:'灌漿好了，托架鎖在預埋件上。最左邊那支緊貼 RC 柱，轉個視角看看。',
       q:{ title:'轉角這顆托架，螺絲你打算怎麼鎖？', body:'左邊直料緊貼 RC 柱。標準段詳圖是從室內側水平鎖。', src:SRC.ncr, opts:[
-        {t:'直接套標準段詳圖，水平鎖', ok:false, exp:'轉角緊貼柱，工具伸不進去。HM2 就是這樣，拆換了 84 支橫料托架。'},
-        {t:'轉角另畫詳圖：3t 鋼板托架，螺絲上下鎖', ok:true, exp:'每顆螺絲都要有工具伸得進去的空間，轉角另出詳圖並標鎖固方向。'} ] },
-      after:[ {who:'tie', t:'HM2 那次，現場拆換 84 支，花了五個工。圖上畫得出來，不代表手伸得進去。記住這句。'} ] },
-    { id:'mullion', name:'直料', tr:'一柱到底', spot:[1.2,1.1], hint:'托架好了，吊直料。直料一整支衝到底，不剪口。' },
+        {t:'直接套標準段詳圖，水平鎖', ok:false, exp:'轉角緊貼柱，工具伸不進去。HM2 就是這樣，**拆換了 84 支**橫料托架。'},
+        {t:'轉角另畫詳圖：3t 鋼板托架，螺絲上下鎖', ok:true, exp:'**每顆螺絲都要有工具伸得進去的空間**，轉角另出詳圖並標鎖固方向。'} ] },
+      after:[ {who:'tie', t:'HM2 那次，現場拆換 84 支，花了五個工。**圖上畫得出來，不代表手伸得進去**。記住這句。'} ] },
+    { id:'mullion', name:'直料', tr:'一柱到底', spot:[1.2,1.1], hint:'托架好了，吊直料。直料**一整支衝到底，不剪口**。' },
     { id:'transom', name:'橫料', tr:'剪口，不切平', spot:[1.8,1.1], hint:'直料好了，接橫料。',
       q:{ title:'橫料接到直料側面，端部怎麼處理？', body:'橫料要接到直料側面。', src:SRC.model, opts:[
-        {t:'橫料端部一刀切平，頂上去', ok:false, exp:'一刀切平是所有交接縫的病根，贏的斷面沒蓋到的地方就是洞。'},
-        {t:'橫料照直料斷面形狀剪口，碰到哪裡停在哪裡', ok:true, exp:'直通橫斷：直料不剪，橫料照直料形狀剪口去接它。'} ] } },
-    { id:'joint', name:'接頭防水', tr:'滴水不漏', spot:[0.6,1.1], hint:'橫料好了。直料和橫料交接的地方（接頭），先打膠防水。',
+        {t:'橫料端部一刀切平，頂上去', ok:false, exp:'**一刀切平是所有交接縫的病根**，贏的斷面沒蓋到的地方就是洞。'},
+        {t:'橫料照直料斷面形狀剪口，碰到哪裡停在哪裡', ok:true, exp:'**直通橫斷**：直料不剪，橫料照直料形狀剪口去接它。'} ] } },
+    { id:'joint', name:'接頭防水', tr:'滴水不漏', spot:[0.6,1.1], hint:'橫料好了。直料和橫料交接的地方（接頭），先打膠做**接頭防水**。',
       q:{ title:'直料、橫料都裝好了。接頭的防水，什麼時候做？', body:'直料和橫料交接的地方有接頭。', src:SRC.pkd16, opts:[
-        {t:'現在就做，做完才裝玻璃', ok:true, exp:'框架式的順序：直料、橫料、接頭防水，然後才裝玻璃或鋁板，最後才是接縫防水。'},
-        {t:'等玻璃裝好，最後跟外面的膠一起打', ok:false, exp:'接頭防水排在裝玻璃的前面。最後打的那一道是接縫防水，是另一件事。'} ] } },
-    { id:'backpan', name:'背襯板', tr:'背後有靠山', spot:[0.6,1.2], hint:'接頭防水好了。樓板這一段，玻璃後面要先裝背襯板。' },
-    { id:'spin', name:'窗間牆防火隔熱材', tr:'背後有棉', in:true, spot:[0.6,-0.75], hint:'背襯板好了。繞到室內側，把窗間牆防火隔熱材用五金配件固定，加補強 T 型角鋼，直料也要包覆。窗間牆這一段高 90 公分。' },
+        {t:'現在就做，做完才裝玻璃', ok:true, exp:'框架式的順序：直料、橫料、**接頭防水**，然後才裝玻璃或鋁板，最後才是**接縫防水**。'},
+        {t:'等玻璃裝好，最後跟外面的膠一起打', ok:false, exp:'接頭防水排在裝玻璃的前面。最後打的那一道是**接縫防水**，是另一件事。'} ] } },
+    { id:'backpan', name:'背襯板', tr:'背後有靠山', spot:[0.6,1.2], hint:'接頭防水好了。樓板這一段，玻璃後面要先裝**背襯板**。' },
+    { id:'spin', name:'窗間牆防火隔熱材', tr:'背後有棉', in:true, spot:[0.6,-0.75], hint:'背襯板好了。繞到室內側，把**窗間牆防火隔熱材**用五金配件固定，加補強 T 型角鋼，直料也要包覆。窗間牆這一段高 **90 公分**。' },
     { id:'wool', name:'層間塞防火岩棉', tr:'塞好塞滿', in:true, spot:[1.8,-0.75], hint:'隔熱材好了。樓板邊跟它之間還有一道縫。',
       q:{ title:'層間塞防火岩棉，塞在哪裡？', body:'樓板邊跟帷幕牆之間有一道縫。窗間牆這一段高 90 公分。', src:SRC.ifc90, opts:[
-        {t:'樓板邊和窗間牆防火隔熱材之間', ok:true, exp:'照圖說，層間塞防火岩棉就是塞在樓板邊和窗間牆防火隔熱材之間。'},
+        {t:'樓板邊和窗間牆防火隔熱材之間', ok:true, exp:'照圖說，**層間塞防火岩棉**就是塞在樓板邊和窗間牆防火隔熱材之間。'},
         {t:'玻璃和橫料之間', ok:false, exp:'位置不對。照圖說，是塞在樓板邊和窗間牆防火隔熱材之間。'} ] } },
     { id:'fcoat', name:'防火阻煙膠', tr:'最後一道', in:true, spot:[1.2,-0.75], hint:'岩棉塞好了，還差一道膠。',
       q:{ title:'防火阻煙膠，塗在哪裡？', body:'層間塞防火岩棉已經塞好。', src:SRC.ifc, opts:[
         {t:'塗在玻璃外側，擋雨', ok:false, exp:'位置不對。照圖說，防火阻煙膠是塗在層間塞防火岩棉的上面。'},
-        {t:'塗在層間塞防火岩棉的上面', ok:true, exp:'照圖說，防火阻煙膠塗在層間塞防火岩棉上面。'} ] } },
+        {t:'塗在層間塞防火岩棉的上面', ok:true, exp:'照圖說，**防火阻煙膠**塗在層間塞防火岩棉上面。'} ] } },
     { id:'glass', name:'玻璃', tr:'玻璃心，輕輕放', spot:[0.6,1.2], hint:'室內側的防火都做好了。回到外面，裝玻璃。' },
     { id:'sealant', name:'矽利康', tr:'灰黑才是正義', spot:[1.2,1.0], hint:'最後打膠收尾。',
       q:{ title:'膠，你要用什麼顏色？', body:'外側收邊矽利康。', src:SRC.model, opts:[
-        {t:'米色，比較溫暖', ok:false, exp:'公司規定膠一律灰色或黑色，不用米色。'},
-        {t:'灰色或黑色', ok:true, exp:'膠一律灰或黑。'} ] } },
+        {t:'米色，比較溫暖', ok:false, exp:'公司規定膠一律**灰色或黑色**，不用米色。'},
+        {t:'灰色或黑色', ok:true, exp:'**膠一律灰或黑**。'} ] } },
   ] },
 
 // ---------- 週二 ----------
@@ -792,8 +823,8 @@ const LEVELS = [
   tray:['inject','plate','drill','cure','premix','rod','clean'],
   intro:[
     {who:'lin', t:'{P}，今天跟我。三樓有一排預埋件，灌漿的時候沒埋到。'},
-    {who:'lin', t:'沒埋到，就只能事後用化學錨栓補。先講清楚：這是例外，是補救。正常的做法是昨天那樣，板筋綁紮時就埋好。'},
-    {who:'lin', t:'補的東西，更要照規矩來。明天 SGS 會來拉拔。'},
+    {who:'lin', t:'沒埋到，就只能事後用化學錨栓補。先講清楚：這是例外，是補救。正常的做法是昨天那樣，**板筋綁紮時就埋好**。'},
+    {who:'lin', t:'補的東西，更要照規矩來。明天 SGS 會來**拉拔**。'},
     {who:'lin', t:'這支 M10 你來植，我站旁邊看。每一步我都會問你為什麼。'},
     {who:'you', t:'（鐵叔比較兇，還是琳姊比較可怕……）'},
     {who:'lin', t:'我聽得到。開始吧，點右邊的工具。'} ],
@@ -801,33 +832,33 @@ const LEVELS = [
   outroBad:[ {who:'lin', t:'錨栓是植好了，異常單 {N} 張。明天拉拔，你站最前面看。'}, {who:'lin', t:'還有，這種補救的工作，最好一次都不要有。'} ],
   onPlace:{ cure(){ LV.refs.resin.material=mat.resinCured; LV.refs.ring.material=mat.resinCured; } },
   steps:[
-    { id:'drill', name:'鑽孔', tr:'十二不是十', hint:'在 RC 上鑽孔。孔深要到原廠最小埋深以上。',
+    { id:'drill', name:'鑽孔', tr:'十二不是十', hint:'在 RC 上鑽孔。孔深要到**原廠最小埋深**以上。',
       q:{ title:'M10 化學錨栓，拿幾 mm 的鑽頭？', body:'DEWALT PURE 500+ 或 Hilti HIT-HY 200-R V3，螺桿 M10。', src:SRC.anchor, opts:[
-        {t:'10mm，跟螺桿一樣大', ok:false, exp:'10mm 是 M10 拉脹螺栓的鑽孔徑。化栓 M10 要鑽 12mm，鑽頭不可混用。'},
-        {t:'12mm', ok:true, exp:'同樣 M10，化栓鑽 12、拉脹鑽 10。要 TAF 報告時也要選孔徑 ≥ 12mm 的規格。'} ] } },
+        {t:'10mm，跟螺桿一樣大', ok:false, exp:'10mm 是 M10 拉脹螺栓的鑽孔徑。**化栓 M10 要鑽 12mm**，鑽頭不可混用。'},
+        {t:'12mm', ok:true, exp:'同樣 M10，**化栓鑽 12、拉脹鑽 10**。要 TAF 報告時也要選孔徑 ≥ 12mm 的規格。'} ] } },
     { id:'clean', name:'清孔', tr:'吹二刷二吹二', temp:true, hint:'孔鑽好了，裡面都是粉塵。',
       q:{ title:'孔怎麼清？', body:'孔裡有鑽孔粉塵。', src:SRC.anchor, opts:[
-        {t:'吹 2・刷 2・吹 2（≥ 6 bar、無油空氣）', ok:true, exp:'粉塵沒清乾淨，膠黏不住孔壁。'},
-        {t:'吹一下就好，省時間', ok:false, exp:'教育訓練規定吹 2・刷 2・吹 2。'} ] } },
+        {t:'吹 2・刷 2・吹 2（≥ 6 bar、無油空氣）', ok:true, exp:'粉塵沒清乾淨，**膠黏不住孔壁**。'},
+        {t:'吹一下就好，省時間', ok:false, exp:'教育訓練規定**吹 2・刷 2・吹 2**。'} ] } },
     { id:'premix', name:'預打藥劑', tr:'見紅才打', hint:'藥劑槍先往旁邊的紙板打幾槍，確認混合均勻。',
       q:{ title:'DEWALT 藥劑預打出來是白色，可以注入嗎？', body:'藥劑槍剛裝上新的一支。', src:SRC.anchor, opts:[
-        {t:'可以，顏色不重要', ok:false, exp:'打出白色＝混合不完全，不可用。'},
+        {t:'可以，顏色不重要', ok:false, exp:'打出白色＝**混合不完全，不可用**。'},
         {t:'不行，要打到均勻深紅才可注入（3 槍以上）', ok:true, exp:'Hilti 330ml 是至少 2 槍、均勻淺灰。'} ] } },
     { id:'inject', name:'注膠', tr:'從底開始', hint:'把膠打進孔裡。',
       q:{ title:'膠從哪裡開始注？', body:'孔已經清好，藥劑顏色正確。', src:SRC.anchor, opts:[
-        {t:'從孔口往裡灌滿', ok:false, exp:'從孔口灌會把空氣封在孔底。要從孔底開始注。'},
+        {t:'從孔口往裡灌滿', ok:false, exp:'從孔口灌會把空氣封在孔底。要**從孔底開始注**。'},
         {t:'從孔底開始注，約 2/3 滿', ok:true, exp:'從孔底注膠約 2/3，之後旋轉植入螺桿，孔口要溢膠。'} ] } },
     { id:'rod', name:'植入螺桿', tr:'轉進去，不是插進去', hint:'旋轉植入螺桿，孔口要看到溢膠。',
       q:{ title:'螺桿要植多深？', body:'M10 化學錨栓。有人說統一埋 50mm 比較省事。', src:SRC.anchor, opts:[
-        {t:'統一埋 50mm，省工', ok:false, exp:'SGS 拉拔：化栓埋 50mm 只剩標準的 58～93% 拉力，全部是混凝土錐體破壞。M10 的原廠最小埋深是 60mm。'},
-        {t:'照原廠最小埋深，並照結構計算', ok:true, exp:'DEWALT、Hilti 的 M10 最小埋深都是 60mm。這是下限，設計埋深照結構計算。'} ] } },
+        {t:'統一埋 50mm，省工', ok:false, exp:'SGS 拉拔：化栓**埋 50mm 只剩標準的 58～93% 拉力**，全部是混凝土錐體破壞。M10 的**原廠最小埋深**是 60mm。'},
+        {t:'照原廠最小埋深，並照結構計算', ok:true, exp:'DEWALT、Hilti 的 M10 最小埋深都是 60mm。這是下限，設計埋深**照結構計算**。'} ] } },
     { id:'cure', name:'養護', tr:'九小時的耐心', hint:'膠還沒乾。',
       q:{ title:'螺桿植好了，可以馬上鎖托架嗎？', body:'DEWALT，現場乾燥。', src:SRC.anchor, opts:[
-        {t:'可以，螺桿已經插好了', ok:false, exp:'養護期間不得擾動、加載。乾燥要 9 小時，潮濕 18 小時。'},
+        {t:'可以，螺桿已經插好了', ok:false, exp:'**養護期間不得擾動、加載**。乾燥要 9 小時，潮濕 18 小時。'},
         {t:'不行，乾燥要養護 9 小時（潮濕 18 小時）', ok:true, exp:'拉脹螺栓才是鎖完立刻可以受力。'} ] } },
     { id:'plate', name:'鎖托架', tr:'二十牛頓米', hint:'養護完成，鎖上托架。',
       q:{ title:'M10 螺帽，鎖多緊？', body:'DEWALT PURE 500+，M10。', src:SRC.anchor, opts:[
-        {t:'越緊越牢，用力鎖', ok:false, exp:'扭力要照原廠表，M10 不超過 20 N·m。'},
+        {t:'越緊越牢，用力鎖', ok:false, exp:'扭力要照原廠表，**M10 不超過 20 N·m**。'},
         {t:'不超過原廠 Tmax（M10 是 20 N·m）', ok:true, exp:'扭力照原廠表。'} ] } },
   ] },
 
@@ -853,33 +884,33 @@ const LEVELS = [
   intro:[
     {who:'an', t:'嗨 {P}！今天下雨，外牆停工。我從辦公室過來，帶你進工務所，在樣品牆上裝一樘窗。'},
     {who:'an', t:'我以前把鋁料照剪口切成一百多段再黏回去，白做兩天，還被鐵叔笑到現在。'},
-    {who:'an', t:'所以今天只教你一句話：直的永遠贏。裝的順序，就是誰贏誰先放。', mood:'smile'},
+    {who:'an', t:'所以今天只教你一句話：**直的永遠贏**。裝的順序，就是**誰贏誰先放**。', mood:'smile'},
     {who:'you', t:'（直的永遠贏……先記起來。）'} ],
   outroGood:[ {who:'an', t:'漂亮！一條縫都沒有。你比我當年強多了。', mood:'smile'} ],
   outroBad:[ {who:'an', t:'窗是好了，不過琳姊剛剛來了 {N} 趟……沒關係，我當年更慘。'} ],
   steps:[
-    { id:'mortar', name:'崁補', tr:'邊界感', spot:[0.6,0.95], hint:'先做崁補（水泥砂漿）。崁補＝外框的邊界。',
+    { id:'mortar', name:'崁補', tr:'邊界感', spot:[0.6,0.95], hint:'先做**崁補**（水泥砂漿）。崁補＝外框的邊界。',
       q:{ title:'鋁料伸到崁補的時候，停在哪裡？', body:'窗框四周都是崁補。', src:SRC.model, opts:[
-        {t:'停在崁補面上', ok:true, exp:'崁補四邊各一整條，料伸進崁補就停在崁補面上。'},
+        {t:'停在崁補面上', ok:true, exp:'崁補四邊各一整條，料伸進崁補就**停在崁補面上**。'},
         {t:'穿過崁補伸進牆裡，比較牢', ok:false, exp:'崁補是外框邊界，料碰到崁補面就停。'} ] } },
     { id:'jamb', name:'直料', tr:'一整支的尊嚴', spot:[0.2,0.95], hint:'左右直料。直的永遠贏。',
       q:{ title:'直料跟很多支料有交接，你怎麼建？', body:'CAD 上直料到處都是剪口。', src:SRC.model, opts:[
-        {t:'照交接處切成很多段，再黏回去', ok:false, exp:'切碎＝兩天白工，還滿身分段線。鋁擠型不准切碎。'},
-        {t:'原始斷面直直擠出一整支', ok:true, exp:'一支料＝一個實體，直直擠出一整支。'} ] } },
+        {t:'照交接處切成很多段，再黏回去', ok:false, exp:'切碎＝兩天白工，還滿身分段線。**鋁擠型不准切碎**。'},
+        {t:'原始斷面直直擠出一整支', ok:true, exp:'**一支料＝一個實體**，直直擠出一整支。'} ] } },
     { id:'sill', name:'下框', tr:'直的永遠贏', spot:[0.6,0.95], hint:'下框跟直料會碰到。',
       q:{ title:'下框跟直料碰到，誰讓誰？', body:'直料底會坐進下框。', src:SRC.model, opts:[
         {t:'下框貫通，把直料底切掉', ok:false, exp:'「下框 > 直料」的舊優先序已經作廢。直的永遠贏。'},
-        {t:'直料衝到底不剪，下框照直料斷面剪口', ok:true, exp:'直通橫斷：下框、中橫料、上框都算橫的。'} ] } },
+        {t:'直料衝到底不剪，下框照直料斷面剪口', ok:true, exp:'**直通橫斷**：下框、中橫料、上框都算橫的。'} ] } },
     { id:'head', name:'上框', tr:'上下一致', spot:[0.9,0.95], hint:'上框一樣是橫的，照直料剪口去接。' },
     { id:'mid', name:'中橫料', tr:'不湊料', spot:[0.6,0.95], hint:'中橫料接在左右直料之間。',
       q:{ title:'中橫料接直料的角落有個小洞，怎麼辦？', body:'交接處看得到一點縫。', src:SRC.model, opts:[
-        {t:'另外補一塊料頭或角塊把洞塞住', ok:false, exp:'不准為了補洞湊料。料頭、補料、角塊都不另外做。'},
-        {t:'中橫料本體伸進直料溝，再照形狀剪口', ok:true, exp:'這就是料頭接法：還是一支料。'} ] } },
+        {t:'另外補一塊料頭或角塊把洞塞住', ok:false, exp:'**不准為了補洞湊料**。料頭、補料、角塊都不另外做。'},
+        {t:'中橫料本體伸進直料溝，再照形狀剪口', ok:true, exp:'這就是**料頭接法**：還是一支料。'} ] } },
     { id:'glass', name:'玻璃', tr:'透心涼', spot:[0.4,1.0], hint:'框完成，放玻璃。' },
     { id:'gasket', name:'膠條', tr:'軟的讓硬的', spot:[0.8,0.95], hint:'最後壓膠條。膠條是軟料。',
       q:{ title:'模型裡膠條跟鋁料重疊了一點點，怎麼處理？', body:'只重疊一點點而已。', src:SRC.model, opts:[
-        {t:'沒關係，穿過去一點比較密', ok:false, exp:'軟料絕對不准穿過鋁料，畫面上會變成黑條插出來。'},
-        {t:'軟料讓鋁，膠條退到鋁料面', ok:true, exp:'膠條、壓膠、矽利康一律讓鋁。顏色用灰或黑。'} ] } },
+        {t:'沒關係，穿過去一點比較密', ok:false, exp:'**軟料絕對不准穿過鋁料**，畫面上會變成黑條插出來。'},
+        {t:'軟料讓鋁，膠條退到鋁料面', ok:true, exp:'膠條、壓膠、矽利康**一律讓鋁**。顏色用灰或黑。'} ] } },
   ] },
 
 // ---------- 週四 ----------
@@ -907,33 +938,33 @@ const LEVELS = [
   intro:[
     {who:'tie', t:'{P}，今天去隔壁廠房，跟阿坤師學三明治板。他話少，你多看。'},
     {who:'kun', t:'……嗯。'},
-    {who:'kun', t:'……第一片歪，後面全歪。'},
+    {who:'kun', t:'……**第一片歪，後面全歪**。'},
     {who:'you', t:'（就、就這樣？）'},
     {who:'kun', t:'……先看骨架。'} ],
   outroGood:[ {who:'kun', t:'……可以。', mood:'smile'}, {who:'tie', t:'阿坤師說「可以」，等於別人說一百分。'}, {who:'tie', t:'四天的工地，到今天結束。這支捲尺跟了我二十年。公司沒發，我自己買的。拿去。'}, {who:'you', t:'鐵叔……'},
-    {who:'tie', t:'不要哭。回去畫圖的時候，想一下現場那個扛料的人。'} ],
+    {who:'tie', t:'不要哭。回去畫圖的時候，**想一下現場那個扛料的人**。'} ],
   outroBad:[ {who:'kun', t:'……再練。'}, {who:'tie', t:'{N} 張單。阿坤師沒罵你，是他懶得講話。'}, {who:'tie', t:'四天的工地，到今天結束。回去畫圖的時候，記得這禮拜。'} ],
   onPlace:{ check(){ LV.refs.badGirt.position.z=0.03; LV.refs.badGirt.material=mat.steel; }, film(){ LV.refs.film1.visible=false; LV.refs.film2.visible=false; LV.refs.films.forEach(m=>{ m.visible=false; }); } },
   steps:[
     { id:'check', name:'檢查骨架', tr:'先看骨架', spot:[1.0,1.0], hint:'中間那支檁條（紅色）歪了，凸出牆面線。',
       q:{ title:'……骨架歪了。怎麼辦。', body:'中間檁條往外凸，超過容許誤差。', src:SRC.atas5, opts:[
         {t:'先裝板，板子壓一壓就平了', ok:false, exp:'骨架沒對齊，接縫難扣合，板面會波浪或凹凸，原廠不負責。'},
-        {t:'開始裝板前，先把骨架修正到容許誤差內', ok:true, exp:'裝板前要檢查骨架直度與對齊，有誤差先修正。'} ] } },
+        {t:'開始裝板前，先把骨架修正到容許誤差內', ok:true, exp:'**裝板前要檢查骨架直度與對齊**，有誤差先修正。'} ] } },
     { id:'base', name:'收邊料', tr:'一圈不斷', spot:[1.0,1.0], hint:'先裝底部收邊料，並且打膠。',
       q:{ title:'……板跟結構之間，怎麼封。', body:'三明治板加上膠，才是整面牆的防潮層。', src:SRC.atas5, opts:[
-        {t:'周邊要一圈連續的膠，每條板側接縫也要封', ok:true, exp:'除非另有規定，用不結皮的丁基膠（butyl），每條膠要接成連續的。'},
+        {t:'周邊要一圈連續的膠，每條板側接縫也要封', ok:true, exp:'除非另有規定，用**不結皮的丁基膠（butyl）**，每條膠要**接成連續的**。'},
         {t:'板子扣緊就好，不用打膠', ok:false, exp:'周邊要連續密封，每條側接縫也要封。'} ] } },
     { id:'panel1', name:'第一片板', tr:'第一片最重要', spot:[0.5,1.0], hint:'量好、切好第一片板，放上去並調垂直。',
       q:{ title:'……這片要裁短。用什麼切。', body:'第一片板要裁短。', src:SRC.atas7, opts:[
-        {t:'砂輪切割機，最快', ok:false, exp:'砂輪鋸不可用來切板或收邊料。'},
+        {t:'砂輪切割機，最快', ok:false, exp:'**砂輪鋸不可用來切板或收邊料**。'},
         {t:'圓鋸配金屬鋸片，切不穿再用刀切芯材', ok:true, exp:'切的時候板要撐好，避免面板跟芯材脫層。'} ] } },
     { id:'fasten', name:'鎖固', pal:'扣件螺絲', tr:'鎖到位就好', spot:[0.5,1.0], hint:'切邊穿透鎖固，原廠邊在檁條位置裝扣件。',
       q:{ title:'……螺絲。鎖多緊。', body:'板子在檁條位置用扣件固定。', src:SRC.atas7, opts:[
-        {t:'越緊越好，板子才不會動', ok:false, exp:'扣件鎖過頭會讓板面起波紋、皺摺。'},
+        {t:'越緊越好，板子才不會動', ok:false, exp:'**扣件鎖過頭**會讓板面起波紋、皺摺。'},
         {t:'鎖到位就好，不可鎖過頭', ok:true, exp:'鎖過頭、搬運不當、骨架沒對齊，都會讓板面難看。'} ] } },
     { id:'seal', name:'接縫打膠', pal:'丁基膠', tr:'豬尾巴膠', spot:[1.0,1.0], hint:'第二片板扣上之前，先打接縫膠和 pigtail（橋接膠）。',
       q:{ title:'……接縫膠。什麼時候打。', body:'第二片板準備扣合。', src:SRC.atas6, opts:[
-        {t:'先扣上板子，再從外面補膠', ok:false, exp:'膠要打在溝槽底，扣上之後就打不到了。'},
+        {t:'先扣上板子，再從外面補膠', ok:false, exp:'膠要打在溝槽底，**扣上之後就打不到了**。'},
         {t:'扣合前確認接縫膠和 pigtail 都打好、連續', ok:true, exp:'pigtail 是把接縫膠跟周邊收邊膠連起來的橋接膠。'} ] } },
     { id:'panel2', name:'第二片板', tr:'公母相扣', spot:[1.5,1.0], hint:'放上第二片板，跟第一片扣合。',
       q:{ title:'……公母榫。扣到哪。', body:'側接縫是公母榫。', src:SRC.atas5, opts:[
@@ -941,7 +972,7 @@ const LEVELS = [
         {t:'留一點縫，之後比較好調整', ok:false, exp:'每條接縫都要完全扣合。'} ] } },
     { id:'film', name:'撕保護膜', tr:'撕膜要趁早', spot:[1.0,1.1], hint:'板面上有藍色保護膜。',
       q:{ title:'……膜。什麼時候撕。', body:'外面太陽很大。', src:SRC.atas7, opts:[
-        {t:'整面牆完工再一起撕', ok:false, exp:'裝之前或剛裝好就要撕，不要讓膜曬太陽超過 24 小時。'},
+        {t:'整面牆完工再一起撕', ok:false, exp:'裝之前或剛裝好就要撕，**不要讓膜曬太陽超過 24 小時**。'},
         {t:'裝之前或剛裝好就撕，不要讓膜曬超過 24 小時', ok:true, exp:'趁早撕。'} ] } },
   ] },
 
@@ -961,38 +992,38 @@ const LEVELS = [
   tray:['embed','cost','iface','revise','fab'],
   intro:[
     {who:'an', t:'{P}，早！我是小安，大你兩屆。今天是你到職第一天。', mood:'smile'},
-    {who:'an', t:'後面大螢幕上是一面轉角帷幕牆的圖，組裡最資深的學長畫的。標準的部分，一定是最有經驗的人畫。'},
+    {who:'an', t:'後面大螢幕上是一面轉角帷幕牆的圖，組裡最資深的學長畫的。**標準部分**，一定是最有經驗的人畫。'},
     {who:'an', t:'你今天的工作：圖送出去之前，跟著我把公司內部的檢討跑一遍。'},
-    {who:'tie', t:'我是鐵叔，這個案子的工地主任。旁邊這位是品管兼勞安的琳姊。圖送出去之前，業務要看成本，工廠要看加工，工務要看安裝跟運送。'},
+    {who:'tie', t:'我是鐵叔，這個案子的工地主任。旁邊這位是品管兼勞安的琳姊。圖送出去之前，業務要看**成本**，工廠要看**加工**，工務要看**安裝跟運送**。'},
     {who:'tie', t:'先講清楚：平常設計不用下來扛料，現場是工務的事。但是這張圖送出去之後，接下來四天你跟我去工地，自己裝一次。'},
-    {who:'tie', t:'你以後也要畫圖。畫圖的人自己裝過，才知道圖上少一條線，現場要多幾個工。'},
+    {who:'tie', t:'你以後也要畫圖。畫圖的人自己裝過，才知道**圖上少一條線，現場要多幾個工**。'},
     {who:'an', t:'送出去之前有五件事。少一件，就是把麻煩送給現場。立牌在後面，順序自己想。'} ],
   outroGood:[ {who:'an', t:'五件事都過了，零異常。圖可以送了！', mood:'smile'}, {who:'an', t:'對了，下班時間是六點。……我是說表定。'},
-    {who:'tie', t:'照規矩，風雨試驗沒過，工地不准開始安裝。就是做一片樣品牆，用風跟水去打，看漏不漏。這個案子上個月過了，所以你逃不掉。'}, {who:'tie', t:'明天早上七點，工地見，看圖上畫的東西裝不裝得起來。'}, {who:'you', t:'（吞口水）……好。'} ],
+    {who:'tie', t:'照規矩，**風雨試驗**沒過，**工地不准開始安裝**。我們會去風雨試驗室，做一片樣品牆，用風跟水去打，看漏不漏。過了，工廠才正式下料，工地才開始組裝。這個案子上個月過了，所以你逃不掉。', src:SRC.wind}, {who:'an', t:'另外還有一個叫**視覺模型**的：做一小片實體樣品，給建築師和業主確認外觀和顏色。它看的是好不好看；風雨試驗看的是漏不漏。', src:SRC.yj5b}, {who:'tie', t:'明天早上七點，工地見，看圖上畫的東西裝不裝得起來。'}, {who:'you', t:'（吞口水）……好。'} ],
   outroBad:[ {who:'an', t:'圖是送出去了，不過有 {N} 張異常單……'}, {who:'lin', t:'我幫你夾好了。明天帶去工地，對著現場看。'},
-    {who:'tie', t:'照規矩，風雨試驗沒過，工地不准開始安裝。就是做一片樣品牆，用風跟水去打，看漏不漏。這個案子上個月過了，所以你逃不掉。'}, {who:'tie', t:'明天早上七點，工地見。'} ],
+    {who:'tie', t:'照規矩，**風雨試驗**沒過，**工地不准開始安裝**。我們會去風雨試驗室，做一片樣品牆，用風跟水去打，看漏不漏。過了，工廠才正式下料，工地才開始組裝。這個案子上個月過了，所以你逃不掉。', src:SRC.wind}, {who:'an', t:'另外還有一個叫**視覺模型**的：做一小片實體樣品，給建築師和業主確認外觀和顏色。它看的是好不好看；風雨試驗看的是漏不漏。', src:SRC.yj5b}, {who:'tie', t:'明天早上七點，工地見。'} ],
   onPlace:{ revise(){ LV.refs.clash.forEach(m=>m.visible=false); } },
   steps:[
     { id:'cost', name:'成本檢討', tr:'業務的計算機', spot:[2.3,-1.6], hint:'圖送出去之前，先給業務部門看成本。',
       q:{ by:'an', title:'業務部回話了：圖上有一支料跟估價單寫的不一樣，會超出預算。你怎麼辦？', body:'業務部門拿成交報告和估價單，對圖上的成本。', src:SRC.yj2, opts:[
-        {t:'先照圖做，結案再一起算', ok:false, exp:'有超出預算、或跟估價單不同的地方，要即時反應業務單位，不能拖到最後。'},
-        {t:'馬上跟業務部門講，一起檢討', ok:true, exp:'業務部門依成交報告和估價單，確認設計圖的成本符不符合預算；有超出或不同的地方，設計要即時反應。'} ] } },
+        {t:'先照圖做，結案再一起算', ok:false, exp:'有超出預算、或跟估價單不同的地方，要**即時反應業務單位**，不能拖到最後。'},
+        {t:'馬上跟業務部門講，一起檢討', ok:true, exp:'業務部門依成交報告和估價單，確認設計圖的成本符不符合預算；有超出或不同的地方，設計要**即時反應**。'} ] } },
     { id:'fab', name:'加工方法檢討', tr:'工廠說做得出來', spot:[1.2,-1.2], hint:'再給廠務部門看：工廠做不做得出來、組不組得起來。',
       q:{ by:'lin', title:'我剛從工廠過來。廠務說：轉角這支料的加工方法，工廠以前沒做過。什麼時候談？', body:'廠務部門看圖，檢討加工和組裝做不做得到。', src:SRC.yj2, opts:[
-        {t:'現在就跟工廠檢討，必要時先做樣品', ok:true, exp:'非標準的部分、工廠以前沒做過的加工方法，更要提前檢討，必要時做樣品模型。工廠有更好的做法，會建議設計修改。'},
-        {t:'等加工圖出了，工廠自己會想辦法', ok:false, exp:'工廠以前沒做過的加工方法，要提前跟工廠檢討，不能等加工圖出了才發現做不出來。'} ] } },
+        {t:'現在就跟工廠檢討，必要時先做樣品', ok:true, exp:'非標準的部分、工廠以前沒做過的加工方法，更要**提前檢討**，必要時做樣品模型。工廠有更好的做法，會建議設計修改。'},
+        {t:'等加工圖出了，工廠自己會想辦法', ok:false, exp:'工廠以前沒做過的加工方法，要**提前跟工廠檢討**，不能等加工圖出了才發現做不出來。'} ] } },
     { id:'iface', name:'安裝運送檢討', tr:'逐顆查', spot:[0.2,-1.9], hint:'最後給工務部門看：運不運得到、裝不裝得上去。轉角、柱邊、梁下的每顆螺絲都要查。',
       q:{ by:'tie', title:'轉角這幾張詳圖是委外畫的。工務要看安裝，你怎麼審？', body:'外包公司交來的圖，尺寸規格都對。', src:SRC.rule3, opts:[
-        {t:'尺寸規格對就好，外包會負責', ok:false, exp:'委外交圖同樣要逐顆查，不可只看尺寸與規格。HM2 那批就是委外畫的。'},
-        {t:'照樣逐顆查：每顆螺絲工具伸不伸得進去', ok:true, exp:'委外交圖同樣依三條檢核，不可只看尺寸與規格。'} ] } },
+        {t:'尺寸規格對就好，外包會負責', ok:false, exp:'**委外交圖同樣要逐顆查**，不可只看尺寸與規格。HM2 那批就是委外畫的。'},
+        {t:'照樣逐顆查：每顆螺絲工具伸不伸得進去', ok:true, exp:'**委外交圖同樣依三條檢核**，不可只看尺寸與規格。'} ] } },
     { id:'revise', name:'圖面修改', tr:'有改有回報', spot:[1.2,-1.9], hint:'螢幕上的紅色方塊＝各部門圈出來要改的地方。',
       q:{ by:'an', title:'三個部門的意見都回來了。你怎麼處理？', body:'業務、廠務、工務各有幾條建議。', src:SRC.yj3, opts:[
-        {t:'挑好改的改一改，其他的不用回', ok:false, exp:'每一條建議都要檢討。改或不改，都要回報給提的部門。'},
-        {t:'一條一條檢討，該改的改，再回報各部門怎麼處理', ok:true, exp:'根據各部門的建議檢討，必要時修改設計圖，並回報各部門建議事項和處理方式。'} ] } },
-    { id:'embed', name:'預埋圖', tr:'先喬再畫', spot:[1.2,0.3], hint:'工地四樓明天綁板筋。預埋圖要照工地的樓層進度給。',
+        {t:'挑好改的改一改，其他的不用回', ok:false, exp:'每一條建議都要檢討。改或不改，都要**回報給提的部門**。'},
+        {t:'一條一條檢討，該改的改，再回報各部門怎麼處理', ok:true, exp:'根據各部門的建議檢討，必要時修改設計圖，並**回報各部門**建議事項和處理方式。'} ] } },
+    { id:'embed', name:'預埋圖', tr:'先喬再畫', spot:[1.2,0.3], hint:'工地四樓明天綁板筋。**預埋圖**要照工地的樓層進度給。',
       q:{ by:'tie', title:'四樓的預埋圖要給工地了。給之前，先找誰談？', body:'預埋件要埋在樓板裡，位置畫在預埋圖上。', src:SRC.yj5d, opts:[
-        {t:'照立面分割畫好就送，現場自己配合', ok:false, exp:'預埋方式要先跟工地的營造廠協商，不是畫好就丟過去。'},
-        {t:'先跟工地的營造廠談：樓板鋼筋怎麼排、固定點、混凝土強度', ok:true, exp:'預埋方式要先跟工地營造協商：樓板 RC 排筋位置、焊接點或固定點、RC 強度、結構尺寸差異。預埋圖照工地樓層的施作進度提供。'} ] } },
+        {t:'照立面分割畫好就送，現場自己配合', ok:false, exp:'預埋方式要**先跟工地的營造廠協商**，不是畫好就丟過去。'},
+        {t:'先跟工地的營造廠談：樓板鋼筋怎麼排、固定點、混凝土強度', ok:true, exp:'預埋方式要**先跟工地營造協商**：樓板 RC 排筋位置、焊接點或固定點、RC 強度、結構尺寸差異。**預埋圖**照工地樓層的施作進度提供。'} ] } },
   ] },
 ];
 
@@ -1454,17 +1485,19 @@ function fitView(){ camera.aspect=innerWidth/innerHeight; camera.setViewOffset(i
 addEventListener('resize',fitView); fitView();
 
 // ===================== 對話 =====================
-let dlgOpen=false, optsOpen=false, dlgQ=[], dlgDone=null, typer=null, typing=false, fullText='';
+let dlgOpen=false, optsOpen=false, dlgQ=[], dlgDone=null, typer=null, typing=false, fullText='', dSegs=[];
 let talkWho=null, talkCam=null;                                                       // 講話時鏡頭帶到說話的人
 function showLine(ln){ talkWho=ln.who; drawFace($('#dFace'), ln.who, ln.mood);
   const n=$('#dName'); n.textContent=cname(ln.who); const r=document.createElement('span'); r.textContent=CAST[ln.who].role; n.append(r);
   const s=$('#dSrc'); if(ln.src){ s.style.display='block'; s.textContent='出處：'+ln.src; } else s.style.display='none';
-  fullText=fill(ln.t); clearInterval(typer); const el=$('#dText'); el.textContent=''; let i=0; typing=true;
-  typer=setInterval(()=>{ i+=2; el.textContent=fullText.slice(0,i); if(i>=fullText.length){ clearInterval(typer); typing=false; } }, 22); }
+  fullText=fill(ln.t); dSegs=segsOf(fullText); const total=dSegs.reduce((t,q)=>t+q.t.length,0); clearInterval(typer); const el=$('#dText'); el.textContent=''; $('#dGloss').style.display='none'; let i=0; typing=true;
+  typer=setInterval(()=>{ i+=2; richText(el,dSegs,i); if(i>=total){ clearInterval(typer); typing=false; showGloss(); } }, 22); }
+function showGloss(){ const g=$('#dGloss'), ts=[...new Set(dSegs.filter(q=>q.hi && GLOSS[q.t]).map(q=>q.t))]; g.innerHTML=''; g.style.display = ts.length ? 'block' : 'none';   // 這一句裡的名詞：下面跳出白話解釋
+  ts.forEach(t=>{ const d=document.createElement('div'), b=document.createElement('b'); b.textContent=t+'：'; d.append(b, GLOSS[t]); g.append(d); }); }
 function say(lines, done){ dlgQ=lines.slice(); dlgDone=done||null; dlgOpen=true; optsOpen=false; $('#dlg').style.display='flex'; $('#dOpts').innerHTML=''; $('#dBar').style.display='flex';
   $('#dSkip').style.display = dlgQ.length>1 ? 'block':'none'; showLine(dlgQ.shift()); }
 function endDlg(){ clearInterval(typer); typing=false; dlgOpen=false; $('#dlg').style.display='none'; const d=dlgDone; dlgDone=null; if(d) d(); }
-function advance(){ if(!dlgOpen||optsOpen) return; if(typing){ clearInterval(typer); typing=false; $('#dText').textContent=fullText; return; }
+function advance(){ if(!dlgOpen||optsOpen) return; if(typing){ clearInterval(typer); typing=false; richText($('#dText'),dSegs); showGloss(); return; }
   if(dlgQ.length){ $('#dSkip').style.display = dlgQ.length>1 ? 'block':'none'; showLine(dlgQ.shift()); } else endDlg(); }
 $('#dNext').onclick=advance; $('#dSkip').onclick=()=>{ if(optsOpen) return; dlgQ=[]; endDlg(); };
 function ask(st, cb){ const by=st.q.by||L.boss; dlgOpen=true; optsOpen=true; dlgQ=[]; dlgDone=null; $('#dlg').style.display='flex'; $('#dBar').style.display='none';
@@ -1482,7 +1515,7 @@ let L=null, li=0, cur=0, score=100, ncr=0, placed=new Set(), t0=Date.now(), done
 const stepOf = id => L.steps.find(x=>x.id===id);
 const need = () => L.steps[cur];
 function stats(){ $('#step').textContent=Math.min(cur+1,L.steps.length); $('#score').textContent=score; $('#ncr').textContent=ncr; }
-function setGoal(){ const g=$('#goal'); g.textContent=''; if(done) return; const st=need(); g.append(st.hint); const s=document.createElement('small');
+function setGoal(){ const g=$('#goal'); g.textContent=''; if(done) return; const st=need(); const h=document.createElement('span'); richText(h, segsOf(st.hint)); g.append(h); const s=document.createElement('small');
   s.textContent = L.bench ? '點下面工具盤裡正確的下一步。' : !carry ? '去後面，拿對的材料，或接對的工作。' : ITEM[L.id+'.'+st.id] ? `手上拿著「${st.pal||st.name}」，扛到藍色圈圈。` : `走到藍色圈圈，做「${st.name}」。`; g.append(s); }
 function showGhost(id){ Object.keys(LV.parts).forEach(k=>LV.parts[k].ghosts.forEach(g=>g.visible=(k===id))); }
 function dropIn(id,temp,from=0,to=1e9){ const p=LV.parts[id]; if(!p) return; const h=0.3;        // 放下去：從上面 30 公分輕輕放，一個接一個；不是從天上掉下來
