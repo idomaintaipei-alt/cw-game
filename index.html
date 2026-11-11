@@ -427,22 +427,21 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
     for(let k=k0;k<3;k++){ P(len,0.06,0.13, mid,Y+3.6*k+0.5,0.08, mat.alu2); P(len,0.06,0.13, mid,Y+3.6*k+3.1,0.08, mat.alu2); }
     const n=Math.round(len/1.2); for(let i=0;i<=n;i++) P(0.07,hh,0.15, a0+len*i/n, yb+hh/2, 0.09, mat.alu); };
   // 北面的一、二樓：挑高大廳。大片玻璃（沒有二樓的窗間牆）、漸層色的直立格柵排成波浪、正中間是有雨庇的出入口
-  const lobby=(xa,xb)=>{ const f=z1, len=xb-xa, mid=(xa+xb)/2, H2=7.2, lg=std(0x8cc4dc,{emissive:0x1d3d48}), dg=std(0xb9dfec,{emissive:0x2c4a52}), fr=std(0x2b3440), st=std(0xd9d4c7), tl=std(0x18a5a0), wh=std(0xf4f5f2),
+  const lobby=(xa,xb)=>{ const f=z1, len=xb-xa, mid=(xa+xb)/2, H2=7.2, lg=std(0x5f93bd,{emissive:0x112a3e}), dg=std(0x8fb8d6,{emissive:0x1d3a50}), fr=std(0x2f4a66), st=std(0xcfc8ba), tl=std(0x2f4a66), wh=std(0xa8865a), bz=std(0xb08a55),   /* 配色：玻璃、深藍、石材都跟樓上同一個色系，只多一個古銅色當重點 */
           P=(w,h,d,x,y,off,m)=>S(box(w,h,d, x,y,f+off, m)), EW=2.0;                                                                 // EW＝出入口的半寬
     P(len,H2,0.06, mid,Y+H2/2,0.03, lg); P(len,0.4,0.12, mid,Y+0.2,0.06, st);                                                       // 大片玻璃、石材踢腳
     [xa+0.22, xb-0.22].forEach(x=>P(0.45,H2-0.45,0.24, x,Y+(H2-0.45)/2,0.12, st));                                                  // 兩端的石材柱
     [xa+(mid-EW-xa)/2, mid-EW, mid+EW, xb-(xb-mid-EW)/2].forEach(x=>P(0.09,H2-0.45,0.16, x,Y+(H2-0.45)/2,0.09, fr)); P(len-0.9,0.07,0.16, mid,Y+3.75,0.09, fr);   // 大分割：深色的直料和一道橫料
-    const pal=[0x18a5a0,0xf5c542,0xf28c28,0xe9573f].map(c=>new THREE.Color(c)), fin=(x,i)=>{ const t=(x-xa)/len*(pal.length-1), k=Math.min(pal.length-2,Math.floor(t)), c=pal[k].clone().lerp(pal[k+1],t-k), dep=0.3+0.26*(0.5+0.5*Math.sin(i*0.8));
-      P(0.07,6.3,dep, x,Y+0.4+3.15,0.06+dep/2, std(c.getHex())); };                                                                 // 格柵：顏色由左到右漸層，深度一深一淺排成波浪
+    const fin=(x,i)=>{ const dep=0.3+0.26*(0.5+0.5*Math.sin(i*0.8)); P(0.07,6.3,dep, x,Y+0.4+3.15,0.06+dep/2, bz); };   // 格柵：同一個古銅色，深度一深一淺排成波浪（活潑靠節奏，不靠顏色）
     let fi=0; [[xa+0.75, mid-EW-0.45],[mid+EW+0.45, xb-0.75]].forEach(([a,b])=>{ const n=Math.round((b-a)/0.42); for(let i=0;i<=n;i++) fin(a+(b-a)*i/n, fi++); });
-    [-1,1].forEach(e=>P(0.3,3.3,0.7, mid+e*(EW-0.15),Y+1.65,0.35, tl)); P(EW*2,0.25,0.7, mid,Y+3.425,0.35, tl);                     // 出入口：凸出來的門框
+    [-1,1].forEach(e=>P(0.3,3.3,0.7, mid+e*(EW-0.15),Y+1.65,0.35, tl)); P(EW*2,0.25,0.7, mid,Y+3.425,0.35, tl);                     // 出入口：凸出來的深藍色門框
     P(EW*2-0.6,3.3,0.04, mid,Y+1.65,0.12, dg); [-0.9,0.9].forEach(a=>P(0.06,3.3,0.08, mid+a,Y+1.65,0.15, fr)); P(EW*2-0.6,0.07,0.08, mid,Y+2.45,0.15, fr); P(0.04,2.45,0.08, mid,Y+1.225,0.15, fr);   // 玻璃門：兩扇對開，兩邊固定窗，上面氣窗
     [-0.1,0.1].forEach(a=>P(0.03,0.9,0.07, mid+a,Y+1.2,0.175, mat.chrome));                                                         // 門把
-    P(6.4,0.14,2.7, mid,Y+3.62,1.35, wh); P(6.4,0.2,0.06, mid,Y+3.62,2.73, std(0xe9573f)); P(5.6,0.03,0.12, mid,Y+3.535,1.5, std(0xfff1c2,{emissive:0xffd98a}));   // 雨庇：白色板、橘紅色的前緣、底下一條燈
-    [-1,1].forEach(e=>[-1,1].forEach(g=>{ const c=cyl(0.055,3.62,'y', mid+e*2.3+g*0.36,Y+1.775,f+2.3, wh,10); c.rotation.z=-g*0.2; S(c); }));   // 雨庇的柱子：兩組 V 字形
+    P(6.4,0.14,2.7, mid,Y+3.62,1.35, fr); P(6.4,0.2,0.06, mid,Y+3.62,2.73, bz); P(5.6,0.03,0.12, mid,Y+3.535,1.5, std(0xfff1c2,{emissive:0xffd98a}));   // 雨庇：深藍色板、古銅色的前緣、底下一條燈
+    [-1,1].forEach(e=>[-1,1].forEach(g=>{ const c=cyl(0.055,3.62,'y', mid+e*2.3+g*0.36,Y+1.775,f+2.3, wh,10); c.rotation.z=-g*0.2; S(c); }));   // 雨庇的柱子：兩組古銅色的 V 字形
     P(6.4,0.04,3.2, mid,Y+0.02,1.6, std(0xcfc9bb)); P(2.4,0.02,0.9, mid,Y+0.05,0.8, fr);                                            // 門口的鋪面、踏墊
     [-1,1].forEach(e=>{ P(0.6,0.5,0.6, mid+e*2.75,Y+0.29,1.0, st); S(ball(0.4,std(0x4fb86a), mid+e*2.75,Y+0.9,f+1.0, 1,1.1,1)); });  // 兩盆樹
-    const sg=board(['大　廳'], mid,Y+4.65,f+0.135,0,2.4,'#1f2a35','#ffd84a'); S(sg); P(2.5,sg.userData.h+0.1,0.07, mid,Y+4.65,0.095, fr); };   // 門上的牌子（後面有底板，貼在玻璃上）
+    const sg=board(['最終版大樓','（第 27 版）'], mid,Y+4.75,f+0.135,0,2.4,'#2f4a66','#e2c48f');   /* 樓名：設計改到第 27 版的「最終版」 */ S(sg); P(2.5,sg.userData.h+0.1,0.07, mid,Y+4.65,0.095, fr); };   // 門上的牌子（後面有底板，貼在玻璃上）
   const XL=x0+(x1-x0)*3/14;                                                                                                          // 北面分兩段：施工電梯那一段維持原樣，右邊是大廳
   face('z',z1,x0,XL,1); face('z',z1,XL,x1,1,2); lobby(XL,x1); face('z',z0,x0,x1,-1); face('x',x0,z0,z1,-1); face('x',x1,z0,z1,1);
   const rail=(xa,za,xb,zb,yb)=>{ const len=Math.hypot(xb-xa,zb-za), n=Math.max(1,Math.round(len/1.6)), ry=Math.atan2(za-zb,xb-xa); for(let i=0;i<=n;i++) S(box(0.05,1.1,0.05, xa+(xb-xa)*i/n,yb+0.55,za+(zb-za)*i/n, mat.mark));   // 護欄
@@ -465,7 +464,7 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
     cg.add(box(0.04,1.1,1.16, 0.6,0.6,0, yl)); cg.add(box(1.16,1.1,0.04, 0,0.6,0.6, yl)); cg.add(box(1.16,0.04,0.04, 0,1.15,-0.6, yl)); cg.add(box(0.04,0.04,1.16, -0.6,1.15,0, yl));   // 東、北兩面圍板；西、南兩面是門口，只有一支橫桿
     cg.add(board(['施工電梯','（限乘 8 人）'], 0.63,0.7,0,Math.PI/2,0.9,'#f2cf1d','#1b1e24'));   /* 牌子掛在東面圍板上 */ stat(cg);
     S(box(1.2,0.04,0.3, hx,T-0.02,8.62, dk));                                                                                                    // 四樓：車廂和平台之間的接板
-    S(box(1.6,0.06,1.6, hx,Y+0.03,hz, mat.rc));                                                                                                  // 地面：電梯的基座
+    S(box(1.6,0.08,1.6, hx,Y+0.04,hz, mat.rc));   /* 地面：電梯的基座，跟車廂地板一樣高（8 公分）；人站在上面就踩在上面，腳下的影子不會被蓋掉 */
     LV.hoist={cage:cg, x:hx, z:hz, Y, T, t:0, run:false};
     LV.fx.push((dt,t)=>{ const me=LV.actors.you, H=LV.hoist; if(!LV.hoisting || !me) return; camGoal=null;
       if(H.run){ H.t+=dt; const k=Math.min(1,H.t/4.5), e=k*k*(3-2*k); H.cage.position.y=H.Y+(H.T-H.Y)*e; me.liftY=H.cage.position.y+0.08; me.face=Math.PI;   // 電梯往上，人跟著車廂
@@ -1415,7 +1414,7 @@ function dropIn(id,temp,from=0,to=1e9){ const p=LV.parts[id]; if(!p) return; con
   if(temp) setTimeout(()=>p.meshes.forEach(m=>m.visible=false),1500); }
 const insideOK = () => !!L && L.id==='L1' && placed.has('pour');                     // 週一灌漿之後，可以走到樓板上（室內側）
 const STAIR={x:10.95, z0:4.6, z1:7.2};                                                // 四樓那一關的樓梯間：最上面那一段樓梯
-const gyAt = (x,z) => (L.yard!==undefined && (x<-3.5 || x>13.1 || z>8.5 || z<-10.8)) ? L.yard : (insideOK() && x>-3.5 && x<13.1 && z<0 && z>-10.8) ? 0 : (L.yard!==undefined && x>10.3 && x<11.6 && z>STAIR.z0 && z<7.4) ? L.gy-(z-STAIR.z0)*(1.8/2.6) : L.gy;
+const gyAt = (x,z) => (L.yard!==undefined && LV.hoist && Math.abs(x-LV.hoist.x)<0.8 && Math.abs(z-LV.hoist.z)<0.8) ? L.yard+0.08 : (L.yard!==undefined && (x<-3.5 || x>13.1 || z>8.5 || z<-10.8)) ? L.yard : (insideOK() && x>-3.5 && x<13.1 && z<0 && z>-10.8) ? 0 : (L.yard!==undefined && x>10.3 && x<11.6 && z>STAIR.z0 && z<7.4) ? L.gy-(z-STAIR.z0)*(1.8/2.6) : L.gy;
 // 進場路線：起點（下車的地方或大門）→ 一路走到工作區（四樓那一關經過施工電梯）
 function entryPath(kind){ const H=LV.hoist, door = kind==='walk' ? {x:L.cx-7.0, z:15.0} : kind==='heli' ? {x:L.cx-13.5+1.7, z:7.9} : {x:(L.yard!==undefined ? L.cx-11.2 : L.cx-6.4)+1.7, z:4.0};
   return L.yard!==undefined ? (kind==='heli' ? [door,{x:-3.0,z:H.z},{x:H.x,z:H.z}] : [door,{x:-4.6,z:10.4},{x:-3.0,z:H.z},{x:H.x,z:H.z}]) : [door,{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}]; }   /* 直升機：從機門直直走到電梯門口（紅地毯是一整條，不轉彎） */
