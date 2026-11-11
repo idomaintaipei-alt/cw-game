@@ -371,7 +371,7 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
     [[xs[0],zb,xs[0],zf],[xs[1],zb,xs[1],zf],[xs[0],zf,xs[1],zf]].forEach(([x0,z0,x1,z1])=>{ const len=Math.hypot(x1-x0,z1-z0), ry=Math.atan2(z0-z1,x1-x0);   // 左、右、前三邊：扶手、中欄杆、踢腳板
       [[0.045,1.13,mat.mark],[0.04,0.6,mat.mark],[0.15,0.13,pf]].forEach(([h,y,m])=>{ const r=box(len+0.05,h,0.03, (x0+x1)/2,yy+y,(z0+z1)/2, m); r.rotation.y=ry; S(r); }); });
     xs.forEach(px=>rod(new THREE.Vector3(px,yy+0.2,zf-0.06), new THREE.Vector3(px,yy+H-0.15,zb-0.12), 0.016, mat.dark));                   // 兩條鋼索：前端拉到上一層的樓板邊
-    S(board(['限載 1 噸'], x,yy+0.88,zf+0.03,0,0.62,'#f2cf1d','#1b1e24')); });
+    S(board(['限載 1 噸'], x,yy+0.72,zf+0.03,0,0.62,'#f2cf1d','#1b1e24')); });
   S(box(0.7,TH+2.5,0.7, cx-12.2,y0+(TH+2.5)/2,-0.6, mat.lattice(1,Math.round(TH)))); S(box(1.5,2.3,1.4, cx-12.2,y0+H*(hi?3:2)+1.3,0.42, std(0xf0b323))); S(box(1.3,1.1,0.05, cx-12.2,y0+H*(hi?3:2)+1.5,1.14, wn0));   // 施工電梯：桁架、車廂
   S(box(1.9,0.2,1.9, cx-12.2,y0+0.1,0.2, mat.rc)); for(let k=1;k<=NF;k++) S(box(0.9,0.06,0.5, cx-12.2,y0+H*k,-0.95, mat.steelDark));
   // 工務所（兩層貨櫃屋）和流動廁所
@@ -380,15 +380,15 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
   S(board(['工務所','（冷氣只吹主管那間）'], ox,y0+5.75,oz+1.15,0,3.0,'#12161b','#ffffff'));
   [0,1.4].forEach(a=>{ S(box(1.1,2.2,1.1, ox+5+a,y0+1.1,oz+0.4, std(0x2f7fc4))); S(box(1.2,0.12,1.2, ox+5+a,y0+2.26,oz+0.4, mat.white)); });
   // 料堆：鋼筋、模板、水泥、鋼管、水桶
-  for(let k=0;k<7;k++) S(cyl(0.045,6,'z', cx+14.2+k*0.11,y0+0.2+(k%2)*0.09,4.2, mat.rebar,6)); [2.2,6.2].forEach(z=>S(box(1.1,0.11,0.12, cx+14.5,y0+0.055,z, mat.wood)));
+  for(let k=0;k<7;k++) S(cyl(0.045,6,'z', cx+14.2+k*0.092,y0+0.155,4.2, mat.rebar,6)); [2.2,6.2].forEach(z=>S(box(1.1,0.11,0.12, cx+14.5,y0+0.055,z, mat.wood)));
   S(box(1.25,0.5,2.45, cx+14.6,y0+0.25,9.2, mat.wood)); S(box(1.25,0.85,2.45, cx+16.2,y0+0.425,9.5, mat.wood));
   for(let l=0;l<3;l++) for(let i=0;i<3;i++) for(let j=0;j<2;j++) S(box(0.62,0.16,0.42, cx+14.3+i*0.66-(l%2)*0.1,y0+0.08+l*0.165,0.4+j*0.46, std(0xcfc8b6)));
-  for(let k=0;k<8;k++) S(cyl(0.035,5,'x', cx-13.5,y0+0.14+Math.floor(k/4)*0.08,10+(k%4)*0.085, mat.steelDark,6));
+  for(let k=0;k<8;k++) S(cyl(0.035,5,'x', cx-13.5,y0+0.035+Math.floor(k/4)*0.065,10+(k%4)*0.085, mat.steelDark,6));
   [[-14.6,-0.3],[-15.3,-0.2],[-14.9,0.35]].forEach(([a,z])=>S(cyl(0.3,0.9,'y', cx+a,y0+0.45,z, std(0x2f7fc4),14)));
   [5.2,3.4,1.6,-1.6,-3.4].forEach(z=>{ const c=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.13,0.42,10), std(0xff6a1f)); c.position.set(cx-4.9,y0+0.24,z); S(c); S(box(0.3,0.03,0.3, cx-4.9,y0+0.015,z, std(0xff6a1f))); S(cyl(0.085,0.07,'y', cx-4.9,y0+0.27,z, mat.white,10)); });   // 便道邊的三角錐
   // 怪手：20 噸級的比例（履帶長約 4.2 公尺；大臂約 4.7、小臂約 3.6 公尺），朝砂石堆挖
   const ex=new THREE.Group(), ey=std(0xf0b323); ex.position.set(cx+18.6,y0,2.0); ex.rotation.y=1.2; [-1.15,1.15].forEach(z=>ex.add(box(4.2,0.75,0.6, 0,0.38,z, mat.tire))); ex.add(box(2.6,0.4,1.8, 0,0.7,0, mat.steelDark));
-  ex.add(box(3.0,1.1,2.6, 0.4,1.5,0, ey)); ex.add(box(1.0,1.0,2.5, 1.7,1.75,0, mat.steelDark)); ex.add(box(1.15,1.55,1.05, -0.65,2.75,-0.75, ey)); ex.add(box(0.9,0.95,1.07, -0.75,2.95,-0.75, wn));   // 車身、配重、駕駛室
+  ex.add(box(3.0,1.1,2.6, 0.4,1.45,0, ey)); ex.add(box(1.0,1.0,2.5, 1.7,1.75,0, mat.steelDark)); ex.add(box(1.15,1.55,1.05, -0.65,2.75,-0.75, ey)); ex.add(box(0.9,0.95,1.07, -0.75,2.95,-0.75, wn));   // 車身、配重、駕駛室
   const arm=(w,len,cxl,cyl2,rz,m)=>{ const o=box(w,len,w*0.9, cxl,cyl2,0.35, m); o.rotation.z=rz; ex.add(o); };
   arm(0.5,4.69,-2.5,3.8,0.694,ey); arm(0.4,3.58,-4.8,4.0,2.678,ey); arm(0.14,2.44,-2.1,2.55,0.611,mat.steel);                                // 大臂、小臂、油壓缸
   const bk=new THREE.Group(), bs=mat.steelDark; bk.position.set(-5.8,2.05,0.35); bk.rotation.z=0.45; bk.add(box(0.08,0.9,0.95, 0.38,0,0, bs)); bk.add(box(0.8,0.08,0.95, 0,-0.42,0, bs)); const lip=box(0.08,0.42,0.95, -0.42,-0.25,0, bs); lip.rotation.z=-0.5; bk.add(lip);   // 鏟斗：背板、底板、前唇
@@ -398,7 +398,7 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
   // 大門：警衛亭和升起來的柵欄
   S(box(1.4,2.3,1.4, cx-3.6,y0+1.15,-18.6, std(0xf1f3f5))); S(box(1.6,0.14,1.6, cx-3.6,y0+2.37,-18.6, mat.red)); S(box(0.05,0.7,0.9, cx-4.32,y0+1.5,-18.6, wn));
   S(box(0.18,1.1,0.18, cx-4.9,y0+0.55,-19.2, mat.mark)); const bar=box(3.5,0.1,0.1, cx-5.15,y0+2.3,-19.2, mat.red); bar.rotation.z=-1.35; S(bar);
-  S(board(['安全是回家唯一的路','（加班不算在路上）'], cx+14.5,y0+1.05,-19.9,0,3.4,'#f2cf1d','#1b1e24'));
+  S(board(['安全是回家唯一的路','（加班不算在路上）'], cx+14.5,y0+1.05,-19.955,0,3.4,'#f2cf1d','#1b1e24'));
   // 遠處的工人：只是站著
   [[ox+1.3,oz+2.3,0.4,0xff7a1a,0xf4f4f4],[cx+15.4,5.4,-1.9,0x7b8794,0x3b8fe0],[cx-4.2,-17.2,2.6,0xd9e021,0xffd21f],[cx-12.6,0.7,1.2,0x7b8794,0xffd21f]].forEach(([x,z,ry,vest,helmet])=>{ const g=makePerson({skin:0xd9a577, vest, helmet, feat:{}}); g.position.set(x,y0,z); g.rotation.y=ry;
     const bl=new THREE.Mesh(new THREE.CircleGeometry(0.38,20), mat.blob); bl.rotation.x=-Math.PI/2; bl.position.y=0.014; bl.userData.blob=true; g.add(bl); S(g); });
@@ -428,7 +428,7 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
   rail(x0+0.06,z1-0.06, x1-0.06,z1-0.06, T); rail(x0+0.06,0.5, x0+0.06,z1-0.06, T); rail(x1-0.06,0.2, x1-0.06,z1-0.06, T);
   rail(x0+0.06,z0+0.06, x0+0.06,-0.5, 0); rail(x0+0.06,z0+0.06, x1-0.06,z0+0.06, 0); rail(x1-0.06,z0+0.06, x1-0.06,-0.1, 0);
   rail(hx0,hz0, hx0,hz1, T); rail(hx0,hz1, hx1,hz1, T); rail(11.6,hz0, hx1,hz0, T);                                                   // 樓梯間洞口的護欄（留一邊讓人上下）
-  for(let k=0;k<6;k++) S(cyl(0.04,4,'x', 7.6,T+0.18+(k%2)*0.08,7.75+k*0.1, mat.rebar,6)); [6.2,9.0].forEach(x=>S(box(0.12,0.1,0.9, x,T+0.05,8.0, mat.wood)));   // 平台上的料堆（讓開樓梯口）
+  for(let k=0;k<6;k++) S(cyl(0.04,4,'x', 7.6,T+0.14,7.78+k*0.082, mat.rebar,6));   /* 一根挨著一根放在墊木上 */ [6.2,9.0].forEach(x=>S(box(0.12,0.1,0.9, x,T+0.05,8.0, mat.wood)));   // 平台上的料堆（讓開樓梯口）
   S(box(1.2,0.45,2.4, 11.6,T+0.225,2.0, mat.wood)); for(let l=0;l<3;l++) for(let i=0;i<2;i++) S(box(0.62,0.16,0.42, 9.0+i*0.66-(l%2)*0.1,T+0.08+l*0.165,0.7, std(0xcfc8b6)));
   // 塔吊：立在樓裡面，塔身從樓板的預留孔穿出來（不會自己孤零零立在空地上）
   const cr=new THREE.Group(), yl=std(0xf2c230), kx=8.9, kz=5.9; cr.position.set(kx,Y,kz); cr.add(box(1.1,26,1.1, 0,13.5,0, mat.lattice(1,24))); cr.add(box(1.5,1.4,1.5, 0,27.2,0, yl));
@@ -453,7 +453,8 @@ function siteOffice(){ const cx=L.cx, y0=L.gy, wall=std(0xe9e6dc), dk=std(0x3a43
   S(box(1.0,0.06,1.9, cx+5.8,y0+0.9,1.6, mat.wood)); [[-0.42,-0.85],[0.42,-0.85],[-0.42,0.85],[0.42,0.85]].forEach(([a,b])=>S(box(0.06,0.9,0.06, cx+5.8+a,y0+0.45,1.6+b, dk)));          // 圖桌：攤開的圖和捲起來的圖
   S(box(0.74,0.012,1.1, cx+5.8,y0+0.94,1.5, mat.white)); S(cyl(0.04,0.8,'x', cx+5.8,y0+0.98,2.35, mat.white,10)); S(cyl(0.04,0.8,'x', cx+5.85,y0+0.98,2.46, std(0xdfe8f2),10));
   S(box(0.8,0.06,1.5, cx+5.8,y0+0.74,4.6, mat.wood)); [[-0.34,-0.68],[0.34,-0.68],[-0.34,0.68],[0.34,0.68]].forEach(([a,b])=>S(box(0.06,0.74,0.06, cx+5.8+a,y0+0.37,4.6+b, dk)));        // 辦公桌、螢幕、椅子
-  S(box(0.04,0.4,0.62, cx+6.0,y0+1.08,4.6, dk)); S(box(0.02,0.34,0.56, cx+5.975,y0+1.08,4.6, std(0x7fd0ff,{emissive:0x2a6f9a}))); S(box(0.5,0.08,0.5, cx+5.0,y0+0.48,4.6, std(0x3b6fd0))); S(box(0.08,0.55,0.5, cx+4.76,y0+0.8,4.6, std(0x3b6fd0))); }
+  S(box(0.04,0.4,0.62, cx+6.0,y0+1.08,4.6, dk)); S(box(0.02,0.34,0.56, cx+5.975,y0+1.08,4.6, std(0x7fd0ff,{emissive:0x2a6f9a}))); S(box(0.05,0.12,0.05, cx+6.02,y0+0.83,4.6, dk)); S(box(0.2,0.02,0.24, cx+6.02,y0+0.78,4.6, dk));   /* 螢幕的支架和底座 */
+  S(box(0.5,0.08,0.5, cx+5.0,y0+0.48,4.6, std(0x3b6fd0))); S(box(0.08,0.55,0.5, cx+4.76,y0+0.8,4.6, std(0x3b6fd0))); S(cyl(0.035,0.4,'y', cx+5.0,y0+0.24,4.6, dk,8)); S(box(0.56,0.04,0.07, cx+5.0,y0+0.03,4.6, dk)); S(box(0.07,0.04,0.56, cx+5.0,y0+0.03,4.6, dk)); }   /* 椅子的腳和腳座 */
 // 週五的廠房：鋼構（柱、斜梁、屋頂檁條）、地坪；後牆和右側牆已經封好板。前面這道外牆（x -3.4～10.6）是這一關要裝的
 function factory(){ const y0=L.gy, S=m=>{ m.castShadow=false; return stat(m); }, X=[-3.5,-0.1,2.1,4.9,7.7,10.5], st=mat.steelDark, GY=[0.4,1.6,2.8];
   S(box(14.3,0.08,8.2, 3.55,y0+0.04,-4.1, mat.rc));                                                                                   // 地坪
@@ -479,7 +480,7 @@ function autoDoor(xc,z1,w,dh){ const y0=L.gy, dk=std(0x3a4350), cw=std(0xdfe3e6)
   S(box(0.5,0.12,0.1, xc,y0+dh+0.2,z1-0.07, dk)); S(box(0.05,0.03,0.02, xc+0.12,y0+dh+0.2,z1-0.125, mat.red)); S(box(0.09,0.14,0.03, dr+0.32,y0+1.2,z1-0.02, dk));                // 感應器、刷卡機
   S(board(['設計部'], xc,y0+dh+0.62,z1-0.02,Math.PI,1.2,'#374151','#ffffff'));
   const pan=[-1,1].map(e=>{ const g=new THREE.Group(); g.add(box(w/2,dh-0.04,0.03, 0,dh/2,0, mat.glass)); g.add(box(w/2,0.06,0.04, 0,dh-0.05,0, dk)); g.add(box(0.04,dh,0.04, -e*w/4,dh/2,0, dk)); g.position.set(xc+e*w/4,y0,z1+0.05); stat(g); return {g,e}; });   // 兩片玻璃門
-  const ps=makePerson({skin:0xd9a577, shirt:0xdfe8f2, feat:{glasses:true}}); stat(ps); let open=0, T0=4;
+  const ps=makePerson({skin:0xd9a577, shirt:0xdfe8f2, feat:{glasses:true}}); ps.visible=false; stat(ps); let open=0, T0=4;
   LV.fx.push((dt,t)=>{ const per=13, k=((t+T0)%per)/4.5, dir=Math.floor((t+T0)/per)%2 ? -1 : 1, px = k<1 ? xc+dir*(-HW+0.6+(2*HW-1.2)*k) : xc+dir*99;                 // 有人經過走廊
     ps.visible=k<1; ps.position.set(px,y0,z1+1.3); ps.rotation.y=dir*Math.PI/2; const u=ps.userData, sw=Math.sin(t*9)*0.6; u.legL.rotation.x=sw; u.legR.rotation.x=-sw; u.armL.rotation.x=-sw*0.6; u.armR.rotation.x=sw*0.6;
     open+=((ps.visible && Math.abs(px-xc)<1.9 ? 1 : 0)-open)*Math.min(1,dt*4); pan.forEach(({g,e})=>{ g.position.x=xc+e*(w/4+open*w*0.46); }); }); }                      // 人走到門前，門就打開
@@ -496,7 +497,7 @@ function shedDoor(xc,z1,w,dh){ const y0=L.gy, dk=std(0x3a4350), S=m=>{ m.castSha
   const dl=xc-w/2, dr=xc+w/2; [[dl-0.05,dh/2,0.1,dh],[dr+0.05,dh/2,0.1,dh],[xc,dh+0.05,w+0.2,0.1]].forEach(([x,y,a,b])=>S(box(a,b,0.14, x,y0+y,z1, dk)));                      // 門框
   const dg=new THREE.Group(); dg.position.set(dl,y0,z1+0.03); const dp=box(w,dh,0.05, w/2,dh/2,0, std(0xb9c2cc)); dg.add(dp); dg.add(box(w-0.3,0.9,0.055, w/2,dh-0.75,0, mat.glass)); dg.add(box(0.14,0.04,0.08, w-0.15,1.05,0.05, mat.steel)); dg.rotation.y=-1.15; stat(dg);   // 半開的門（往外開）
   S(board(['工務所','（下雨請勿進出太頻繁）'], xc,y0+dh+0.45,z1-0.02,Math.PI,1.7,'#12161b','#ffffff')); S(box(0.6,0.02,0.4, xc,y0+0.01,z1-0.35, std(0x5a3a2a)));        // 門牌、門口的踏墊
-  const ps=makePerson({skin:0xd9a577, vest:0xf2cf1d, helmet:0xffd21f, feat:{}}); stat(ps); let T0=2;
+  const ps=makePerson({skin:0xd9a577, vest:0xf2cf1d, helmet:0xffd21f, feat:{}}); ps.visible=false; stat(ps); let T0=2;
   LV.fx.push((dt,t)=>{ rt.offset.y=(t*1.8)%1; const per=11, k=((t+T0)%per)/5, dir=Math.floor((t+T0)/per)%2 ? -1 : 1; ps.visible=k<1; ps.position.set(xc+dir*(-5+10*Math.min(1,k)),y0-0.12,z1+3.0); ps.rotation.y=dir*Math.PI/2;   // 雨往下落；工人走過
     const u=ps.userData, sw=Math.sin(t*9)*0.6; u.legL.rotation.x=sw; u.legR.rotation.x=-sw; u.armL.rotation.x=-sw*0.6; u.armR.rotation.x=sw*0.6; }); }
 // 右牆的窗：外面是別的辦公大樓
@@ -1253,7 +1254,7 @@ function makePallet(st,x,z){ const g=new THREE.Group(); g.position.set(x,L.gy,z)
       if(it.pose==='upright') o.position.set(i?0.17:-0.03, 0.1+it.len/2, i?0.02:0);            // 直料：立著
       else if(it.pose==='across') o.position.set(0, 0.17, i?0.17:-0.02);                          // 橫料：橫著
       else if(it.kind==='panel') o.position.set(0, 0.15+i*0.1, 0);
-      else o.position.y=PY[it.kind];
+      else { o.position.set(0,0,0); o.updateMatrixWorld(true); o.position.y = 0.1-new THREE.Box3().setFromObject(o).min.y; }   /* 小東西：照實際底部放在棧板上，不浮起來也不陷進去 */
       item.add(o); }
     if(it.pose==='upright') g.add(box(0.44,0.2,0.34,0.07,0.2,0.01,mat.wood));                    // 直料的立架
     g.add(item); ly = Math.max(0.66, new THREE.Box3().setFromObject(item).max.y + 0.26); }             // 量物件實際的高度，標籤放在它上面
