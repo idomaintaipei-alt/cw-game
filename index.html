@@ -339,10 +339,11 @@ function cyl(r,len,axis,x,y,z,m,seg=16){ const g=new THREE.Mesh(new THREE.Cylind
 function at(mesh,x,y,z){ mesh.position.set(x,y,z); mesh.castShadow=true; return mesh; }
 function board(lines,x,y,z,ry,w,bg,fg){ const c=document.createElement('canvas'), n=lines.length; c.width=512; c.height=Math.round(512*(0.21*n+0.14)); const g=c.getContext('2d');
   g.fillStyle=bg; g.fillRect(0,0,c.width,c.height); g.strokeStyle=fg; g.lineWidth=10; g.strokeRect(8,8,c.width-16,c.height-16); g.fillStyle=fg; g.textAlign='center'; g.textBaseline='middle';
-  lines.forEach((t,i)=>{ g.font=(i===0?'bold 66px ':'bold 44px ')+'"Microsoft JhengHei","Noto Sans TC",sans-serif'; g.fillText(t,256,512*(0.18+0.21*i)); });
-  const h=w*c.height/c.width, m=new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c), side:THREE.DoubleSide})); m.position.set(x,y,z); m.rotation.y=ry; m.userData.h=h; return m; }
+  let fit=1; lines.forEach((t,i)=>{ const base=i===0?66:44, font=px=>'bold '+px+'px "Microsoft JhengHei","Noto Sans TC",sans-serif'; g.font=font(base);   /* 字太長就縮小，不會超出牌子 */
+    const k=Math.min(1,(c.width-60)/Math.max(1,g.measureText(t).width)); fit=Math.min(fit,k); g.font=font(Math.floor(base*k)); g.fillText(t,256,512*(0.18+0.21*i)); });
+  const h=w*c.height/c.width, m=new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c), side:THREE.DoubleSide})); m.position.set(x,y,z); m.rotation.y=ry; m.userData.h=h; m.userData.lines=lines; m.userData.fit=fit; return m; }
 function standBoard(lines,x,z,ry,w,bg,fg,yb){ const y0 = yb===undefined ? L.gy : yb, b=board(lines,x,y0+2.2,z,ry,w,bg,fg); stat(b);                 // 立在地上的看板：兩支腳
-  [-1,1].forEach(e=>stat(box(0.07,2.2+b.userData.h/2,0.07, x+e*Math.cos(ry)*(w/2-0.1), y0+(2.2+b.userData.h/2)/2, z-e*Math.sin(ry)*(w/2-0.1), mat.steelDark))); }
+  [-1,1].forEach(e=>stat(box(0.07,2.2+b.userData.h/2,0.07, x+e*Math.cos(ry)*(w/2-0.1)-Math.sin(ry)*0.06, y0+(2.2+b.userData.h/2)/2, z-e*Math.sin(ry)*(w/2-0.1)-Math.cos(ry)*0.06, mat.steelDark))); }   // 兩支腳在牌子後面，不擋到字
 // 工地的外圍：都擺在走不到的地方，避開座駕和壓送車走的便道、直升機降落的位置，中間（x -3.5～13.1、z -10.8～8.5）留給週二那棟樓
 const yardY = () => L.yard!==undefined ? L.yard : L.gy;                                                    // 地面的高度
 function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m.traverse(o=>{ o.castShadow=false; }); return stat(m); };
@@ -425,7 +426,7 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
   face('z',z1,x0,x1,1); face('z',z0,x0,x1,-1); face('x',x0,z0,z1,-1); face('x',x1,z0,z1,1);
   const rail=(xa,za,xb,zb,yb)=>{ const len=Math.hypot(xb-xa,zb-za), n=Math.max(1,Math.round(len/1.6)), ry=Math.atan2(za-zb,xb-xa); for(let i=0;i<=n;i++) S(box(0.05,1.1,0.05, xa+(xb-xa)*i/n,yb+0.55,za+(zb-za)*i/n, mat.mark));   // 護欄
     [[0.045,0.55,mat.mark],[0.045,1.07,mat.mark],[0.12,0.06,mat.steelDark]].forEach(([h,y,m])=>{ const r=box(len,h,0.04, (xa+xb)/2,yb+y,(za+zb)/2, m); r.rotation.y=ry; S(r); }); };
-  rail(x0+0.06,z1-0.06, x1-0.06,z1-0.06, T); rail(x0+0.06,0.5, x0+0.06,z1-0.06, T); rail(x1-0.06,0.2, x1-0.06,z1-0.06, T);
+  rail(x0+0.06,z1-0.06, -2.25,z1-0.06, T); rail(-0.75,z1-0.06, x1-0.06,z1-0.06, T);   /* 北邊護欄在施工電梯的出口留一個缺口 */ rail(x0+0.06,0.5, x0+0.06,z1-0.06, T); rail(x1-0.06,0.2, x1-0.06,z1-0.06, T);
   rail(x0+0.06,z0+0.06, x0+0.06,-0.5, 0); rail(x0+0.06,z0+0.06, x1-0.06,z0+0.06, 0); rail(x1-0.06,z0+0.06, x1-0.06,-0.1, 0);
   rail(hx0,hz0, hx0,hz1, T); rail(hx0,hz1, hx1,hz1, T); rail(11.6,hz0, hx1,hz0, T);                                                   // 樓梯間洞口的護欄（留一邊讓人上下）
   for(let k=0;k<6;k++) S(cyl(0.04,4,'x', 7.6,T+0.14,7.78+k*0.082, mat.rebar,6));   /* 一根挨著一根放在墊木上 */ [6.2,9.0].forEach(x=>S(box(0.12,0.1,0.9, x,T+0.05,8.0, mat.wood)));   // 平台上的料堆（讓開樓梯口）
@@ -435,6 +436,21 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
   const top=new THREE.Group(); top.position.y=27.9; top.rotation.y=-0.45; top.add(box(22,1.0,1.0, -11,0.5,0, mat.lattice(20,1))); top.add(box(7,0.8,1.0, 4.2,0.4,0, mat.lattice(7,1))); top.add(box(2.4,1.6,1.4, 6.6,-0.2,0, mat.steelDark));
   top.add(box(1.0,4,1.0, 0,2.6,0, mat.lattice(1,4))); top.add(box(1.3,1.3,1.5, -1.3,-0.5,0.95, mat.white)); top.add(cyl(0.025,8,'y', -13,-4,0, mat.dark,4)); top.add(box(0.5,0.6,0.3, -13,-8.2,0, yl)); cr.add(top); cr.traverse(o=>{ o.castShadow=false; }); stat(cr);
   S(box(1.5,0.02,1.5, kx,T+0.012,kz, mat.dark)); [[0,-0.78,1.6,0.06],[0,0.78,1.6,0.06],[-0.78,0,0.06,1.6],[0.78,0,0.06,1.6]].forEach(([a,b,w,d])=>S(box(w,0.22,d, kx+a,T+0.11,kz+b, mat.wood)));   // 樓板的預留孔和擋板
+  // 施工電梯：貼在樓的北面，桁架從地面一路到四樓上方；車廂西邊進、南邊出（出口接四樓平台）
+  { const hx=-1.5, hz=9.35, yl=std(0xf0b323), dk=std(0x3a4350), mast=box(0.8,T-Y+3.2,0.8, hx,Y+(T-Y+3.2)/2,hz+1.0, mat.lattice(1,Math.round(T-Y+3))); mast.castShadow=false; stat(mast);
+    for(let k=1;k<=3;k++) S(box(0.08,0.08,1.0, hx,Y+3.6*k,hz+0.1, dk));                                                                          // 每層一支繫牆桿，把桁架拉在樓上
+    const cg=new THREE.Group(); cg.position.set(hx,Y,hz); cg.add(box(1.2,0.08,1.2, 0,0.04,0, dk)); cg.add(box(1.2,0.08,1.2, 0,2.3,0, yl));   // 車廂：地板、頂板
+    [[-0.58,-0.58],[0.58,-0.58],[-0.58,0.58],[0.58,0.58]].forEach(([a,b])=>cg.add(box(0.06,2.3,0.06, a,1.15,b, yl)));                              // 四根角柱
+    cg.add(box(0.04,1.1,1.16, 0.6,0.6,0, yl)); cg.add(box(1.16,1.1,0.04, 0,0.6,0.6, yl)); cg.add(box(1.16,0.04,0.04, 0,1.15,-0.6, yl)); cg.add(box(0.04,0.04,1.16, -0.6,1.15,0, yl));   // 東、北兩面圍板；西、南兩面是門口，只有一支橫桿
+    cg.add(board(['施工電梯','（限乘 8 人）'], 0.63,0.7,0,Math.PI/2,0.9,'#f2cf1d','#1b1e24'));   /* 牌子掛在東面圍板上 */ stat(cg);
+    S(box(1.2,0.04,0.3, hx,T-0.02,8.62, dk));                                                                                                    // 四樓：車廂和平台之間的接板
+    S(box(1.6,0.06,1.6, hx,Y+0.03,hz, mat.rc));                                                                                                  // 地面：電梯的基座
+    LV.hoist={cage:cg, x:hx, z:hz, Y, T, t:0, run:false};
+    LV.fx.push((dt,t)=>{ const me=LV.actors.you, H=LV.hoist; if(!LV.hoisting || !me) return; camGoal=null;
+      if(H.run){ H.t+=dt; const k=Math.min(1,H.t/4.5), e=k*k*(3-2*k); H.cage.position.y=H.Y+(H.T-H.Y)*e; me.liftY=H.cage.position.y+0.08; me.face=Math.PI;   // 電梯往上，人跟著車廂
+        if(k>=1){ H.run=false; me.liftY=H.T; me.dest={x:H.x,z:8.0}; me.onArrive=()=>{ me.liftY=undefined; me.dest={x:L.cx,z:2.4}; me.onArrive=()=>{ LV.hoisting=false; camGoal={theta:0.5, phi:1.08, dist:12}; }; }; } }
+      const q=Math.min(1,dt*2.5); target.x+=(me.x-target.x)*q; target.y+=(me.g.position.y+1.0-target.y)*q; target.z+=(me.z-target.z)*q; dist+=(13-dist)*q; });   // 鏡頭跟著人
+  }
   stat(board(['4F'], -0.35,2.2,0.153,0,0.34,'#374151','#ffffff')); stat(board(['4F'], -0.097,2.2,-0.15,Math.PI/2,0.34,'#374151','#ffffff')); }   // 樓層牌：貼在柱子表面（正面、側面各一塊），不是浮在空中的標籤
 // 工務所的室內（週四下雨）：兩面牆、外面在下雨的窗、進度表、安全帽架、雨衣、長椅、圖桌、辦公桌、鐵櫃、飲水機。家具都放在走不到的地方
 function siteOffice(){ const cx=L.cx, y0=L.gy, wall=std(0xe9e6dc), dk=std(0x3a4350), S=m=>{ m.traverse(o=>{ o.castShadow=false; }); return stat(m); };
@@ -536,7 +552,7 @@ function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas')
 const LV = { group:null, parts:{}, refs:{}, pallets:{}, pick:[], actors:{} };
 const anims = [];
 function resetGroup(){ if(LV.group){ scene.remove(LV.group); LV.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.orbit=null; LV.room=null; LV.fx=[]; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
+  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
 function part(id){ return LV.parts[id] || (LV.parts[id]={meshes:[],ghosts:[]}); }
 function ghostOf(id, mesh){ if(mesh.isSprite) return; const gh=new THREE.Mesh(mesh.geometry, mat.ghost); gh.position.copy(mesh.position); gh.rotation.copy(mesh.rotation); gh.visible=false; (LV.host||LV.group).add(gh); part(id).ghosts.push(gh); }
 function add(id, mesh){ mesh.visible=false; mesh.userData.home=mesh.position.clone(); (LV.host||LV.group).add(mesh); part(id).meshes.push(mesh); ghostOf(id,mesh); return mesh; }
@@ -1072,16 +1088,16 @@ function stepPour(c,dt){ c.t+=dt; const t=c.t, A1=1.5, A2=1.0, P=5.5, E1=0.8, E2
   if(t>=A1+A2+P+E1+E2){ slab.material=c.dry; slab.scale.set(1,1,1); slab.position.copy(slab.userData.home); LV.refs.rebar.visible=false; LV.group.remove(c.g); cut=null; const kc=c.keep; camCut(()=>{ camGoal=null; theta=kc.theta; phi=kc.phi; dist=kc.dist; target.set(...kc.t); });
     bubble(L.boss,'好，收。灌漿廠的人，下班比我們早。'); } }
 function stepCut(dt){ if(cut.kind==='pour'){ stepPour(cut,dt); return; }
-  if(cut.kind==='walk'){ const c=cut, me=LV.actors.you, q=Math.min(1,dt*3); c.t+=dt; target.x+=((me.x+L.cx)/2-target.x)*q; if(!me.dest || c.t>10){ cut=null; if(c.then) c.then(); } return; }   // 走上樓的這一段：鏡頭跟著人
+  if(cut.kind==='walk'){ const c=cut; c.t+=dt; if(!LV.hoisting || c.t>45){ LV.hoisting=false; cut=null; if(c.then) c.then(); } return; }   // 走上樓的這一段：鏡頭跟著人
   const c=cut, g=c.g, u=g.userData, heli=c.kind==='heli', dur=heli?3.4:2.6; c.t+=dt; const k=Math.min(1,c.t/dur);
-  if(c.stage<2){ const tx = c.stage===0 ? (heli || L.yard!==undefined ? L.cx-8 : L.cx-4.5) : L.yard!==undefined ? (LV.actors.you.x+L.cx)/2 : L.cx, ty = (c.stage===0 ? yardY() : L.gy)+(c.stage===0 && heli ? 3.2 : 1.3), q=Math.min(1,dt*3); target.x+=(tx-target.x)*q; target.y+=(ty-target.y)*q; }
+  if(c.stage<2 && !LV.hoisting){ const tx = c.stage===0 ? (heli || L.yard!==undefined ? L.cx-8 : L.cx-4.5) : L.yard!==undefined ? (LV.actors.you.x+L.cx)/2 : L.cx, ty = (c.stage===0 ? yardY() : L.gy)+(c.stage===0 && heli ? 3.2 : 1.3), q=Math.min(1,dt*3); target.x+=(tx-target.x)*q; target.y+=(ty-target.y)*q; }
   if(heli){ const e=1-Math.pow(1-k,2), sp = c.stage ? Math.max(2,30-(c.t-dur)*6) : 34; g.position.set(L.cx-13.5, yardY()+(1-e)*14, 7.5); /* 降在車道旁邊的空地，不停在路中間 */ g.rotation.y=2.75+(1-e)*2.2; g.rotation.z = c.stage ? 0 : Math.sin(c.t*2.2)*0.05;
     u.rotor.rotation.y+=dt*sp; u.tail.rotation.z+=dt*30; u.disc.material.opacity=Math.min(0.16, sp/34*0.16)*(sp>8?1:0); u.strobe.visible=(c.t*2.5)%1<0.2; }
   else { const e=1-Math.pow(1-k,3); const P=q=>{ const v=Math.max(0,Math.min(1,(q-0.82)/0.18)); return {x:L.cx-6.4-(L.yard!==undefined ? 4.8*v*v*(3-2*v) : 0), z:3.6-(1-q)*22}; }, pa=P(e), pb=P(Math.min(1,e+0.004));   /* 路線：最後一段往左彎進車道旁的空地 */
     g.position.set(pa.x, yardY()+(c.stage?0:Math.abs(Math.sin(c.t*14))*0.03*(1-k)), pa.z); g.rotation.y = e<0.995 ? Math.atan2(pb.z-pa.z, pa.x-pb.x) : Math.PI/2;   /* 車頭照行進方向轉，不是橫著平移 */ if(!c.stage) u.wheels.forEach(w=>w.rotation.z+=dt*22*(1-k*k));
     if(c.stage && u.doors) u.doors.forEach((d,i)=>{ d.rotation.x+=((i?-1:1)*1.75-d.rotation.x)*Math.min(1,dt*4); }); }
-  if(c.stage===0 && k>=1){ c.stage=1; const me=LV.actors.you; if(L.yard!==undefined) climbIn(); else { const pts=[{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}], go2=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go2 : null; }; me.x=g.position.x+1.7; me.z=g.position.z+0.3; me.g.visible=true; go2(); } /* 從座駕旁邊下車，走到工作區 */ bubble(L.boss, RIDEB[c.kind], true); fan('ride',1); camGoal={theta:0.5,phi:1.08,dist:12}; }
-  else if(c.stage===1 && c.t>=dur+1.9 && !(LV.actors.you.dest && c.t<dur+10)){ c.stage=2; target.x=L.cx; target.y=L.gy+1.3; const f=c.then; c.then=null; if(f) f(); } }
+  if(c.stage===0 && k>=1){ c.stage=1; const me=LV.actors.you; if(L.yard!==undefined) climbIn(g.position.x+1.7, g.position.z+0.4); else { const pts=[{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}], go2=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go2 : null; }; me.x=g.position.x+1.7; me.z=g.position.z+0.3; me.g.position.set(me.x, gyAt(me.x,me.z), me.z); me.g.visible=true; go2(); } /* 從座駕旁邊下車，走到工作區 */ bubble(L.boss, RIDEB[c.kind], true); fan('ride',1); camGoal={theta:0.5,phi:1.08,dist:12}; }
+  else if(c.stage===1 && c.t>=dur+1.9 && !((LV.actors.you.dest || LV.hoisting) && c.t<dur+45)){ c.stage=2; LV.hoisting=false; target.x=L.cx; target.y=L.gy+1.3; const f=c.then; c.then=null; if(f) f(); } }
 
 // ===================== 人物（3D 小人＋頭像） =====================
 let _robe=null;
@@ -1169,7 +1185,7 @@ function stepActor(a,dt,t){ let moving=false;
   pushOut(a, moving);
   if(moving && a.dest){ const d=Math.hypot(a.dest.x-a.x,a.dest.z-a.z); if(d<a.bestD-0.015){ a.bestD=d; a.stuck=0; } else a.stuck+=dt;
     if(a.stuck>0.4){ a.dest=null; a.restUntil=t+0.9; moving=false; const f=a.onArrive; a.onArrive=null; if(f) f(); } }   // 一直沒有更靠近目標＝被擋住：停下，不要原地踏步
-  a.g.position.set(a.x, gyAt(a.x,a.z)+(a.seated ? -SIT : moving?Math.abs(Math.sin(t*10+a.ph))*0.035:0), a.z);
+  a.g.position.set(a.x, (a.liftY!==undefined ? a.liftY : gyAt(a.x,a.z))+(a.seated ? -SIT : moving?Math.abs(Math.sin(t*10+a.ph))*0.035:0), a.z);
   let dr=a.face-a.g.rotation.y; dr=Math.atan2(Math.sin(dr),Math.cos(dr)); a.g.rotation.y+=dr*Math.min(1,dt*12);
   const u=a.g.userData, sw=moving?Math.sin(t*10+a.ph)*0.7:0, k=Math.min(1,dt*14);
   u.legL.rotation.x+=(sw-u.legL.rotation.x)*k; u.legR.rotation.x+=(-sw-u.legR.rotation.x)*k;
@@ -1337,9 +1353,10 @@ function dropIn(id,temp,from=0,to=1e9){ const p=LV.parts[id]; if(!p) return; con
   if(temp) setTimeout(()=>p.meshes.forEach(m=>m.visible=false),1500); }
 const insideOK = () => !!L && L.id==='L1' && placed.has('pour');                     // 週一灌漿之後，可以走到樓板上（室內側）
 const STAIR={x:10.95, z0:4.6, z1:7.2};                                                // 四樓那一關的樓梯間：最上面那一段樓梯
-const gyAt = (x,z) => (insideOK() && x>-3.5 && x<13.1 && z<0 && z>-10.8) ? 0 : (L.yard!==undefined && x>10.3 && x<11.6 && z>STAIR.z0 && z<7.4) ? L.gy-(z-STAIR.z0)*(1.8/2.6) : L.gy;
-function climbIn(){ const me=LV.actors.you, pts=[{x:STAIR.x,z:STAIR.z0-0.5},{x:5.6,z:3.5},{x:L.cx,z:2.4}]; me.x=STAIR.x; me.z=STAIR.z1-0.2; me.g.visible=true; me.face=Math.PI;   // 人從樓梯走上來，再走到工作區
-  const go=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go : null; }; go(); }      // 站在樓板上就是樓板的高度
+const gyAt = (x,z) => (L.yard!==undefined && (x<-3.5 || x>13.1 || z>8.5 || z<-10.8)) ? L.yard : (insideOK() && x>-3.5 && x<13.1 && z<0 && z>-10.8) ? 0 : (L.yard!==undefined && x>10.3 && x<11.6 && z>STAIR.z0 && z<7.4) ? L.gy-(z-STAIR.z0)*(1.8/2.6) : L.gy;
+function climbIn(sx,sz){ const me=LV.actors.you, H=LV.hoist; LV.hoisting=true; H.run=false; H.t=0; H.cage.position.y=H.Y; me.liftY=undefined;   // 四樓那一關進場：在地面走到施工電梯，搭上四樓
+  me.x = sx===undefined ? L.cx-7.0 : sx; me.z = sz===undefined ? 15.0 : sz; me.g.position.set(me.x, gyAt(me.x,me.z), me.z); me.g.visible=true;   /* 模型也馬上搬過去，不然會在原地閃一格 */                                                      // 沒有座駕：從前面的大門走進來
+  const pts=[{x:-4.6,z:10.4},{x:-3.0,z:H.z},{x:H.x,z:H.z}], go=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go : ()=>{ H.run=true; }; }; go(); }      // 站在樓板上就是樓板的高度
 function clampXZ(x,z,from){ x=Math.min(L.cx+4.2,Math.max(L.cx-4.2,x)); const zmin = L.office ? -2.4 : insideOK() && x>0.05 ? -1.9 : 0.85; z=Math.min(6.6,Math.max(zmin,z));
   if(insideOK() && (x<2.75 || x>4.5) && z<0.85 && z>-0.15){                                // 牆的位置不能站，也不能穿過去；要進室內只能繞牆的右端
     if(from && from.x>=2.7 && from.x<=4.55 && from.z<0.85 && from.z>-0.15) x = x<2.75 ? 2.75 : 4.5;              // 鍵盤：人在牆右端的通道裡，往牆走就停在通道邊
