@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
 <meta property="og:type" content="website">
@@ -11,10 +11,13 @@
 <style>
   :root { --bg:#14181d; --panel:rgba(30,36,43,.94); --line:#3a4350; --txt:#e8ecf1; --dim:#9aa4b1; --ok:#3ddc84; --bad:#ff5c5c; --acc:#4da3ff; }
   * { box-sizing:border-box; }
-  html,body { margin:0; height:100%; overflow:hidden; background:var(--bg); color:var(--txt); font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; }
+  html,body { margin:0; height:100%; overflow:hidden; touch-action:none; -webkit-user-select:none; user-select:none; background:var(--bg); color:var(--txt); font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; }
   #view { position:fixed; inset:0; } #view canvas { touch-action:none; }   /* 手機：手指拖曳交給遊戲，不讓瀏覽器捲動或放大 */
   button { background:#2a323c; color:var(--txt); border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-size:14px; cursor:pointer; font-family:inherit; }
   button:hover { border-color:var(--acc); }
+  #camBtns { position:fixed; right:10px; top:50%; transform:translateY(-50%); z-index:4; display:none; flex-direction:column; gap:10px; }   /* 手機：放大、縮小、鏡頭回正 */
+  #camBtns button { width:46px; height:46px; padding:0; border-radius:50%; font-size:22px; font-weight:bold; background:rgba(26,32,40,.82); line-height:1; }
+  #camBtns button.small { font-size:13px; }
   button.primary { background:#1d4f86; border-color:#4da3ff; }
   button.done { opacity:.35; cursor:default; }
   button.shake { animation:sh .3s; border-color:var(--bad); }
@@ -119,6 +122,27 @@
     .bub { font-size:12px; padding:4px 8px; }
     #trayCard { position:fixed; left:8px; right:8px; bottom:54px; } #trayCard h2 { display:none; } #tray button { padding:6px 4px; font-size:12px; }   /* 工作台：工具盤放到下面，中間留給要看的東西 */
   }
+  /* 很窄的螢幕（摺疊機折起來的外螢幕、小手機）：再縮一級 */
+  @media (max-width:400px){
+    header h1 { font-size:13px; } #stats { gap:5px; font-size:11px; } #stats button { padding:2px 6px; font-size:11px; }
+    #dFace { width:60px; height:60px; } #dlg { padding:8px; gap:8px; } #dText { font-size:14px; } #dGloss { font-size:12px; }
+    #camBtns button { width:40px; height:40px; font-size:19px; } #camBtns button.small { font-size:11px; }
+    #goal { font-size:12px; }
+  }
+  /* 手機打橫（螢幕很矮）：上面的列、目標框、對話框都縮小，操作說明拿掉，三顆鏡頭按鈕移到左邊，中間留給畫面 */
+  @media (max-height:500px) and (orientation:landscape){
+    header { padding:3px 10px; } header h1 { font-size:13px; } #stats { gap:6px; font-size:12px; } #stats button { padding:2px 7px; font-size:11px; }
+    #ticker { left:8px; right:auto; top:calc(var(--topH,40px) + 4px); max-width:46vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; padding:2px 8px; }
+    #help { display:none; }
+    #side { left:auto; right:8px; top:calc(var(--topH,40px) + 4px); width:240px; max-width:40vw; gap:4px; } #side .card { padding:6px 8px; } #goal { font-size:12px; line-height:1.4; } #goal small { display:none; }
+    #trayCard { position:fixed; left:auto; right:8px; bottom:8px; width:240px; max-width:40vw; } #trayCard h2 { display:none; } #tray button { padding:4px; font-size:11px; }
+    #camBtns { right:auto; left:8px; top:56%; gap:8px; } #camBtns button { width:40px; height:40px; font-size:19px; } #camBtns button.small { font-size:11px; }
+    #dlg { bottom:6px; padding:7px 9px; gap:8px; width:min(760px, calc(100vw - 16px)); max-height:60vh; overflow:auto; }
+    #dFace { width:56px; height:56px; } #dName { font-size:13px; } #dText { font-size:13px; line-height:1.45; min-height:0; } #dGloss { font-size:12px; padding:4px 7px; margin-top:4px; } #dSrc { font-size:11px; }
+    #dOpts button { margin-top:4px; padding:5px 8px; font-size:13px; } #dBar { margin-top:3px; }
+    #toasts { top:auto; bottom:30%; }
+    #testTag { bottom:6px !important; left:auto !important; right:256px !important; font-size:10px !important; }
+  }
 </style>
 </head>
 <body>
@@ -135,6 +159,7 @@
   </div>
 </header>
 <div id="help"></div>
+<div id="camBtns"><button id="zIn" aria-label="放大">＋</button><button id="zOut" aria-label="縮小">－</button><button id="zHome" class="small" aria-label="鏡頭回正">回正</button></div>
 <div id="fade"></div>
 <div id="testTag" style="display:none; position:fixed; left:12px; bottom:12px; z-index:3; font-size:12px; background:#7a3340; color:#fff; padding:5px 10px; border-radius:6px">測試版：造型和座駕全部解鎖</div>
 <div id="ticker"><b>公司廣播</b><span id="tickTxt"></span></div>
@@ -1460,27 +1485,31 @@ function placeCam(){ followSun(); const dx=Math.sin(phi)*Math.sin(theta), dz=Mat
   if(camShake>0){ camera.position.x+=(Math.random()-0.5)*camShake*0.6; camera.position.y+=(Math.random()-0.5)*camShake*0.6; }
   const nn=Math.min(0.5,Math.max(0.03,d*0.02)); if(Math.abs(camera.near-nn)>0.005){ camera.near=nn; camera.updateProjectionMatrix(); } }   // 鏡頭越遠，近裁切面越遠：深度比較準，地上貼的東西不會閃
 let pd=null, dragged=false; const cvs=renderer.domElement;
-cvs.addEventListener('pointerdown',e=>{ pd={x:e.clientX,y:e.clientY,pan:e.button!==0||e.shiftKey}; dragged=false; try{ cvs.setPointerCapture(e.pointerId); }catch(_){} });   // 右鍵（或中鍵、Shift＋左鍵）拖曳＝平移
+cvs.addEventListener('pointerdown',e=>{ pd={x:e.clientX,y:e.clientY,pan:e.button!==0||e.shiftKey, touch:e.pointerType==='touch', axis:null}; dragged=false; try{ cvs.setPointerCapture(e.pointerId); }catch(_){} });   // 右鍵（或中鍵、Shift＋左鍵）拖曳＝平移
 cvs.addEventListener('contextmenu',e=>e.preventDefault());
 const touches=new Map(); let pinch=null;                                                // 兩指：捏合＝縮放，一起移動＝平移
 function panBy(dx,dy){ if(!camHome) return; const k=dist*0.0016, sn=Math.sin(theta), cs=Math.cos(theta), lim=(v,c)=>Math.min(c+18,Math.max(c-18,v));
   target.x=lim(target.x-(cs*dx+sn*dy)*k, camHome.t[0]); target.z=lim(target.z+(sn*dx-cs*dy)*k, camHome.t[2]);
   if(LV.room){ const R=LV.room; target.x=Math.min(R.x1-1.3,Math.max(R.x0+1.3,target.x)); target.z=Math.min(R.z1-1.3,Math.max(R.z0+1.3,target.z)); } }
 cvs.addEventListener('pointerdown',e=>{ if(e.pointerType!=='touch') return; touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(touches.size===2){ const [a,b]=[...touches.values()]; pinch={d:Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)), dist, mx:(a.x+b.x)/2, my:(a.y+b.y)/2}; pd=null; dragged=true; } });
+  if(touches.size===2){ const [a,b]=[...touches.values()]; pinch={d:Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)), dist, mx:(a.x+b.x)/2, my:(a.y+b.y)/2, mx0:(a.x+b.x)/2, my0:(a.y+b.y)/2, mode:null}; pd=null; dragged=true; } });   /* mode：先不決定，等手指動一段再看是捏合還是一起移動 */
 cvs.addEventListener('pointermove',e=>{ if(!touches.has(e.pointerId)) return; touches.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(!pinch || touches.size<2) return;
-  const [a,b]=[...touches.values()], d=Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)), mx=(a.x+b.x)/2, my=(a.y+b.y)/2; camGoal=null; if(talkCam) talkCam.free=true;
-  dist=Math.min(maxD,Math.max(minD,pinch.dist*pinch.d/d)); panBy(mx-pinch.mx, my-pinch.my); pinch.mx=mx; pinch.my=my; });
+  const [a,b]=[...touches.values()], d=Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)), mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+  if(!pinch.mode){ const dd=Math.abs(d-pinch.d), dm=Math.hypot(mx-pinch.mx0,my-pinch.my0); if(dd>16 && dd>dm*0.6) pinch.mode='zoom'; else if(dm>22) pinch.mode='pan'; else return; pinch.d=d; pinch.dist=dist; pinch.mx=mx; pinch.my=my; }   // 兩指距離變了＝縮放；兩指一起移動＝平移。決定後不混在一起
+  camGoal=null; if(talkCam) talkCam.free=true;
+  if(pinch.mode==='zoom') dist=Math.min(maxD,Math.max(minD,pinch.dist*pinch.d/d)); else panBy(mx-pinch.mx, my-pinch.my); pinch.mx=mx; pinch.my=my; });
 ['pointerup','pointercancel'].forEach(ev=>cvs.addEventListener(ev,e=>{ touches.delete(e.pointerId); if(touches.size<2) pinch=null; }));
 let camHome=null; function camReset(){ if(!camHome) return; target.set(...camHome.t); camGoal={theta:camHome.theta, phi:camHome.phi, dist:camHome.dist}; }   // 鏡頭回正
-cvs.addEventListener('pointermove',e=>{ if(!pd) return; const dx=e.clientX-pd.x, dy=e.clientY-pd.y; if(!dragged && Math.hypot(dx,dy)<5) return; dragged=true; camGoal=null; if(talkCam) talkCam.free=true;
+cvs.addEventListener('pointermove',e=>{ if(!pd) return; let dx=e.clientX-pd.x, dy=e.clientY-pd.y; if(!dragged && Math.hypot(dx,dy)<(pd.touch?12:5)) return; dragged=true; camGoal=null; if(talkCam) talkCam.free=true;
+  if(pd.touch){ if(!pd.axis) pd.axis = Math.abs(dx)>=Math.abs(dy) ? 'h' : 'v'; if(pd.axis==='h') dy=0; else dx=0; dx*=0.8; dy*=0.8; }   /* 手機：一次只轉左右或上下，轉慢一點 */
   if(pd.pan && camHome){ const k=dist*0.0016, sn=Math.sin(theta), cs=Math.cos(theta), lim=(v,c)=>Math.min(c+18,Math.max(c-18,v));                   // 平移：畫面跟著滑鼠走，離原位最多 18 公尺
     target.x=lim(target.x-(cs*dx+sn*dy)*k, camHome.t[0]); target.z=lim(target.z+(sn*dx-cs*dy)*k, camHome.t[2]);
     if(LV.room){ const R=LV.room; target.x=Math.min(R.x1-1.3,Math.max(R.x0+1.3,target.x)); target.z=Math.min(R.z1-1.3,Math.max(R.z0+1.3,target.z)); } }   // 室內：平移不出房間
-  else { theta-=dx*0.006; if(LV.orbit) theta=Math.min(LV.orbit[1],Math.max(LV.orbit[0],theta)); phi=Math.min(1.5,Math.max(0.3,phi-dy*0.006)); } pd={x:e.clientX,y:e.clientY,pan:pd.pan}; });
+  else { theta-=dx*0.006; if(LV.orbit) theta=Math.min(LV.orbit[1],Math.max(LV.orbit[0],theta)); phi=Math.min(1.5,Math.max(0.3,phi-dy*0.006)); } pd={x:e.clientX,y:e.clientY,pan:pd.pan,touch:pd.touch,axis:pd.axis}; });
 cvs.addEventListener('pointerup',e=>{ const was=pd; pd=null; if(was && !dragged && !was.pan) onClick(e); });
 cvs.addEventListener('wheel',e=>{ e.preventDefault(); dist=Math.min(maxD,Math.max(minD,dist*(e.deltaY>0?1.1:0.9))); },{passive:false});
-function fitView(){ camera.aspect=innerWidth/innerHeight; camera.setViewOffset(innerWidth,innerHeight,0,Math.round(innerHeight*0.1),innerWidth,innerHeight); // 畫面往上讓，下面留給對話框
+function fitView(){ const a=innerWidth/innerHeight; camera.aspect=a; camera.fov = a<0.75 ? Math.min(70, 2*Math.atan(Math.tan(22.5*Math.PI/180)*0.75/a)*180/Math.PI) : 45;   /* 畫面很窄（手機直拿、摺疊機折起來）：視野自動放寬，左右看得到的範圍不會被切掉；摺疊、打開、轉向時跟著變 */
+  camera.setViewOffset(innerWidth,innerHeight,0,Math.round(innerHeight*0.1),innerWidth,innerHeight); // 畫面往上讓，下面留給對話框
   camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); }
 addEventListener('resize',fitView); fitView();
 
@@ -1722,7 +1751,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
   resetGroup(); L.build(); sun.castShadow=!L.noShadow; scene.background.set(L.office||L.indoor?0x262b32:0x9aa5b0); CLOUDS.forEach(c=>c.visible=!L.office&&!L.indoor);
   $('#card').style.display='none'; $('#card').classList.remove('on'); cardNext=null;
   if(L.bench){ const c=L.cam; target.set(...c.t); theta=c.theta; phi=c.phi; dist=c.dist; minD=dist*0.35; maxD=dist*2.5;
-    $('#help').textContent = TOUCH ? '點工具盤＝做那一步　一指拖曳＝轉視角　兩指＝縮放、平移' : '點右邊工具盤＝做那一步　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
+    $('#help').textContent = TOUCH ? '點工具盤＝做那一步　一指拖曳＝轉視角　兩指捏合＝縮放　兩指一起移＝平移　右邊按鈕＝放大、縮小、回正' : '點右邊工具盤＝做那一步　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   else { const n=L.tray.length, per=Math.ceil(n/2);
     if(L.office) L.tray.forEach((id,k)=>makePallet(stepOf(id), L.cx+(k-(n-1)/2)*0.95, 1.6));                                 // 辦公室：立牌在你面前排成一排，跟螢幕在同一個畫面
     else if(per<=6) L.tray.forEach((id,k)=>{ const row=k<per?0:1, j=row?k-per:k, cnt=row?n-per:per; makePallet(stepOf(id), L.cx+(j-(cnt-1)/2)*1.5+(row && cnt===per ? 0.75 : 0), 3.4+row*1.9); });   // 兩排拉開、錯開半格，長料才不會頭尾相接
@@ -1736,9 +1765,9 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
     LV.pick.push(spot.userData.disc);
     if(L.view){ target.set(...L.view.t); theta=L.view.theta; phi=L.view.phi; dist=L.view.dist; } else { target.set(L.cx, L.gy+1.3, 2.5); theta=0.5; phi=1.08; dist=12; }
     minD=4; maxD=24;
-    $('#help').textContent = TOUCH ? '點地板＝走路　點棧板＝拿材料　點藍圈＝安裝　點同事＝聊天　一指拖曳＝轉視角　兩指＝縮放、平移' : '點地板＝走路（WASD 也行）　點棧板＝拿材料　點藍色圈圈＝安裝　點同事＝聊天　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
+    $('#help').textContent = TOUCH ? '點地板＝走路　點棧板＝拿材料　點藍圈＝安裝　點同事＝聊天　一指拖曳＝轉視角　兩指捏合＝縮放　兩指一起移＝平移　右邊按鈕＝放大、縮小、回正' : '點地板＝走路（WASD 也行）　點棧板＝拿材料　點藍色圈圈＝安裝　點同事＝聊天　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   if(LV.room) maxD=Math.min(maxD,15);
-  if(innerWidth<innerHeight){ dist=Math.min(maxD, dist*1.35); if(LV.room) phi=Math.min(phi,0.78); }   // 手機直著拿：畫面窄，鏡頭拉遠一點；室內被牆擋住拉不遠，就改成從高一點往下看
+  if(innerWidth<innerHeight && LV.room) phi=Math.min(phi,0.78);   // 手機直著拿：畫面窄，鏡頭拉遠一點；室內被牆擋住拉不遠，就改成從高一點往下看
   camHome={t:[target.x,target.y,target.z], theta, phi, dist};
   $('#lvTitle').textContent=L.name; $('#stepN').textContent=L.steps.length; hideDayEnd(); $('#menu').style.display='none';
   clearBubbles(); nextIdle=performance.now()+9000; lastAct=performance.now();
@@ -1774,6 +1803,12 @@ addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; const k=e
     let bestId=null, bd=1.0; Object.entries(LV.pallets).forEach(([id,q])=>{ const d=rectDist(q.obs,p.x,p.z).d; if(d<bd && !placed.has(id)){ bd=d; bestId=id; } }); if(bestId) tryPick(bestId); } });
 addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
 addEventListener('keydown',e=>{ if(e.target.tagName!=='INPUT' && e.key.toLowerCase()==='c' && !(cut && cut.stage<2)) camReset(); });
+['gesturestart','gesturechange','gestureend'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));   /* iPhone 的 Safari 不理「禁止放大」的設定：兩指捏合會放大整頁，這裡攔下來，交給遊戲的鏡頭縮放 */
+document.addEventListener('touchmove',e=>{ if(e.touches.length>1 || e.target===renderer.domElement) e.preventDefault(); },{passive:false});
+let lastTap=0; document.addEventListener('touchend',e=>{ const n=Date.now(); if(n-lastTap<300 && e.target===renderer.domElement) e.preventDefault(); lastTap=n; },{passive:false});   /* 連點兩下不要放大整頁 */
+if(TOUCH) $('#camBtns').style.display='flex';                                                                  // 手機：放大、縮小、回正三顆按鈕
+const zoomBy=f=>{ if(cut && cut.stage<2) return; camGoal=null; if(talkCam) talkCam.free=true; dist=Math.min(maxD,Math.max(minD,dist*f)); };
+$('#zIn').onclick=()=>zoomBy(0.8); $('#zOut').onclick=()=>zoomBy(1.25); $('#zHome').onclick=()=>{ if(!(cut && cut.stage<2)) camReset(); };
 
 // ===================== 撞人、對話泡泡、碎念 =====================
 let bumpTotal=0, lastAct=performance.now(), nextIdle=performance.now()+9000;
