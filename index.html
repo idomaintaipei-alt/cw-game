@@ -1096,7 +1096,7 @@ function stepCut(dt){ if(cut.kind==='pour'){ stepPour(cut,dt); return; }
   else { const e=1-Math.pow(1-k,3); const P=q=>{ const v=Math.max(0,Math.min(1,(q-0.82)/0.18)); return {x:L.cx-6.4-(L.yard!==undefined ? 4.8*v*v*(3-2*v) : 0), z:3.6-(1-q)*22}; }, pa=P(e), pb=P(Math.min(1,e+0.004));   /* 路線：最後一段往左彎進車道旁的空地 */
     g.position.set(pa.x, yardY()+(c.stage?0:Math.abs(Math.sin(c.t*14))*0.03*(1-k)), pa.z); g.rotation.y = e<0.995 ? Math.atan2(pb.z-pa.z, pa.x-pb.x) : Math.PI/2;   /* 車頭照行進方向轉，不是橫著平移 */ if(!c.stage) u.wheels.forEach(w=>w.rotation.z+=dt*22*(1-k*k));
     if(c.stage && u.doors) u.doors.forEach((d,i)=>{ d.rotation.x+=((i?-1:1)*1.75-d.rotation.x)*Math.min(1,dt*4); }); }
-  if(c.stage===0 && k>=1){ c.stage=1; const me=LV.actors.you; if(L.yard!==undefined) climbIn(g.position.x+1.7, g.position.z+0.4); else { const pts=[{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}], go2=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go2 : null; }; me.x=g.position.x+1.7; me.z=g.position.z+0.3; me.g.position.set(me.x, gyAt(me.x,me.z), me.z); me.g.visible=true; go2(); } /* 從座駕旁邊下車，走到工作區 */ bubble(L.boss, RIDEB[c.kind], true); fan('ride',1); camGoal={theta:0.5,phi:1.08,dist:12}; }
+  if(c.stage===0 && k>=1){ c.stage=1; const me=LV.actors.you; if(heli) heliWelcome(); if(L.yard!==undefined) climbIn(g.position.x+1.7, g.position.z+0.4); else { const pts=[{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}], go2=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go2 : null; }; me.x=g.position.x+1.7; me.z=g.position.z+0.3; me.g.position.set(me.x, gyAt(me.x,me.z), me.z); me.g.visible=true; go2(); } /* 從座駕旁邊下車，走到工作區 */ bubble(L.boss, RIDEB[c.kind], true); fan('ride',1); camGoal={theta:0.5,phi:1.08,dist:12}; }
   else if(c.stage===1 && c.t>=dur+1.9 && !((LV.actors.you.dest || LV.hoisting) && c.t<dur+45)){ c.stage=2; LV.hoisting=false; target.x=L.cx; target.y=L.gy+1.3; const f=c.then; c.then=null; if(f) f(); } }
 
 // ===================== 人物（3D 小人＋頭像） =====================
@@ -1118,7 +1118,8 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
   if(!off) [0.98,1.2].forEach(y=>{ const b=new THREE.Mesh(new THREE.TorusGeometry(rAt(y)+0.006,0.02,6,24),trim); b.rotation.x=Math.PI/2; b.scale.set(1,0.72,1); b.position.y=y; g.add(b); });   // 反光條
   if(off){ const ln=new THREE.Mesh(new THREE.TorusGeometry(0.135,0.01,6,22), std(0x2f6fd0)); ln.rotation.x=Math.PI/2-0.5; ln.position.set(0,1.37,0.05); g.add(ln); g.add(box(0.09,0.12,0.012,0,1.13,0.152,mat.white)); g.add(box(0.055,0.028,0.014,0,1.16,0.154,std(0x2f6fd0))); }   // 識別證
   // 垂著的長手
-  const ma=sx=>{ const a=new THREE.Group(); a.position.set(sx*0.25,1.34,0); a.add(cyl(0.05,0.46,'y',0,-0.23,0,vest,10)); a.add(ball(0.062,skin,0,-0.5,0)); g.add(a); return a; };
+  const ma=sx=>{ const a=new THREE.Group(); a.position.set(sx*0.25,1.34,0); a.add(cyl(0.05,0.25,'y',0,-0.125,0,vest,10));   /* 上臂 */
+    const el=new THREE.Group(); el.position.y=-0.24; el.add(cyl(0.047,0.24,'y',0,-0.12,0,vest,10)); el.add(ball(0.062,skin,0,-0.26,0)); a.add(el); a.userData.elbow=el; g.add(a); return a; };   /* 手肘以下：前臂、手 */
   const armL=ma(-1), armR=ma(1);
   // 頭：白眼球、往下看的瞳孔、半垂的眼皮、眼袋、一條線的嘴
   g.add(ball(0.2,skin,0,1.57,0.01,1,0.96,0.96));
@@ -1165,7 +1166,7 @@ function makeActor(who,x,z){ const c=CAST[who], g=makePerson(c); LV.group.add(g)
   const tag=label(cname(who), who==='you'?'#1d4f86':'#374151', 0,2.1,0,0.17); g.add(tag);
   const a={who,g,x,z,home:{x,z},dest:null,onArrive:null,speed: who==='you'?3.0:4.2, face:Math.PI, ph:Math.random()*6, carry:null, wob:0, bumps:0, touching:false, pushT:0, backAt:0, fined:false};
   if(who!=='you') g.traverse(o=>{ if(o.isMesh||o.isSprite){ o.userData.pick={kind:'npc',who}; LV.pick.push(o); } });
-  if(!L.office && ['tie','lin','an','kun'].includes(who)){ const cb=new THREE.Group(); cb.add(box(0.24,0.32,0.02, 0,0,0, mat.dark)); cb.add(box(0.2,0.27,0.006, 0,-0.01,0.013, mat.white)); cb.position.set(0.05,-0.52,0.1); cb.rotation.x=-1.25; g.userData.armL.add(cb); g.userData.clip=cb; }   // 工地的同事手上有板夾
+  if(!L.office && ['tie','lin','an','kun'].includes(who)){ const cb=new THREE.Group(); cb.add(box(0.24,0.32,0.02, 0,0,0, mat.dark)); cb.add(box(0.2,0.27,0.006, 0,-0.01,0.013, mat.white)); cb.position.set(0.05,-0.28,0.1); cb.rotation.x=-1.25; g.userData.armL.userData.elbow.add(cb); g.userData.clip=cb; }   // 工地的同事手上有板夾
   LV.actors[who]=a; return a; }
 const PR=0.22;                                                                       // 人的半徑
 function rectDist(o,x,z){ const dx=x-o.x, dz=z-o.z, ex=dx-Math.max(-o.hx,Math.min(o.hx,dx)), ez=dz-Math.max(-o.hz,Math.min(o.hz,dz)); return {dx,dz,ex,ez,d:Math.hypot(ex,ez)}; }   // 點到方形障礙物的距離
@@ -1181,7 +1182,7 @@ function stepActor(a,dt,t){ let moving=false;
     else { const s=Math.min(d,a.speed*dt); a.x+=dx/d*s; a.z+=dz/d*s; a.face=Math.atan2(dx,dz); moving=true; } }
   else if(a.who!=='you' && LV.actors.you){ const p=LV.actors.you, free = !a.follower && !dlgOpen && !(a.lookT>performance.now()), busy = free && a.seated && Math.hypot(a.x-a.home.x,a.z-a.home.z)<0.3;
     a.atDesk=busy; a.atWork = free && !a.seated && !L.office && Math.hypot(a.x-a.home.x,a.z-a.home.z)<0.9 && Math.hypot(p.x-a.x,p.z-a.z)>1.6;                 // 工地：在自己的位置、你沒走近、沒在講話＝在忙
-    a.face = busy ? a.deskFace : a.atWork ? Math.atan2(L.cx-a.x, 0.2-a.z) : Math.atan2(p.x-a.x,p.z-a.z); }   // 坐著的人平常面向螢幕，講話或被叫才轉過來
+    a.face = busy ? a.deskFace : a.atWork ? Math.atan2(L.cx-a.x, 0.2-a.z) : a.waiting ? a.face : Math.atan2(p.x-a.x,p.z-a.z); }   // 坐著的人平常面向螢幕，講話或被叫才轉過來
   pushOut(a, moving);
   if(moving && a.dest){ const d=Math.hypot(a.dest.x-a.x,a.dest.z-a.z); if(d<a.bestD-0.015){ a.bestD=d; a.stuck=0; } else a.stuck+=dt;
     if(a.stuck>0.4){ a.dest=null; a.restUntil=t+0.9; moving=false; const f=a.onArrive; a.onArrive=null; if(f) f(); } }   // 一直沒有更靠近目標＝被擋住：停下，不要原地踏步
@@ -1189,9 +1190,10 @@ function stepActor(a,dt,t){ let moving=false;
   let dr=a.face-a.g.rotation.y; dr=Math.atan2(Math.sin(dr),Math.cos(dr)); a.g.rotation.y+=dr*Math.min(1,dt*12);
   const u=a.g.userData, sw=moving?Math.sin(t*10+a.ph)*0.7:0, k=Math.min(1,dt*14);
   u.legL.rotation.x+=(sw-u.legL.rotation.x)*k; u.legR.rotation.x+=(-sw-u.legR.rotation.x)*k;
-  const c=a.carry, up = c==='overhead'||c==='across', fa = c==='front' ? -0.62 : c==='upright' ? -1.25 : null, tl = up?-2.9 : fa!==null?fa : -sw, tr = up?-2.9 : fa!==null?fa : sw;   // front＝捧在腰前；club＝拿在手上垂著，手照常擺
+  const c=a.carry, up = c==='overhead'||c==='across', fa = c==='front' ? -0.32 : c==='upright' ? -1.25 : null, tl = up?-2.9 : fa!==null?fa : -sw, tr = up?-2.9 : fa!==null?fa : sw;   // front＝捧在腰前；club＝拿在手上垂著，手照常擺
   const gz = c==='front' ? Math.asin(Math.max(-0.6,Math.min(0.5,(0.22-(a.grip||0.15))/0.5))) : 0;                 // 捧著東西：兩手往內（或往外）收到東西的兩側
   u.armL.rotation.x+=(tl-u.armL.rotation.x)*k; u.armR.rotation.x+=(tr-u.armR.rotation.x)*k; u.armL.rotation.z+=(gz-u.armL.rotation.z)*k; u.armR.rotation.z+=(-gz-u.armR.rotation.z)*k;
+  const eb = c==='front' ? -1.3 : 0; [u.armL,u.armR].forEach(m=>{ const e=m.userData.elbow; if(e) e.rotation.x+=(eb-e.rotation.x)*k; });   // 捧東西：上臂垂著、前臂往前平舉
   if(a.wob>0){ a.wob=Math.max(0,a.wob-dt*2.2); a.g.rotation.z=Math.sin(a.wob*18)*0.22*a.wob; } else a.g.rotation.z=0;
   if(a.atWork && !moving && u.clip){ u.armL.rotation.x=-1.15; u.armL.rotation.z=0.3; u.armR.rotation.x=-1.0+Math.sin(t*7+a.ph)*0.1; u.armR.rotation.z=-0.38; }   // 在忙：左手拿板夾，右手在上面寫
   if(u.clip) u.clip.visible = !a.carry;
@@ -1199,10 +1201,12 @@ function stepActor(a,dt,t){ let moving=false;
     u.armL.rotation.z = typ ? 0.13 : 0; u.armR.rotation.z = typ ? -0.13 : 0; }   // 坐姿；在位子上就打字
   if(a.swing && a.swing.id==='drink'){ const sw2=a.swing, w=Math.min(1,sw2.t/0.35); sw2.t+=dt; u.armR.rotation.x=-2.0*w; u.armR.rotation.z=-0.3*w; a.g.rotation.x=-0.13*w*(0.6+0.4*Math.sin(sw2.t*9));   // 喝：手舉到嘴邊（不超過頭），仰頭灌
     if(sw2.t>0.7 && !sw2.hit){ sw2.hit=true; bubble(sw2.target.who,'欸！上班時間喝什麼！',true); } if(sw2.t>2.0){ a.g.rotation.x=0; a.swing=null; sw2.done(); } }
-  else if(a.swing){ const sw2=a.swing, w=Math.min(1,sw2.t/0.26), h=Math.max(0,Math.min(1,(sw2.t-0.26)/0.11)); sw2.t+=dt;                  // 揮：0.26 秒往後拉，0.11 秒揮出去
-    { u.armR.rotation.x=u.armL.rotation.x=-1.35; u.armR.rotation.z=-0.1; u.armL.rotation.z=0.5; a.g.rotation.y=a.face-1.2*w+2.1*h; }   // 球棒：兩手握，轉身橫著揮
-    if(h>=1 && !sw2.hit){ sw2.hit=true; sw2.target.wob=1.6; bubble(sw2.target.who,'啊！',true); }
-    if(sw2.t>0.8){ a.swing=null; sw2.done(); } }
+  else if(a.swing){ const sw2=a.swing; sw2.t+=dt; const W1=0.45, W2=0.08, w=Math.min(1,sw2.t/W1), h=Math.max(0,Math.min(1,(sw2.t-W1)/W2)), e=w*w*(3-2*w), fo=Math.max(0,Math.min(1,(sw2.t-W1-W2)/0.3));   // 揮：0.45 秒蓄力、0.08 秒全力揮出、收棒
+    const eL=u.armL.userData.elbow, eR=u.armR.userData.elbow; u.armR.rotation.x=u.armL.rotation.x = -1.35-1.0*e*(1-h); u.armR.rotation.z=-0.1; u.armL.rotation.z=0.5; eL.rotation.x=eR.rotation.x = -1.2*e*(1-h);   // 蓄力：球棒舉到肩後
+    a.g.rotation.y = a.face - 1.6*e*(1-h) + 1.9*h + 0.3*fo; a.g.rotation.x = 0.12*e*(1-h) - 0.2*h*(1-fo*0.6); u.legL.rotation.x = -0.5*h; u.legR.rotation.x = 0.3*h;   // 轉身、前傾、跨步
+    if(h>0 && !sw2.lunge){ sw2.lunge=true; const tg=sw2.target, d=Math.hypot(tg.x-a.x,tg.z-a.z)||1; a.x+=(tg.x-a.x)/d*0.25; a.z+=(tg.z-a.z)/d*0.25; }
+    if(h>=1 && !sw2.hit){ sw2.hit=true; const tg=sw2.target, d=Math.hypot(tg.x-a.x,tg.z-a.z)||1; tg.wob=2.6; tg.x+=(tg.x-a.x)/d*0.4; tg.z+=(tg.z-a.z)/d*0.4; camShake=0.4; thud(); bubble(tg.who,'啊！！',true); bubble('you','鏘——！',true); }   // 打到：對方被打退、畫面震、撞擊聲
+    if(sw2.t>1.15){ a.g.rotation.x=0; a.swing=null; sw2.done(); } }
   if(u.fx) for(const f of u.fx) f(t); }
 function drawFace(cv, who, mood){ const c=CAST[who], g=cv.getContext('2d'), W=cv.width, s=W/192, hex=n=>'#'+n.toString(16).padStart(6,'0'), off=!!(L && L.office) && cv.id!=='lkFace';
   g.setTransform(s,0,0,s,0,0); g.clearRect(0,0,192,192);
@@ -1244,7 +1248,7 @@ const ITEM = {   // bar:長度:材質:v＝直料（立著）／h＝橫料（橫�
   'L3.mortar':'bucket', 'L3.jamb':'bar:1.4:alu:v', 'L3.sill':'bar:1.0:alu2:h', 'L3.head':'bar:1.0:alu2:h', 'L3.mid':'bar:1.0:alu2:h', 'L3.glass':'glass', 'L3.gasket':'coil',
   'L4.base':'bar:1.5:steelDark:h', 'L4.panel1':'panel', 'L4.fasten':'smallbox', 'L4.seal':'tube:seal', 'L4.panel2':'panel',
 };
-const POSE = { upright:[0.26,1.05,0.26], across:[0,1.9,0.02], overhead:[0,1.89,0.05], front:[0,0.95,0.33] };   // front＝雙手捧在胸前：位置對齊手掌
+const POSE = { upright:[0.26,1.05,0.26], across:[0,1.9,0.02], overhead:[0,1.89,0.05], front:[0,1.1,0.38] };   // front＝雙手捧在胸前：位置對齊手掌
 const PY = { glass:0.62, embed:0.36, sheet:0.44, wool:0.27, bolts:0.19, plate:0.3, tube:0.18, bucket:0.3, coil:0.19, smallbox:0.22 };
 const flatPanelMat = [mat.foam, mat.foam, mat.face, mat.face, mat.foam, mat.foam];
 function makeItem(spec){ const g=new THREE.Group(), [kind,a,b,o]=spec.split(':'); let pose='front', len=0;
@@ -1291,9 +1295,11 @@ const target=new THREE.Vector3(); let theta=0, phi=1.2, dist=6, keyTheta=0, camG
 const SUN_D=new THREE.Vector3(15,27,21).normalize(), SUN_R=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),SUN_D).normalize(), SUN_U=new THREE.Vector3().crossVectors(SUN_D,SUN_R), SUN_TEX=28/2048;
 function followSun(p=target){ const r=Math.round(p.dot(SUN_R)/SUN_TEX)*SUN_TEX, u=Math.round(p.dot(SUN_U)/SUN_TEX)*SUN_TEX, f=p.dot(SUN_D);   // 太陽和影子範圍跟著鏡頭看的地方；位置對齊影子貼圖的格子，鏡頭移動時影子的邊不會抖
   sun.target.position.copy(SUN_R).multiplyScalar(r).addScaledVector(SUN_U,u).addScaledVector(SUN_D,f); sun.position.copy(sun.target.position).addScaledVector(SUN_D,37.6); sun.target.updateMatrixWorld(); }
+let camShake=0;                                                                        // 畫面震動（揮棒打到時）
 function placeCam(){ followSun(); const dx=Math.sin(phi)*Math.sin(theta), dz=Math.sin(phi)*Math.cos(theta), R=LV.room; let d=dist;
   if(R){ const m=0.4; if(dx>1e-4) d=Math.min(d,(R.x1-m-target.x)/dx); else if(dx<-1e-4) d=Math.min(d,(R.x0+m-target.x)/dx); if(dz>1e-4) d=Math.min(d,(R.z1-m-target.z)/dz); else if(dz<-1e-4) d=Math.min(d,(R.z0+m-target.z)/dz); d=Math.max(0.8,d); }   // 室內：鏡頭碰到牆之前先拉近
   camera.position.set(target.x+d*dx, target.y+d*Math.cos(phi), target.z+d*dz); camera.lookAt(target);
+  if(camShake>0){ camera.position.x+=(Math.random()-0.5)*camShake*0.6; camera.position.y+=(Math.random()-0.5)*camShake*0.6; }
   const nn=Math.min(0.5,Math.max(0.03,d*0.02)); if(Math.abs(camera.near-nn)>0.005){ camera.near=nn; camera.updateProjectionMatrix(); } }   // 鏡頭越遠，近裁切面越遠：深度比較準，地上貼的東西不會閃
 let pd=null, dragged=false; const cvs=renderer.domElement;
 cvs.addEventListener('pointerdown',e=>{ pd={x:e.clientX,y:e.clientY,pan:e.button!==0||e.shiftKey}; dragged=false; try{ cvs.setPointerCapture(e.pointerId); }catch(_){} });   // 右鍵（或中鍵、Shift＋左鍵）拖曳＝平移
@@ -1358,9 +1364,41 @@ function dropIn(id,temp,from=0,to=1e9){ const p=LV.parts[id]; if(!p) return; con
 const insideOK = () => !!L && L.id==='L1' && placed.has('pour');                     // 週一灌漿之後，可以走到樓板上（室內側）
 const STAIR={x:10.95, z0:4.6, z1:7.2};                                                // 四樓那一關的樓梯間：最上面那一段樓梯
 const gyAt = (x,z) => (L.yard!==undefined && (x<-3.5 || x>13.1 || z>8.5 || z<-10.8)) ? L.yard : (insideOK() && x>-3.5 && x<13.1 && z<0 && z>-10.8) ? 0 : (L.yard!==undefined && x>10.3 && x<11.6 && z>STAIR.z0 && z<7.4) ? L.gy-(z-STAIR.z0)*(1.8/2.6) : L.gy;
+// 進場路線：起點（下車的地方或大門）→ 一路走到工作區（四樓那一關經過施工電梯）
+function entryPath(kind){ const H=LV.hoist, door = kind==='walk' ? {x:L.cx-7.0, z:15.0} : kind==='heli' ? {x:L.cx-13.5+1.7, z:7.9} : {x:(L.yard!==undefined ? L.cx-11.2 : L.cx-6.4)+1.7, z:4.0};
+  return L.yard!==undefined ? [door,{x:-4.6,z:10.4},{x:-3.0,z:H.z},{x:H.x,z:H.z}] : [door,{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}]; }
+// 小弟在一樓迎接：站在路的兩邊等，主角走到面前就鞠躬，然後跟在後面（四樓那一關一起搭電梯）。直升機另外有拱門、紅地毯、彩帶
+function setupEscort(rd){ const fs=Object.values(LV.actors).filter(a=>a.follower); if(!fs.length) return; const kind=rd.slice(2), heli=kind==='heli', P=entryPath(kind), y=yardY();
+  const a=P[0], b=P[1], L1=Math.hypot(b.x-a.x,b.z-a.z), d={x:(b.x-a.x)/L1, z:(b.z-a.z)/L1}, n={x:d.z, z:-d.x}, side = heli ? 1.1 : 0.85, E={fs, kind, P, started:false};
+  fs.forEach((f,i)=>{ const e=i?1:-1; f.x=b.x-d.x*0.6+n.x*side*e; f.z=b.z-d.z*0.6+n.z*side*e; f.g.position.set(f.x,y,f.z); f.face=Math.atan2(-d.x,-d.z); f.waiting=true; f.dest=null; f.bow=0; });
+  if(heli){ const gold=std(0xe8b923,{emissive:0x4a3500}), red=std(0xb3141c), S=m=>{ stat(m); return m; }, segs=[], CP = L.yard!==undefined ? P.slice(0,3) : P.slice(0,2);
+    for(let i=0;i<CP.length-1;i++){ const p0=CP[i], p1=CP[i+1], Ls=Math.hypot(p1.x-p0.x,p1.z-p0.z), g=new THREE.Group(); g.position.set(p0.x,y+0.05,p0.z); g.rotation.y=Math.atan2(p1.x-p0.x,p1.z-p0.z);   // 紅地毯（一開始捲著）
+      const m=new THREE.Mesh(new THREE.PlaneGeometry(1.0,Ls+1.0), red); m.rotation.x=-Math.PI/2; m.position.z=Ls/2; m.receiveShadow=true; g.add(m);
+      [-0.44,0.44].forEach(e=>{ const r=new THREE.Mesh(new THREE.PlaneGeometry(0.06,Ls+1.0), gold); r.rotation.x=-Math.PI/2; r.position.set(e,0.003,Ls/2); g.add(r); }); g.scale.z=0.001; stat(g); segs.push({g, L:Ls+1.0}); }
+    const posts=[]; for(let k=1.4;k<L1-0.4;k+=1.4) [-1,1].forEach(e=>{ const px=a.x+d.x*k+n.x*0.72*e, pz=a.z+d.z*k+n.z*0.72*e; S(cyl(0.035,0.95,'y', px,y+0.475,pz, gold,10)); S(ball(0.06,gold,px,y+0.97,pz)); S(cyl(0.16,0.03,'y', px,y+0.015,pz, gold,14)); posts.push({x:px,z:pz,e}); });   // 金色欄杆柱
+    for(let k=0;k+2<posts.length;k++){ const p0=posts[k], p1=posts[k+2], dx=p1.x-p0.x, dz=p1.z-p0.z, Lr=Math.hypot(dx,dz), r=cyl(0.02,Lr,'z', (p0.x+p1.x)/2,y+0.85,(p0.z+p1.z)/2, red,6); r.rotation.y=Math.atan2(dx,dz); r.rotation.x=Math.PI/2; S(r); }   // 紅繩
+    const mid={x:a.x+d.x*L1*0.5, z:a.z+d.z*L1*0.5}; [-1,1].forEach(e=>S(cyl(0.07,2.7,'y', mid.x+n.x*1.35*e,y+1.35,mid.z+n.z*1.35*e, gold,10)));     // 歡迎拱門
+    S(board(['恭迎學長','蒞臨指導'], mid.x,y+2.55,mid.z,Math.atan2(-d.x,-d.z),2.7,'#b3141c','#ffd84a'));
+    E.carpet={segs, t:0, go:false}; }
+  LV.escort=E; LV.fx.push(escortFx); }
+function escortFx(dt,t){ const E=LV.escort; if(!E) return; const me=LV.actors.you, H=LV.hoist, y=yardY(); if(cut) E.started=true;
+  const C=E.carpet; if(C && C.go){ C.t+=dt; let left=C.t*8; C.segs.forEach(s=>{ s.g.scale.z=Math.max(0.001,Math.min(1,left/s.L)); left-=s.L; });   // 紅地毯從機門滾出去
+    if(C.conf){ C.conf.forEach(q=>{ q.m.position.y=Math.max(y+0.06,q.m.position.y-dt*q.v); q.m.rotation.x+=dt*q.r; q.m.rotation.z+=dt*q.r*0.7; q.m.position.x+=Math.sin(t*2+q.r)*dt*0.3; }); } }
+  E.fs.forEach((f,i)=>{ const sd=i?0.55:-0.55;
+    if(f.waiting){ f.dest=null; if(me.g.visible && Math.hypot(me.x-f.x,me.z-f.z)<2.2){ f.waiting=false; f.bow=0.9; if(!E.hi){ E.hi=true; bubble(f.who, E.kind==='heli' ? '恭迎學長！紅地毯鋪好了！' : '學長早！我們陪你上去！', true); } } else return; }
+    if(f.bow>0){ f.bow=Math.max(0,f.bow-dt); f.g.rotation.x = f.bow>0 ? 0.6*Math.sin(Math.PI*(1-f.bow/0.9)) : 0; f.dest=null; return; }   // 鞠躬
+    if(H && H.board){ const bx=H.x+sd*0.62, bz=H.z+0.3; if(Math.hypot(f.x-bx,f.z-bz)>0.05) f.dest={x:bx,z:bz}; return; }                  // 走進電梯
+    if(H && H.run){ f.dest=null; f.x=H.x+sd*0.62; f.z=H.z+0.3; f.liftY=H.cage.position.y+0.08; f.face=Math.PI; return; }                // 一起搭電梯
+    if(f.liftY!==undefined && f.z<8.45) f.liftY=undefined;
+    const tx=me.x-Math.sin(me.face)*0.8+Math.cos(me.face)*sd, tz=me.z-Math.cos(me.face)*0.8-Math.sin(me.face)*sd; if(Math.hypot(f.x-tx,f.z-tz)>0.3) f.dest={x:tx,z:tz}; });   // 跟在主角後面
+  if(H && H.board){ H.bt+=dt; if(H.bt>3 || E.fs.every(f=>!f.waiting && Math.hypot(f.x-(H.x+(f===E.fs[0]?-0.55:0.55)*0.62),f.z-(H.z+0.3))<0.08)){ H.board=false; H.run=true; } }   // 小弟都進來了（或等了 3 秒）就開
+  if(E.started && (!cut || cut.stage>=2)){ E.fs.forEach(f=>{ f.liftY=undefined; f.waiting=false; f.bow=0; f.g.rotation.x=0; }); LV.escort=null; } }
+function heliWelcome(){ const E=LV.escort; if(!E || !E.carpet) return; const C=E.carpet, y=yardY(), P=E.P; C.go=true; chime('platinum');   // 直升機落地：紅地毯滾出去、彩帶、號角
+  const cols=[0xff3b3b,0xffd21f,0x3bb7ff,0x3bff6e,0xff4fd8,0xffffff]; C.conf=[]; for(let k=0;k<90;k++){ const m=new THREE.Mesh(new THREE.PlaneGeometry(0.09,0.05), new THREE.MeshBasicMaterial({color:cols[k%cols.length], side:THREE.DoubleSide}));
+    const u=Math.random(); m.position.set(P[0].x+(P[1].x-P[0].x)*u+(Math.random()-0.5)*3, y+3+Math.random()*3, P[0].z+(P[1].z-P[0].z)*u+(Math.random()-0.5)*3); stat(m); C.conf.push({m, v:0.8+Math.random()*0.8, r:2+Math.random()*6}); } }
 function climbIn(sx,sz){ const me=LV.actors.you, H=LV.hoist; LV.hoisting=true; H.run=false; H.t=0; H.cage.position.y=H.Y; me.liftY=undefined;   // 四樓那一關進場：在地面走到施工電梯，搭上四樓
   me.x = sx===undefined ? L.cx-7.0 : sx; me.z = sz===undefined ? 15.0 : sz; me.g.position.set(me.x, gyAt(me.x,me.z), me.z); me.g.visible=true;   /* 模型也馬上搬過去，不然會在原地閃一格 */                                                      // 沒有座駕：從前面的大門走進來
-  const pts=[{x:-4.6,z:10.4},{x:-3.0,z:H.z},{x:H.x,z:H.z}], go=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go : ()=>{ H.run=true; }; }; go(); }      // 站在樓板上就是樓板的高度
+  const pts=[{x:-4.6,z:10.4},{x:-3.0,z:H.z},{x:H.x,z:H.z}], go=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go : ()=>{ if(LV.escort){ H.board=true; H.bt=0; } else H.run=true; }; }; go(); }   /* 有小弟：等他們走進電梯再開 */      // 站在樓板上就是樓板的高度
 function clampXZ(x,z,from){ x=Math.min(L.cx+4.2,Math.max(L.cx-4.2,x)); const zmin = L.office ? -2.4 : insideOK() && x>0.05 ? -1.9 : 0.85; z=Math.min(6.6,Math.max(zmin,z));
   if(insideOK() && (x<2.75 || x>4.5) && z<0.85 && z>-0.15){                                // 牆的位置不能站，也不能穿過去；要進室內只能繞牆的右端
     if(from && from.x>=2.7 && from.x<=4.55 && from.z<0.85 && from.z>-0.15) x = x<2.75 ? 2.75 : 4.5;              // 鍵盤：人在牆右端的通道裡，往牆走就停在通道邊
@@ -1420,13 +1458,13 @@ function makePrank(id,x,z){ const g=new THREE.Group(), it=prankItem(id), bat=id=
   const ob={x,z,hx:0.2,hz:0.2}; LV.obs.push(ob); LV.pranks[id]={x,z,item:it,obs:ob}; }
 function goPrank(id){ const q=LV.pranks[id], t=standNear(q.x,q.z,0.7,q.obs); moveTo(t.x,t.z,()=>{ const me=LV.actors.you; if(rectDist(q.obs,me.x,me.z).d<0.9) togglePrank(id); }); }
 function togglePrank(id){ if(done||dlgOpen) return; const me=LV.actors.you, hold=me.g.userData.hold, q=LV.pranks[id]; if(me.swing) return;
-  if(id==='drink'){ if(carry||prank){ say([{who:L.boss, t:'手上的先放好。'}]); return; } const boss=LV.actors[L.boss], b=bottle(0); q.item.visible=false; b.position.set(0,-0.56,0.05); b.rotation.x=0.9; me.g.userData.armR.add(b); me.dest=null; me.onArrive=null;   // 拿起來就喝
+  if(id==='drink'){ if(carry||prank){ say([{who:L.boss, t:'手上的先放好。'}]); return; } const boss=LV.actors[L.boss], b=bottle(0); q.item.visible=false; b.position.set(0,-0.32,0.05); b.rotation.x=0.9; me.g.userData.armR.userData.elbow.add(b); me.dest=null; me.onArrive=null;   // 拿起來就喝
     me.swing={t:0, id:'drink', target:boss, done:()=>{ WHY.drink=PRANK.drink.why; award('misc.drink'); failMission(boss,'drink'); }}; return; }
   if(prank===id){ if(me.prankMesh && me.prankMesh.parent) me.prankMesh.parent.remove(me.prankMesh); me.prankMesh=null; q.item.visible=true; prank=null; me.carry=null; return; }   // 放回去
   if(carry||prank){ say([{who:L.boss, t:'手上的先放好，再拿別的。'}]); return; }
   prank=id; q.item.visible=false; const it=prankItem(id); while(hold.children.length) hold.remove(hold.children[0]);
-  if(id==='bat'){ it.rotation.x=Math.PI-0.5; it.position.set(0,-0.85,0.19); } else { it.rotation.x=1.2; it.position.set(0,-0.57,0.07); }                // 握在右手，垂在身邊：球棒頭朝下朝前
-  me.g.userData.armR.add(it); me.prankMesh=it; me.carry='club'; award('misc.prank'); bubble(L.boss, PRANK[id].say[L.boss], true); }
+  if(id==='bat'){ it.rotation.x=Math.PI-0.5; it.position.set(0,-0.61,0.19); } else { it.rotation.x=1.2; it.position.set(0,-0.33,0.07); }                // 握在右手，垂在身邊：球棒頭朝下朝前
+  me.g.userData.armR.userData.elbow.add(it); me.prankMesh=it; me.carry='club'; award('misc.prank'); bubble(L.boss, PRANK[id].say[L.boss], true); }
 function prankHit(a){ const me=LV.actors.you, id=prank; if(me.swing) return; me.dest=null; me.onArrive=null; me.face=Math.atan2(a.x-me.x,a.z-me.z);
   me.swing={t:0, id, target:a, done:()=>{ prank=null; WHY.prank=PRANK[id].why; award('misc.'+id); failMission(a,'prank'); }}; }
 function goPallet(id){ const q=LV.pallets[id]; if(!q||placed.has(id)) return; const s=standNear(q.x,q.z,0.9,q.obs); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(rectDist(q.obs,p.x,p.z).d<0.9) tryPick(id); }); }   // 真的走到旁邊才拿
@@ -1542,7 +1580,8 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
   stats(); buildTray(); setGoal(); if(quiet) return;
   if(!L.bench && !L.office && !L.indoor){ const rd=skinState().ride, heli=rd==='r_heli';                    // 要進場的關卡：一開始就把人藏起來、鏡頭放在進場的位置，字卡淡出時不會先看到人站在工作區
     if(rd!=='r_walk'){ LV.actors.you.g.visible=false; camGoal=null; target.set(heli || L.yard!==undefined ? L.cx-8 : L.cx-4.5, yardY()+(heli?3.2:1.3), 2.5); theta = L.yard!==undefined ? -0.25 : 0.1; phi=1.05; dist=22; }
-    else if(L.yard!==undefined){ LV.actors.you.g.visible=false; camGoal=null; target.set(L.cx-7, yardY()+1.0, 14); dist=13; } }
+    else if(L.yard!==undefined){ LV.actors.you.g.visible=false; camGoal=null; target.set(L.cx-7, yardY()+1.0, 14); dist=13; }
+    if(rd!=='r_walk' || L.yard!==undefined) setupEscort(rd); }
   let intro=L.intro; if(li===0){ const r=nameRoast(), k=L.roastAt||1; if(r.length){ intro=L.intro.slice(0,k).concat(r, L.intro.slice(k)); award('misc.name'); } }   // 第一天、鐵叔自我介紹之後開虧
   const gr=greet(); if(gr.length) intro=[intro[0]].concat(gr, intro.slice(1));
   if(Object.values(LV.actors).some(a=>a.follower)) award('misc.fan');
@@ -1581,6 +1620,8 @@ function placeBubbles(now){ for(const k in bubs){ const b=bubs[k], a=LV.actors[k
   _v.set(a.x, gyAt(a.x,a.z)+2.32, a.z).project(camera); b.el.style.left=((_v.x+1)/2*innerWidth)+'px'; b.el.style.top=((1-_v.y)/2*innerHeight)+'px'; } }
 let patience=100, failed=false, warned=false, patShown=100;
 function patUI(){ patShown=patience; const f=$('#patFill'); f.style.width=Math.round(patience)+'%'; f.style.background = patience>55 ? 'var(--ok)' : patience>28 ? '#ffd166' : 'var(--bad)'; }
+function thud(){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); const t0=actx.currentTime;   // 揮棒打到的聲音：一聲悶響加一聲金屬響
+  [[140,'sine',0.35,0.6],[920,'triangle',0.14,0.25]].forEach(([f,ty,dur,v])=>{ const o=actx.createOscillator(), g=actx.createGain(); o.type=ty; o.frequency.setValueAtTime(f,t0); o.frequency.exponentialRampToValueAtTime(f*0.35,t0+dur); g.gain.setValueAtTime(v,t0); g.gain.exponentialRampToValueAtTime(0.001,t0+dur); o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0+dur); }); }catch(_){} }
 function failSound(){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); [196,147,98].forEach((f,i)=>{ const o=actx.createOscillator(), g=actx.createGain(); o.type='sawtooth'; o.frequency.value=f; const t=actx.currentTime+i*0.28;
   g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.09,t+0.03); g.gain.exponentialRampToValueAtTime(0.001,t+0.7); o.connect(g).connect(actx.destination); o.start(t); o.stop(t+0.75); }); }catch(e){} }
 function hurt(cost,a,why){ if(done||failed) return; patience=Math.max(0,patience-cost); patUI();
@@ -1621,7 +1662,7 @@ let lastT=performance.now();
 function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/1000; lastT=now;   // 時間不會倒著走
   for(let i=anims.length-1;i>=0;i--){ const a=anims[i]; a.m.visible=performance.now()>=a.t0; if(!a.m.visible) continue; const k=Math.min(1,Math.max(0,(performance.now()-a.t0)/450)); const e=1-Math.pow(1-k,3); a.m.position.y=a.from+(a.to-a.from)*e; if(k>=1) anims.splice(i,1); }
   if(camGoal){ theta=camGoal.theta+Math.atan2(Math.sin(theta-camGoal.theta),Math.cos(theta-camGoal.theta)); theta+=(camGoal.theta-theta)*0.08; phi+=(camGoal.phi-phi)*0.08; dist+=(camGoal.dist-dist)*0.08; if(Math.abs(camGoal.theta-theta)<1e-3&&Math.abs(camGoal.phi-phi)<1e-3) camGoal=null; }
-  mat.ghost.opacity=0.45+0.4*Math.sin(now/250);
+  mat.ghost.opacity=0.45+0.4*Math.sin(now/250); camShake=Math.max(0,camShake-dt*1.3);
   if(LV.fx) LV.fx.forEach(f=>f(dt,t));
   if(L && !L.bench && LV.actors.you && !(cut && cut.stage<2)){ const q=Math.min(1,dt*2.5), me=LV.actors.you;
     if(dlgOpen && talkWho){ const a=LV.actors[talkWho]||me; if(!talkCam) talkCam={t:[target.x,target.y,target.z], dist, free:false};          // 講話：鏡頭移到說話的人（偏向他，你也在畫面裡），拉近一點
