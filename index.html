@@ -441,7 +441,7 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
     [-1,1].forEach(e=>[-1,1].forEach(g=>{ const c=cyl(0.055,3.62,'y', mid+e*2.3+g*0.36,Y+1.775,f+2.3, wh,10); c.rotation.z=-g*0.2; S(c); }));   // 雨庇的柱子：兩組古銅色的 V 字形
     P(6.4,0.04,3.2, mid,Y+0.02,1.6, std(0xcfc9bb)); P(2.4,0.02,0.9, mid,Y+0.05,0.8, fr);                                            // 門口的鋪面、踏墊
     [-1,1].forEach(e=>{ P(0.6,0.5,0.6, mid+e*2.75,Y+0.29,1.0, st); S(ball(0.4,std(0x4fb86a), mid+e*2.75,Y+0.9,f+1.0, 1,1.1,1)); });  // 兩盆樹
-    const sg=board(['最終版大樓','（第 27 版）'], mid,Y+4.75,f+0.135,0,2.4,'#2f4a66','#e2c48f');   /* 樓名：設計改到第 27 版的「最終版」 */ S(sg); P(2.5,sg.userData.h+0.1,0.07, mid,Y+4.65,0.095, fr); };   // 門上的牌子（後面有底板，貼在玻璃上）
+    const sg=board(['爆肝大廈','全年無休・責任制'], mid,Y+4.75,f+0.135,0,2.4,'#2f4a66','#e2c48f');   /* 樓名：建案取名的口氣，講的是蓋它的人 */ S(sg); P(2.5,sg.userData.h+0.1,0.07, mid,Y+4.65,0.095, fr); };   // 門上的牌子（後面有底板，貼在玻璃上）
   const XL=x0+(x1-x0)*3/14;                                                                                                          // 北面分兩段：施工電梯那一段維持原樣，右邊是大廳
   face('z',z1,x0,XL,1); face('z',z1,XL,x1,1,2); lobby(XL,x1); face('z',z0,x0,x1,-1); face('x',x0,z0,z1,-1); face('x',x1,z0,z1,1);
   const rail=(xa,za,xb,zb,yb)=>{ const len=Math.hypot(xb-xa,zb-za), n=Math.max(1,Math.round(len/1.6)), ry=Math.atan2(za-zb,xb-xa); for(let i=0;i<=n;i++) S(box(0.05,1.1,0.05, xa+(xb-xa)*i/n,yb+0.55,za+(zb-za)*i/n, mat.mark));   // 護欄
