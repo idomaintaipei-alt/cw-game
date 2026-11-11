@@ -358,18 +358,18 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
   [-20,16].forEach(z=>[cx-9.3,cx-4.7].forEach(x=>S(box(0.3,2.7,0.3, x,y0+1.35,z, mat.mark))));
   // 另一棟：結構體，正面和側面包著鷹架和防塵網（週二在四樓，這棟就蓋到六層）
   const bx=[cx-18.5,cx-14.8,cx-11.1], bz=[-12,-7,-2], H=3.4, NF=hi?6:3, TH=H*NF, wn0=std(0x9fd0f0,{emissive:0x24465a});
-  bx.forEach(x=>bz.forEach(z=>{ S(box(0.5,TH,0.5, x,y0+TH/2,z, mat.rc)); [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>S(cyl(0.02,0.9,'y', x+a*0.15,y0+TH+0.45,z+b*0.15, mat.rebar,6))); }));
+  bx.forEach(x=>bz.forEach(z=>{ S(box(0.5,TH+0.02,0.5, x,y0+(TH+0.02)/2,z, mat.rc));   /* 柱頂比樓板高 2 公分：頂面不跟樓板同高，不會閃 */ [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>S(cyl(0.02,0.9,'y', x+a*0.15,y0+TH+0.45,z+b*0.15, mat.rebar,6))); }));
   for(let k=1;k<=NF;k++) S(box(8.0,0.25,10.6, cx-14.8,y0+H*k-0.125,-7, mat.rc));
   for(let k=0;k<=4;k++) S(cyl(0.03,TH+1,'y', cx-18.8+k*2.1,y0+(TH+1)/2,-1.2, mat.steelDark,6));
   for(let k=0;k<=5;k++) S(cyl(0.03,TH+1,'y', cx-10.4,y0+(TH+1)/2,-1.6-k*2.1, mat.steelDark,6));
   for(let k=1;k<=Math.floor(TH/2);k++){ S(cyl(0.03,8.6,'x', cx-14.6,y0+k*2.0,-1.2, mat.steelDark,6)); S(cyl(0.03,10.9,'z', cx-10.4,y0+k*2.0,-6.85, mat.steelDark,6)); }
   const netF=new THREE.Mesh(new THREE.PlaneGeometry(8.7,TH+0.6), mat.net); netF.position.set(cx-14.6,y0+(TH+0.6)/2,-1.1); stat(netF);
   const netS=new THREE.Mesh(new THREE.PlaneGeometry(11.0,TH+0.6), mat.net); netS.rotation.y=Math.PI/2; netS.position.set(cx-10.3,y0+(TH+0.6)/2,-6.85); stat(netS);
-  for(let k=1;k<=Math.floor(TH/2);k++){ S(box(8.6,0.05,0.55, cx-14.6,y0+k*2.0-0.06,-1.48, mat.wood)); S(box(0.55,0.05,10.9, cx-10.68,y0+k*2.0-0.06,-6.85, mat.wood)); }                                   // 鷹架上每一層的施工平台（踏板）
+  for(let k=1;k<=Math.floor(TH/2);k++){ S(box(8.6,0.05,0.55, cx-14.6,y0+k*2.0-0.06,-1.48, mat.wood)); S(box(0.55,0.05,10.9, cx-10.68,y0+k*2.0-0.075,-6.85, mat.wood)); }   /* 側面的踏板低 1.5 公分，轉角跟正面的踏板不會疊在同一個高度 */                                   // 鷹架上每一層的施工平台（踏板）
   const rod=(p0,p1,r,m)=>{ const d=new THREE.Vector3().subVectors(p1,p0), o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),6), m); o.position.copy(p0).add(p1).multiplyScalar(0.5); o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), d.normalize()); S(o); };   // 兩點之間拉一根桿子或鋼索
   const pf=std(0xf08a1c), plate=std(0x8e959c);
   [[-17.4,2],[-15.4,4],[-17.2,5]].filter(([a,k])=>k<=NF).forEach(([a,k])=>{ const x=cx+a, yy=y0+H*k, zb=-1.7, zf=0.3, W=2.2, xs=[x-W/2+0.04, x+W/2-0.04];   // 外挑的卸料平台：從樓板邊（z=-1.7）伸出去 2 公尺
-    xs.forEach(px=>S(box(0.14,0.2,zf-zb+1.0, px+(px<x?0.03:-0.03), yy-0.1, (zb+zf)/2-0.5, pf)));                                   // 兩支主梁：後段壓在樓板上
+    xs.forEach(px=>S(box(0.14,0.2,zf-zb+1.0, px+(px<x?0.03:-0.03), yy-0.11, (zb+zf)/2-0.5, pf)));   /* 主梁頂面比樓板低 1 公分：壓在樓板裡的那一段藏起來，不會跟樓板搶著顯示 */                                   // 兩支主梁：後段壓在樓板上
     S(box(W,0.05,zf-zb, x,yy+0.025,(zb+zf)/2, plate));                                                                                // 鋼板踏面
     [[xs[0],zb+0.05],[xs[0],(zb+zf)/2],[xs[0],zf],[xs[1],zb+0.05],[xs[1],(zb+zf)/2],[xs[1],zf],[x-0.37,zf],[x+0.37,zf]].forEach(([px,pz])=>S(box(0.05,1.1,0.05, px,yy+0.6,pz, mat.mark)));   // 欄杆柱
     [[xs[0],zb,xs[0],zf],[xs[1],zb,xs[1],zf],[xs[0],zf,xs[1],zf]].forEach(([x0,z0,x1,z1])=>{ const len=Math.hypot(x1-x0,z1-z0), ry=Math.atan2(z0-z1,x1-x0);   // 左、右、前三邊：扶手、中欄杆、踢腳板
@@ -464,7 +464,7 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
     cg.add(box(0.04,1.1,1.16, 0.6,0.6,0, yl)); cg.add(box(1.16,1.1,0.04, 0,0.6,0.6, yl)); cg.add(box(1.16,0.04,0.04, 0,1.15,-0.6, yl)); cg.add(box(0.04,0.04,1.16, -0.6,1.15,0, yl));   // 東、北兩面圍板；西、南兩面是門口，只有一支橫桿
     cg.add(board(['施工電梯','（限乘 8 人）'], 0.63,0.7,0,Math.PI/2,0.9,'#f2cf1d','#1b1e24'));   /* 牌子掛在東面圍板上 */ stat(cg);
     S(box(1.2,0.04,0.3, hx,T-0.02,8.62, dk));                                                                                                    // 四樓：車廂和平台之間的接板
-    S(box(1.6,0.08,1.6, hx,Y+0.04,hz, mat.rc));   /* 地面：電梯的基座，跟車廂地板一樣高（8 公分）；人站在上面就踩在上面，腳下的影子不會被蓋掉 */
+    S(box(1.6,0.05,1.6, hx,Y+0.025,hz, mat.rc));   /* 地面：電梯的基座（5 公分）。比車廂地板（8 公分）矮，兩個頂面不在同一個高度，才不會互相搶著顯示、一直閃 */
     LV.hoist={cage:cg, x:hx, z:hz, Y, T, t:0, run:false};
     LV.fx.push((dt,t)=>{ const me=LV.actors.you, H=LV.hoist; if(!LV.hoisting || !me) return; camGoal=null;
       if(H.run){ H.t+=dt; const k=Math.min(1,H.t/4.5), e=k*k*(3-2*k); H.cage.position.y=H.Y+(H.T-H.Y)*e; me.liftY=H.cage.position.y+0.08; me.face=Math.PI;   // 電梯往上，人跟著車廂
@@ -584,7 +584,7 @@ function ground(y,m){ const g=new THREE.Mesh(new THREE.PlaneGeometry(200,200), m
 
 // 設計部辦公室：牆、窗、白板、辦公桌、盆栽；那面牆變成「模型投影」
 function office(){ const cx=L.cx, y0=L.gy, wall=std(0xf3efe6), desk=std(0xd9b98a), dk=std(0x3a4350), scr=std(0x7fd0ff,{emissive:0x2a6f9a}), chair=std(0x3b6fd0), win=std(0xbfe6ff,{emissive:0x35617a});
-  room(cx-7.1,cx+9,-3.4,8.4,4.6,wall,{x:cx+0.95,w:2.2,h:2.5}); autoDoor(cx+0.95,8.4,2.2,2.5); officeWindows(cx+9); stat(box(16.4,4.6,0.2, cx+0.9,y0+2.3,-3.5, wall)); stat(box(0.2,4.6,12, cx-7.2,y0+2.3,2.4, wall));
+  room(cx-7.1,cx+9,-3.4,8.4,4.6,wall,{x:cx+0.95,w:2.2,h:2.5}); autoDoor(cx+0.95,8.4,2.2,2.5); officeWindows(cx+9); stat(box(16.4,4.6,0.2, cx+0.9,y0+2.3,-3.5, wall)); stat(box(0.2,4.59,12, cx-7.2,y0+2.295,2.4, wall));   /* 側牆矮 1 公分：轉角跟後牆的頂面不同高，不會閃 */
   [-6.3,6.3].forEach(x=>{ stat(box(2.2,1.6,0.06, cx+x,y0+2.5,-3.38, win)); stat(box(2.3,0.08,0.12, cx+x,y0+1.66,-3.36, mat.white)); });
   stat(box(6.9,4.0,0.08, cx,y0+2.4,-3.36, dk)); stat(box(6.6,3.7,0.04, cx,y0+2.4,-3.31, std(0x16263a,{emissive:0x0c1a2c})));          // 大螢幕：外框＋畫面
   stat(box(0.05,1.3,2.6, cx-7.08,y0+1.95,1.4, mat.white)); stat(box(0.06,0.06,2.7, cx-7.07,y0+1.27,1.4, dk));
@@ -1414,7 +1414,7 @@ function dropIn(id,temp,from=0,to=1e9){ const p=LV.parts[id]; if(!p) return; con
   if(temp) setTimeout(()=>p.meshes.forEach(m=>m.visible=false),1500); }
 const insideOK = () => !!L && L.id==='L1' && placed.has('pour');                     // 週一灌漿之後，可以走到樓板上（室內側）
 const STAIR={x:10.95, z0:4.6, z1:7.2};                                                // 四樓那一關的樓梯間：最上面那一段樓梯
-const gyAt = (x,z) => (L.yard!==undefined && LV.hoist && Math.abs(x-LV.hoist.x)<0.8 && Math.abs(z-LV.hoist.z)<0.8) ? L.yard+0.08 : (L.yard!==undefined && (x<-3.5 || x>13.1 || z>8.5 || z<-10.8)) ? L.yard : (insideOK() && x>-3.5 && x<13.1 && z<0 && z>-10.8) ? 0 : (L.yard!==undefined && x>10.3 && x<11.6 && z>STAIR.z0 && z<7.4) ? L.gy-(z-STAIR.z0)*(1.8/2.6) : L.gy;
+const gyAt = (x,z) => (L.yard!==undefined && LV.hoist && Math.abs(x-LV.hoist.x)<0.8 && Math.abs(z-LV.hoist.z)<0.8) ? L.yard+(Math.abs(x-LV.hoist.x)<0.6 && Math.abs(z-LV.hoist.z)<0.6 && LV.hoist.cage.position.y<L.yard+0.01 ? 0.08 : 0.05) :   /* 站在電梯底座上：車廂在一樓時踩車廂地板，其他地方踩底座 */ (L.yard!==undefined && (x<-3.5 || x>13.1 || z>8.5 || z<-10.8)) ? L.yard : (insideOK() && x>-3.5 && x<13.1 && z<0 && z>-10.8) ? 0 : (L.yard!==undefined && x>10.3 && x<11.6 && z>STAIR.z0 && z<7.4) ? L.gy-(z-STAIR.z0)*(1.8/2.6) : L.gy;
 // 進場路線：起點（下車的地方或大門）→ 一路走到工作區（四樓那一關經過施工電梯）
 function entryPath(kind){ const H=LV.hoist, door = kind==='walk' ? {x:L.cx-7.0, z:15.0} : kind==='heli' ? {x:L.cx-13.5+1.7, z:7.9} : {x:(L.yard!==undefined ? L.cx-11.2 : L.cx-6.4)+1.7, z:4.0};
   return L.yard!==undefined ? (kind==='heli' ? [door,{x:-3.0,z:H.z},{x:H.x,z:H.z}] : [door,{x:-4.6,z:10.4},{x:-3.0,z:H.z},{x:H.x,z:H.z}]) : [door,{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}]; }   /* 直升機：從機門直直走到電梯門口（紅地毯是一整條，不轉彎） */
