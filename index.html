@@ -453,7 +453,8 @@ function board(lines,x,y,z,ry,w,bg,fg){ const c=document.createElement('canvas')
   g.fillStyle=bg; g.fillRect(0,0,c.width,c.height); g.strokeStyle=fg; g.lineWidth=10; g.strokeRect(8,8,c.width-16,c.height-16); g.fillStyle=fg; g.textAlign='center'; g.textBaseline='middle';
   let fit=1; lines.forEach((t,i)=>{ const base=i===0?66:44, font=px=>'bold '+px+'px "Microsoft JhengHei","Noto Sans TC",sans-serif'; g.font=font(base);   /* 字太長就縮小，不會超出牌子 */
     const k=Math.min(1,(c.width-60)/Math.max(1,g.measureText(t).width)); fit=Math.min(fit,k); g.font=font(Math.floor(base*k)); g.fillText(t,256,512*(0.18+0.21*i)); });
-  const h=w*c.height/c.width, m=new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c), side:THREE.DoubleSide})); m.position.set(x,y,z); m.rotation.y=ry; m.userData.h=h; m.userData.lines=lines; m.userData.fit=fit; return m; }
+  const h=w*c.height/c.width, bm=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}), ed=new THREE.MeshBasicMaterial({color:bg}), m=new THREE.Mesh(new THREE.BoxGeometry(w,h,0.004), [ed,ed,ed,ed,bm,bm]); m.position.set(x,y,z); m.rotation.y=ry;
+  m.userData.h=h; m.userData.lines=lines; m.userData.fit=fit; return m; }   // 4 毫米厚的薄板，前後兩面都貼字：從後面看字也是正的（不是鏡像）
 function standBoard(lines,x,z,ry,w,bg,fg,yb){ const y0 = yb===undefined ? L.gy : yb, b=board(lines,x,y0+2.2,z,ry,w,bg,fg); stat(b);                 // 立在地上的看板：兩支腳
   [-1,1].forEach(e=>stat(box(0.07,2.2+b.userData.h/2,0.07, x+e*Math.cos(ry)*(w/2-0.1)-Math.sin(ry)*0.04, y0+(2.2+b.userData.h/2)/2, z-e*Math.sin(ry)*(w/2-0.1)-Math.cos(ry)*0.04, mat.steelDark))); }   /* 腳貼著牌子背面（不留縫） */   // 兩支腳在牌子後面，不擋到字
 // 工地的外圍：都擺在走不到的地方，避開座駕和壓送車走的便道、直升機降落的位置，中間（x -3.5～13.1、z -10.8～8.5）留給週二那棟樓
@@ -738,7 +739,7 @@ function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas')
 const LV = { group:null, parts:{}, refs:{}, pallets:{}, pick:[], actors:{} };
 const anims = [];
 function resetGroup(){ if(LV.group){ scene.remove(LV.group); LV.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
+  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
 function part(id){ return LV.parts[id] || (LV.parts[id]={meshes:[],ghosts:[]}); }
 function ghostOf(id, mesh){ if(mesh.isSprite) return; const gh=new THREE.Mesh(mesh.geometry, mat.ghost); gh.position.copy(mesh.position); gh.rotation.copy(mesh.rotation); gh.visible=false; (LV.host||LV.group).add(gh); part(id).ghosts.push(gh); }
 function add(id, mesh){ mesh.visible=false; mesh.userData.home=mesh.position.clone(); (LV.host||LV.group).add(mesh); part(id).meshes.push(mesh); ghostOf(id,mesh); return mesh; }
@@ -767,7 +768,7 @@ function cornerWall(put, staged, fm){   // staged＝從板筋階段開始（樓�
   if(staged) tower(); else if(fm!=='none') ground(-0.25, fm);
   stat(box(0.5,3.6,0.6, -0.35,1.55,-0.15, mat.rc));
   const slab = staged ? box(16.6,0.2,10.8, 4.8,-0.1,-5.4, mat.rc) : box(3.4,0.2,2.2, 1.1,-0.1,-1.1, mat.rc);                                   // 工地那一關：整層樓板一起灌（x -3.5～13.1、z -10.8～0）
-  if(staged){ const CX=[-3.35,-0.35,2.95,6.25,9.55,12.85], CZ=[-0.15,-5.35,-10.55];
+  if(staged){ const CX=[-3.35,-0.35,2.95,6.0,9.6,12.85], CZ=[-0.15,-5.35,-10.55];   // 柱子對齊直料（6.0、9.6 正好是直料的位置；兩端貼樓板邊）
     CX.forEach(x=>CZ.forEach(z=>{ if(z>-1 && x===2.95) return;                                                                               // 轉角這一跨的右前方不放柱子，留給人繞進室內
       const zc = z>-1 && x!==-0.35 ? -0.4 : z; if(!(z>-1 && x===-0.35)) stat(box(0.5,3.6,0.6, x,1.55,zc, mat.rc)); [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>stat(cyl(0.016,0.8,'y', x+a*0.16,3.75,zc+b*0.2, mat.rebar,6))); }));   // 前排的柱子退到樓板邊後面，牆從柱子前面過   // 柱子＋柱頭的預留筋
     add('pour', slab); const rb=new THREE.Group(), rm=mat.rebar; rb.add(box(16.6,0.03,10.8, 4.8,-0.215,-5.4, mat.wood));                       // 底模＋側模＋板筋
@@ -802,6 +803,8 @@ function cornerWall(put, staged, fm){   // staged＝從板筋階段開始（樓�
     put('glass', box(w,TY[1]-TY[0]-0.1,0.012, cx,(TY[0]+TY[1])/2,WZ+0.05, mat.glass));
     put('glass', box(w,TY[0]-BOT-0.1,0.012, cx,(TY[0]+BOT)/2+0.02,WZ+0.05, mat.glass));
   });
+  const FC = staged ? [-3.35,-0.35,6.0,9.6,12.85] : [-0.35];                                              // 牆後面的柱子（中心 x，寬 0.5）
+  BAYS.forEach(([a,b])=>FC.forEach(x=>{ const l=Math.max(a+MW/2,x-0.28), r=Math.min(b-MW/2,x+0.28); if(r-l>0.02) put('backpan', box(r-l, TY[1]-TY[0]-0.1, 0.014, (l+r)/2, (TY[0]+TY[1])/2, WZ-0.03, mat.steel)); }));   // 玻璃後面剛好是柱子：加背襯板遮住，不會看到柱子被切一半
   XS.forEach(x=>[-1,1].forEach(e=>put('sealant', box(0.012,TOP-BOT,0.012, x+e*(MW/2+0.006),(TOP+BOT)/2,WZ+0.065, mat.seal))));
   BAYS.forEach(([a,b])=>TY.forEach(y=>[-1,1].forEach(e=>put('sealant', box(b-a-MW,0.012,0.012, (a+b)/2,y+e*0.046,WZ+0.065, mat.seal)))));
 }
@@ -1395,14 +1398,14 @@ function stepActor(a,dt,t){ let moving=false;
     a.atDesk=busy; a.atWork = free && !a.seated && !L.office && Math.hypot(a.x-a.home.x,a.z-a.home.z)<0.9 && Math.hypot(p.x-a.x,p.z-a.z)>1.6;                 // 工地：在自己的位置、你沒走近、沒在講話＝在忙
     a.face = busy ? a.deskFace : a.atWork ? Math.atan2(L.cx-a.x, 0.2-a.z) : a.waiting ? a.face : Math.atan2(p.x-a.x,p.z-a.z); }   // 坐著的人平常面向螢幕，講話或被叫才轉過來
   pushOut(a, moving);
-  if(a.follower && a.liftY===undefined) for(const k in LV.actors){ const o=LV.actors[k]; if(o===a || o.liftY!==undefined || !o.g.visible) continue; const dx=a.x-o.x, dz=a.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ a.x+=dx/d*(0.55-d); a.z+=dz/d*(0.55-d); pushOut(a); } }   /* 小弟走完這一步，跟任何人都保持 55 公分（走路途中也不會擦撞） */
+  if(a.follower && a.liftY===undefined) for(const k in LV.actors){ const o=LV.actors[k]; if(o===a || o.liftY!==undefined || !o.g.visible) continue; const dx=a.x-o.x, dz=a.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ const fx=a.x, fz=a.z; a.x+=dx/d*(0.55-d); a.z+=dz/d*(0.55-d); pushOut(a); const c=clampXZ(a.x,a.z,{x:fx,z:fz}); a.x=c.x; a.z=c.z; } }   /* 被擠開也不會擠到牆的位置上；小弟走完這一步，跟任何人都保持 55 公分（走路途中也不會擦撞） */
   if(moving && a.dest){ const d=Math.hypot(a.dest.x-a.x,a.dest.z-a.z); if(d<a.bestD-0.015){ a.bestD=d; a.stuck=0; } else a.stuck+=dt;
     if(a.stuck>0.4){ a.dest=null; a.restUntil=t+0.9; moving=false; const f=a.onArrive; a.onArrive=null; if(f) f(); } }   // 一直沒有更靠近目標＝被擋住：停下，不要原地踏步
   a.g.position.set(a.x, (a.liftY!==undefined ? a.liftY : gyAt(a.x,a.z))+(a.seated ? -SIT : moving?Math.abs(Math.sin(t*10+a.ph))*0.035:0), a.z);
   let dr=a.face-a.g.rotation.y; dr=Math.atan2(Math.sin(dr),Math.cos(dr)); a.g.rotation.y+=dr*Math.min(1,dt*12);
   const u=a.g.userData, sw=moving?Math.sin(t*10+a.ph)*0.7:0, k=Math.min(1,dt*14);
   u.legL.rotation.x+=(sw-u.legL.rotation.x)*k; u.legR.rotation.x+=(-sw-u.legR.rotation.x)*k;
-  const c=a.carry, up = c==='overhead'||c==='across', fa = c==='front' ? -0.32 : c==='upright' ? -1.25 : null, tl = up?-2.9 : fa!==null?fa : -sw, tr = up?-2.9 : fa!==null?fa : sw;   // front＝捧在腰前；club＝拿在手上垂著，手照常擺
+  const c=a.carry, up = c==='overhead'||c==='across', fa = c==='front' ? -0.32 : c==='upright' ? -1.25 : null, ha = a.holdAim!==undefined && !moving ? a.holdAim : null, tl = ha!==null?ha : up?-2.9 : fa!==null?fa : -sw, tr = ha!==null?ha : up?-2.9 : fa!==null?fa : sw;   /* ha＝小弟扶料：兩手伸向要裝的東西 */   // front＝捧在腰前；club＝拿在手上垂著，手照常擺
   const gz = c==='front' ? Math.asin(Math.max(-0.6,Math.min(0.5,(0.22-(a.grip||0.15))/0.5))) : 0;                 // 捧著東西：兩手往內（或往外）收到東西的兩側
   u.armL.rotation.x+=(tl-u.armL.rotation.x)*k; u.armR.rotation.x+=(tr-u.armR.rotation.x)*k; u.armL.rotation.z+=(gz-u.armL.rotation.z)*k; u.armR.rotation.z+=(-gz-u.armR.rotation.z)*k;
   const eb = c==='front' ? -1.3 : 0; [u.armL,u.armR].forEach(m=>{ const e=m.userData.elbow; if(e) e.rotation.x+=(eb-e.rotation.x)*k; });   // 捧東西：上臂垂著、前臂往前平舉
@@ -1492,7 +1495,7 @@ function makePallet(st,x,z){ const g=new THREE.Group(); g.position.set(x,L.gy,z)
       else if(it.kind==='panel') o.position.set(0, 0.15+i*0.1, 0);
       else { o.position.set(0,0,0); o.updateMatrixWorld(true); o.position.y = 0.1-new THREE.Box3().setFromObject(o).min.y; }   /* 小東西：照實際底部放在棧板上，不浮起來也不陷進去 */
       item.add(o); }
-    if(it.pose==='upright') g.add(box(0.44,0.2,0.34,0.07,0.2,0.01,mat.wood));                    // 直料的立架
+    if(it.pose==='upright') item.add(box(0.44,0.2,0.34,0.07,0.2,0.01,mat.wood));                 // 直料的立架：跟直料一起拿走，棧板上不會剩一塊木頭
     g.add(item); ly = Math.max(0.66, new THREE.Box3().setFromObject(item).max.y + 0.26); }             // 量物件實際的高度，標籤放在它上面
   else { g.add(box(0.36,0.06,0.36,0,0.03,0,mat.wood)); g.add(box(0.06,0.9,0.06,0,0.48,0,mat.wood)); }   // 純動作：立牌
   const lb=label(st.pal||st.name, spec?'#374151':'#1d4f86', 0, ly, 0, 0.2); g.add(lb);
@@ -1807,7 +1810,7 @@ const CARD = {
 const cardSeen=new Set(); let cardNext=null;
 function showCard(lines, then){ const el=$('#card'), tx=$('#cardTxt'); tx.innerHTML=''; el.style.display='flex'; requestAnimationFrame(()=>el.classList.add('on')); let i=0, timer=null, closing=false;
   const finish=()=>{ if(closing) return; closing=true; clearTimeout(timer); cardNext=null; el.classList.remove('on'); setTimeout(()=>{ el.style.display='none'; then(); }, 500); };
-  const step=()=>{ clearTimeout(timer); if(i>=lines.length){ finish(); return; } const d=document.createElement('div'); phrases(d, fill(lines[i])); if(i===0) d.className='big'; tx.append(d); i++; timer=setTimeout(step, i>=lines.length ? 2200 : 1500); };
+  const step=()=>{ clearTimeout(timer); if(i>=lines.length){ finish(); return; } const d=document.createElement('div'); phrases(d, fill(lines[i]).replace(/。$/,'')); if(i===0) d.className='big';   /* 旁白每行最後不加句號 */ tx.append(d); i++; timer=setTimeout(step, i>=lines.length ? 2200 : 1500); };
   cardNext=step; step(); }
 function nameRoast(){ const n=cname('you'), U=n.toUpperCase(), has=a=>a.some(k=>U.includes(k));
   if(Object.keys(CAST).some(k=>k!=='you' && CAST[k].name===n)) return [{who:'tie', t:`你也叫「${n}」？這裡已經有一個了。以後叫你「二號」。`, mood:'mad'}, {who:'you', t:'（……早知道不要亂取。）'}];
@@ -1963,15 +1966,26 @@ function helpSlots(){ const sp=spot.position, key=sp.x.toFixed(2)+','+sp.z.toFix
     const dot=((x-sp.x)*ux+(z-sp.z)*uz)/r; cs.push({x,z,sc:Math.abs(dot)+(dot>0.35?3:0)+(r>1?0.15:0)}); }   // 分數越低越好：在你來的方向的側邊，不要擋在你和藍圈中間
   cs.sort((a,b)=>a.sc-b.sc); const out=[]; for(const c of cs){ if(out.every(o=>Math.hypot(o.x-c.x,o.z-c.z)>0.9)) out.push(c); if(out.length>=2) break; }
   out.key=key; hsCache=out; return out; }
+function holdSlots(){ const sp=spot.position, st=need(), key=(st?st.id:'')+'@'+sp.x.toFixed(2)+','+sp.z.toFixed(2); if(LV.holdCache && LV.holdCache.key===key) return LV.holdCache;
+  let c=null, bd=1e9; const bb=new THREE.Box3(), v=new THREE.Vector3(); if(st) part(st.id).ghosts.forEach(g=>{ bb.setFromObject(g); if(bb.isEmpty()) return; bb.getCenter(v); const d=Math.hypot(v.x-sp.x,v.z-sp.z); if(d<bd){ bd=d; c=v.clone(); } });
+  if(!c) c=new THREE.Vector3(sp.x, sp.y+1.2, sp.z-1);
+  let ux=c.x-sp.x, uz=c.z-sp.z; const U=Math.hypot(ux,uz); if(U<0.05){ ux=0; uz=-1; } else { ux/=U; uz/=U; }
+  const out=[]; for(const r of [0.8,1.05]) for(const sd of [1,-1]){ const x=sp.x-uz*r*sd+ux*0.1, z=sp.z+ux*r*sd+uz*0.1, k=clampXZ(x,z); if(Math.hypot(k.x-x,k.z-z)>0.01 || blocked(x,z,0.06) || out.some(o=>Math.hypot(o.x-x,o.z-z)<0.8)) continue;
+    const hx=c.x-x, hz=c.z-z, hd=Math.hypot(hx,hz)||1; out.push({x, z, face:Math.atan2(hx,hz), aim:-Math.PI/2-Math.atan2(c.y-(gyAt(x,z)+1.45), Math.max(0.3,hd)) }); if(out.length>=2) break; }   // aim＝手臂往上抬多少，才會指到那個東西
+  out.key=key; LV.holdCache=out; return out; }
 function crowd(dt,now){ const p=LV.actors.you; if(!p) return;
   if(!done && patience<100){ patience=Math.min(100,patience+dt*0.6); if(Math.abs(patience-patShown)>=1) patUI(); }
   if(!dlgOpen && !failed){ const moving=!!p.dest;
-    const hs = carry && spot.visible && !L.bench ? helpSlots() : null; let fi=0;   // 小弟的工作：你拿著料＝去藍圈旁邊扶料；沒拿料＝回待命位置
-    for(const k in LV.actors){ const f=LV.actors[k]; if(!f.follower) continue; const job = hs ? hs[fi] : f.post; fi++; if(!job) continue; const tx=job.x, tz=job.z;
-      if(hs && !f.helping && Math.hypot(f.x-tx,f.z-tz)<0.3){ f.helping=hs.key; if(Math.random()<0.7) bubble(f.who,pickOne(FAN.help)); } if(f.helping && (!hs || f.helping!==hs.key)) f.helping=null;   // 走到扶料的位置：講一句
+    const hs = carry && spot.visible && !L.bench ? helpSlots() : null; let fi=0, said=false;   // 小弟的工作：你拿著料＝先到藍圈旁邊等；你走到藍圈＝過來扶住；沒拿料＝回待命位置
+    const near = hs && ITEM[L.id+'.'+carry] && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.8;   /* 放樣、叫灌漿車這種沒有料的工作不用扶 */ if(near) LV.holdKeep={slots:holdSlots(), until:now+1800};   // 你快到藍圈了：小弟伸手扶（裝好之後還扶 1.8 秒）
+    const keep = LV.holdKeep && now<LV.holdKeep.until, hk = keep ? LV.holdKeep.slots : hs ? holdSlots() : null;   // 你一拿起料，小弟就先走到藍圈旁邊扶料的位置等
+    for(const k in LV.actors){ const f=LV.actors[k]; if(!f.follower) continue; const hj = hk && hk[fi], job = hj || (hs ? hs[fi] : f.post); fi++; if(!job){ f.holdAim=undefined; continue; } const tx=job.x, tz=job.z;
+      const at=Math.hypot(f.x-tx,f.z-tz)<0.25, hold = hj && at && (near || keep); f.holdAim = hold ? hj.aim : undefined; if(hj && at) f.face=hj.face;   // 先站好面向牆；你走過來才伸手
+      if(hold){ f.dest=null;   // 扶住：面向要裝的東西，兩手伸出去
+        if(f.helping!==hk.key && !said){ said=true; if(Math.random()<0.8) bubble(f.who,pickOne(FAN.help)); } f.helping=hk.key; continue; }
       if(blocked(tx,tz) || now/1000<(f.restUntil||0)) f.dest=null;
-      else if(Math.hypot(f.x-tx,f.z-tz)>0.45){ const w=plan(f, clampXZ(tx,tz))[0]; if(!f.dest || Math.hypot(f.dest.x-w.x,f.dest.z-w.z)>0.3) f.dest=w; }
-      for(const k2 in LV.actors){ const o=LV.actors[k2]; if(o===f||o===p) continue; const dx=f.x-o.x, dz=f.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ f.x+=dx/d*(0.55-d); f.z+=dz/d*(0.55-d); } } const fc=clampXZ(f.x,f.z); f.x=fc.x; f.z=fc.z; pushOut(f); }   // 被擠開之後再確認一次：不出界、不站在牆上、不進障礙物
+      else if(Math.hypot(f.x-tx,f.z-tz)>(hj?0.2:0.45)){ const w=plan(f, clampXZ(tx,tz))[0]; if(!f.dest || Math.hypot(f.dest.x-w.x,f.dest.z-w.z)>0.3) f.dest=w; }
+      for(const k2 in LV.actors){ const o=LV.actors[k2]; if(o===f||o===p||o.holdAim!==undefined) continue; const dx=f.x-o.x, dz=f.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ f.x+=dx/d*(0.55-d); f.z+=dz/d*(0.55-d); } } const fc=clampXZ(f.x,f.z); f.x=fc.x; f.z=fc.z; pushOut(f); }   // 被擠開之後再確認一次：不出界、不站在牆上、不進障礙物
     for(const k in LV.actors){ const a=LV.actors[k]; if(a===p) continue; const dx=a.x-p.x, dz=a.z-p.z, d=Math.hypot(dx,dz)||0.001;
       if(d<0.55){ const side = a.dest && !moving ? 0.03 : 0;   // 同事走回原位被你擋到：往旁邊滑開，不要卡住
         const c=clampXZ(a.x+dx/d*(0.55-d)-dz/d*side, a.z+dz/d*(0.55-d)+dx/d*side); a.x=c.x; a.z=c.z; pushOut(a); a.backAt=now+1600;
