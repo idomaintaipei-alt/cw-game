@@ -775,7 +775,7 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
   stat(board(['4F'], -0.35,2.2,0.153,0,0.34,'#374151','#ffffff')); stat(board(['4F'], -0.097,2.2,-0.15,Math.PI/2,0.34,'#374151','#ffffff')); }   // 樓層牌：貼在柱子表面（正面、側面各一塊），不是浮在空中的標籤
 // 工務所的室內（週四下雨）：兩面牆、外面在下雨的窗、進度表、安全帽架、雨衣、長椅、圖桌、辦公桌、鐵櫃、飲水機。家具都放在走不到的地方
 function siteOffice(){ const cx=L.cx, y0=L.gy, wall=std(0xe9e6dc), dk=std(0x3a4350), S=m=>{ m.traverse(o=>{ o.castShadow=false; }); return stat(m); };
-  room(cx-6.5,cx+6.7,-1.92,8.5,3.4,wall,{x:cx+0.6,w:1.6,h:2.3}); shedDoor(cx+0.6,8.5,1.6,2.3); S(box(13.4,3.4,0.15, cx,y0+1.7,-2.0, wall)); S(box(0.15,3.4,10.6, cx-6.6,y0+1.7,3.25, wall)); S(box(13.4,0.12,0.2, cx,y0+0.06,-1.9, dk)); S(box(0.2,0.12,10.6, cx-6.5,y0+0.06,3.25, dk));   // 地板、後牆、左牆、踢腳板
+  room(cx-6.5,cx+6.7,-1.92,8.5,3.4,wall,{x:cx+0.6,w:1.6,h:2.3}); shedDoor(cx+0.6,8.5,1.6,2.3); { const ce=new THREE.Mesh(new THREE.PlaneGeometry(13.2,10.42), std(0xf1efe8)); ce.rotation.x=Math.PI/2; ce.position.set(cx+0.1,y0+3.4,3.29); stat(ce); }   /* 天花板：只從下面看得到；有了它，牆頂上方不會看到外面的雨和塔吊 */ S(box(13.4,3.4,0.15, cx,y0+1.7,-2.0, wall)); S(box(0.15,3.4,10.6, cx-6.6,y0+1.7,3.25, wall)); S(box(13.4,0.12,0.2, cx,y0+0.06,-1.9, dk)); S(box(0.2,0.12,10.6, cx-6.5,y0+0.06,3.25, dk));   // 地板、後牆、左牆、踢腳板
   const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'), gr=g.createLinearGradient(0,0,0,128); gr.addColorStop(0,'#8e9aa6'); gr.addColorStop(1,'#6f7c89'); g.fillStyle=gr; g.fillRect(0,0,128,128);
   const rainM=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)});   // 窗外：陰天的天空（雨另外一層，會往下流）
   const wc=document.createElement('canvas'); wc.width=wc.height=64; const wg=wc.getContext('2d'); wg.strokeStyle='rgba(235,242,248,.7)'; wg.lineWidth=1.3; for(let i=0;i<22;i++){ const x=Math.random()*72-4, y=Math.random()*64; wg.beginPath(); wg.moveTo(x,y); wg.lineTo(x-3,y+10); wg.stroke(); }
@@ -785,8 +785,8 @@ function siteOffice(){ const cx=L.cx, y0=L.gy, wall=std(0xe9e6dc), dk=std(0x3a43
     [2.64,1.16].forEach(y=>S(box(2.56,0.08,0.1, cx+a,y0+y,zf-0.06, mat.white))); [-1.24,0,1.24].forEach(e=>S(box(0.07,1.5,0.1, cx+a+e,y0+1.9,zf-0.06, mat.white)));   // 窗框（背面離牆 1 公分，不跟牆面搶）
     const bl=std(0xe9e7df); S(box(2.46,0.06,0.07, cx+a,y0+2.57,zf-0.14, bl)); for(let k=0;k<15;k++){ const sl=box(2.4,0.008,0.05, cx+a,y0+2.5-k*0.045,zf-0.14, bl); sl.rotation.x=0.55; S(sl); }   // 百葉簾：頂軌、葉片（斜的，拉下一半）
     S(box(2.42,0.025,0.06, cx+a,y0+2.5-15*0.045,zf-0.14, std(0xd8d5cb))); S(cyl(0.004,0.9,'y', cx+a+1.05,y0+2.0,zf-0.18, std(0xcfcabb),6)); });   // 底軌、拉繩
-  { const zf=8.5, x=cx+4.0, ac=std(0xf4f5f2); S(box(1.0,0.3,0.22, x,y0+2.98,zf-0.12, ac)); S(box(0.92,0.035,0.02, x,y0+2.86,zf-0.225, std(0x9aa1a8))); S(box(0.96,0.012,0.012, x,y0+3.05,zf-0.225, std(0xd5d8dc)));   // 分離式冷氣：室內機、出風口葉片、進風格柵
-    S(box(0.03,0.012,0.004, x+0.38,y0+2.94,zf-0.222, std(0x3fae4f,{emissive:0x2a8a3a}))); const pp=std(0xdcdcd6); S(cyl(0.012,0.95,'x', x+0.975,y0+2.88,zf-0.03, pp,8)); S(cyl(0.012,2.75,'y', x+1.45,y0+1.5,zf-0.03, pp,8)); }   // 運轉燈、排水管：先往右橫走，再沿著窗戶外側往下
+  { const zf=8.5, x=cx+4.0, ac=std(0xf4f5f2); S(box(1.3,0.36,0.26, x,y0+3.0,zf-0.14, ac)); S(box(1.2,0.045,0.02, x,y0+2.86,zf-0.265, std(0x9aa1a8))); S(box(1.24,0.014,0.012, x,y0+3.1,zf-0.265, std(0xd5d8dc)));   /* 室內機放大：寬 1.3、高 0.36 */   // 分離式冷氣：室內機、出風口葉片、進風格柵
+    S(box(0.04,0.014,0.004, x+0.5,y0+2.96,zf-0.272, std(0x3fae4f,{emissive:0x2a8a3a}))); const pp=std(0xdcdcd6); S(cyl(0.012,0.8,'x', x+1.05,y0+2.88,zf-0.03, pp,8)); S(cyl(0.012,2.75,'y', x+1.45,y0+1.5,zf-0.03, pp,8)); }   // 運轉燈、排水管：先往右橫走，再沿著窗戶外側往下
   S(board(['工程進度表','預定 100%','實際 41%','（下雨不算）'], cx-1.9,y0+2.1,-1.91,0,1.6,'#ffffff','#1b1e24')); { const fl=new THREE.Mesh(new THREE.BoxGeometry(1.2,0.8,0.006), [mat.white,mat.white,mat.white,mat.white,new THREE.MeshBasicMaterial({map:flagTex()}),mat.white]); fl.position.set(cx+0.1,y0+2.35,-1.915); S(fl); S(cyl(0.015,1.3,'x', cx+0.1,y0+2.77,-1.9, mat.steel,8)); }   // 公安旗：掛在後牆中間 S(board(['雨天備案','1. 室內繼續做','2. 沒有 2'], cx+2.05,y0+2.1,-1.91,0,1.45,'#f2cf1d','#1b1e24'));
   S(box(0.3,0.05,2.0, cx-6.38,y0+1.62,2.1, mat.wood)); [[1.4,0xf4f4f4],[1.85,0xffd21f],[2.3,0xe04545],[2.75,0xffd21f]].forEach(([z,col])=>S(ball(0.16,std(col),cx-6.36,y0+1.74,z,1,0.72,1)));   // 安全帽架
   S(box(0.42,0.06,1.9, cx-6.25,y0+0.46,2.1, mat.wood)); [1.3,2.9].forEach(z=>S(box(0.36,0.44,0.06, cx-6.25,y0+0.22,z, dk)));                                                              // 長椅
@@ -887,7 +887,7 @@ function shedDoor(xc,z1,w,dh){ const y0=L.gy, dk=std(0x3a4350), S=m=>{ m.castSha
     g.lineWidth=1; ln(178,26,178,62); g.fillStyle=Y; g.fillRect(175,62,6,5); }   // 吊鉤
   const bg=new THREE.Mesh(new THREE.PlaneGeometry(HW*2,7), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)})); bg.rotation.y=Math.PI; bg.position.set(xc,y0+3.0,z1+D); stat(bg);
   const rc=document.createElement('canvas'); rc.width=rc.height=64; const rg=rc.getContext('2d'); rg.strokeStyle='rgba(220,230,240,.55)'; rg.lineWidth=1; for(let i=0;i<26;i++){ const x=Math.random()*70, y=Math.random()*64; rg.beginPath(); rg.moveTo(x,y); rg.lineTo(x-2,y+9); rg.stroke(); }
-  const rt=new THREE.CanvasTexture(rc); rt.wrapS=rt.wrapT=THREE.RepeatWrapping; rt.repeat.set(HW*2,4.5);   /* 每公尺一格：跟窗外的雨一樣大 */ const rain=new THREE.Mesh(new THREE.PlaneGeometry(HW*2,4.5), new THREE.MeshBasicMaterial({map:rt, transparent:true, depthWrite:false})); rain.rotation.y=Math.PI; rain.position.set(xc,y0+2.0,z1+1.6); stat(rain);   // 雨
+  const rt=new THREE.CanvasTexture(rc); rt.wrapS=rt.wrapT=THREE.RepeatWrapping; rt.repeat.set(HW*2,3.5);   /* 每公尺一格：跟窗外的雨一樣大 */ const rain=new THREE.Mesh(new THREE.PlaneGeometry(HW*2,3.5), new THREE.MeshBasicMaterial({map:rt, transparent:true, depthWrite:false})); rain.rotation.y=Math.PI; rain.position.set(xc,y0+1.5,z1+1.6);   /* 雨不高過牆頂（3.4 公尺） */ stat(rain);   // 雨
   [[-2.5,4],[2.2,5.5],[-1.0,7]].forEach(([a,z])=>{ const cn=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.13,0.42,10), std(0xff6a1f)); cn.position.set(xc+a,y0+0.09,z1+z); S(cn); });
   const dl=xc-w/2, dr=xc+w/2; [[dl-0.05,dh/2,0.1,dh],[dr+0.05,dh/2,0.1,dh],[xc,dh+0.05,w+0.2,0.1]].forEach(([x,y,a,b])=>S(box(a,b,0.14, x,y0+y,z1, dk)));                      // 門框
   const dg=new THREE.Group(); dg.position.set(dl,y0,z1+0.03); const dp=box(w,dh,0.05, w/2,dh/2,0, std(0xb9c2cc)); dg.add(dp); dg.add(box(w-0.3,0.9,0.055, w/2,dh-0.75,0, mat.glass)); dg.add(box(0.14,0.04,0.08, w-0.15,1.05,0.05, mat.steel)); dg.rotation.y=-1.15; stat(dg);   // 半開的門（往外開）
@@ -1960,12 +1960,11 @@ function makeItem(spec){ const g=new THREE.Group(), [kind,a,b,o]=spec.split(':')
 function makePallet(st,x,z){ const g=new THREE.Group(); g.position.set(x,L.gy,z); const spec=ITEM[L.id+'.'+st.id]; let item=null, ly=1.12;
   if(spec){ g.add(box(0.85,0.1,0.85,0,0.05,0,mat.wood)); item=new THREE.Group(); const it=makeItem(spec), n = it.kind==='bar'||it.kind==='panel' ? 2 : 1;
     for(let i=0;i<n;i++){ const o = i ? makeItem(spec).g : it.g;
-      if(it.pose==='upright') o.position.set(i?0.17:-0.03, 0.1+it.len/2, i?0.02:0);            // 直料：立著
+      if(it.pose==='upright'){ o.rotation.z=Math.PI/2; o.position.set(0, 0.17, i?0.17:-0.02); }   // 直料：跟橫料一樣橫躺在棧板上（原本立著、底下還墊一塊木頭，跟其他料不一樣）
       else if(it.pose==='across') o.position.set(0, 0.17, i?0.17:-0.02);                          // 橫料：橫著
       else if(it.kind==='panel') o.position.set(0, 0.15+i*0.1, 0);
       else { o.position.set(0,0,0); o.updateMatrixWorld(true); o.position.y = 0.1-new THREE.Box3().setFromObject(o).min.y; }   /* 小東西：照實際底部放在棧板上，不浮起來也不陷進去 */
       item.add(o); }
-    if(it.pose==='upright') item.add(box(0.44,0.2,0.34,0.07,0.2,0.01,mat.wood));                 // 直料的立架：跟直料一起拿走，棧板上不會剩一塊木頭
     g.add(item); ly = Math.max(0.66, new THREE.Box3().setFromObject(item).max.y + 0.26); }             // 量物件實際的高度，標籤放在它上面
   else { g.add(box(0.36,0.06,0.36,0,0.03,0,mat.wood)); g.add(box(0.06,0.9,0.06,0,0.48,0,mat.wood)); }   // 純動作：立牌
   const lb=label(st.pal||st.name, spec?'#374151':'#1d4f86', 0, ly, 0, 0.2); g.add(lb);
