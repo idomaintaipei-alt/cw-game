@@ -2,7 +2,10 @@
 
 帷幕牆、三明治板組裝小遊戲。點開網址就能玩，不用安裝。
 
-- 這個倉庫只放遊戲本體 `index.html`，給 GitHub Pages 用。
+- 這個倉庫只放遊戲本體，給 GitHub Pages 用：
+  - `index.html`：美術版（主網址，手機、電腦都開這個）。
+  - `classic.html`：舊畫風的正式版，比對用。
+  - `art-test.html`：舊連結，會自動轉到主網址。
 - 開發、測試、說明都在另一個倉庫 `cw-assembly-game`（私人）。
 - 更新方式：在 `cw-assembly-game` 雙擊 `更新網頁版.bat`，再到 GitHub Desktop 推這個倉庫。
 - 網址後面加 `?test=1` 是測試版：造型和座駕全部解鎖。

@@ -410,17 +410,21 @@ const plain = t => t.replace(/\*\*/g,'');
 // ===================== 3D 基本 =====================
 const view = document.getElementById('view');
 const renderer = new THREE.WebGLRenderer({ antialias:true });
-renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(innerWidth, innerHeight, false); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(innerWidth, innerHeight, false); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
 view.appendChild(renderer.domElement);
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x9aa5b0);
+const scene = new THREE.Scene();
+const skyTex=(()=>{ const c=document.createElement('canvas'); c.width=4; c.height=256; const g=c.getContext('2d'), gr=g.createLinearGradient(0,0,0,256); gr.addColorStop(0,'#3fa9f5'); gr.addColorStop(0.55,'#93d3ff'); gr.addColorStop(1,'#e9f7ff'); g.fillStyle=gr; g.fillRect(0,0,4,256); return new THREE.CanvasTexture(c); })(), skyFog=new THREE.Fog(0xdcefff, 50, 160);
+scene.background = skyTex; scene.fog = skyFog;
 const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.05, 160);
-scene.add(new THREE.HemisphereLight(0xffffff, 0xd8c8a0, 0.58));
-const sun = new THREE.DirectionalLight(0xffffff, 0.5); sun.position.set(5,9,7); sun.castShadow = true; sun.shadow.mapSize.set(2048,2048);
+scene.add(new THREE.HemisphereLight(0xd4ebff, 0xffe6c2, 0.82));
+const sun = new THREE.DirectionalLight(0xfff1dc, 0.78); sun.shadow.radius=4; sun.position.set(5,9,7); sun.castShadow = true; sun.shadow.mapSize.set(2048,2048);
 Object.assign(sun.shadow.camera,{left:-14,right:14,top:14,bottom:-14, near:1, far:90}); sun.shadow.bias=-0.0004; sun.shadow.normalBias=0.03; scene.add(sun); scene.add(sun.target);   /* 影子範圍跟著鏡頭走（見 placeCam） */
 
 // 卡通上色：三階明暗，整個場景同一種畫風
 const toonGrad = (()=>{ const t=new THREE.DataTexture(new Uint8Array([110,185,255]),3,1,THREE.LuminanceFormat); t.minFilter=t.magFilter=THREE.NearestFilter; t.needsUpdate=true; return t; })();
-const std = (c,o={}) => { const q=Object.assign({ color:c, gradientMap:toonGrad }, o); delete q.roughness; delete q.metalness; return new THREE.MeshToonMaterial(q); };
+// 試做美術風格：柔和的黏土玩具質感＋粉彩配色（參考 Pokopia 的感覺）
+const pastel=c=>{ const col=new THREE.Color(c), h={}; col.getHSL(h); col.setHSL(h.h, Math.min(1,h.s*1.3), h.l+(1-h.l)*0.1); return col; };   // 亮一點、飽和一點
+const std = (c,o={}) => { const q=Object.assign({ color:pastel(c), roughness:0.78, metalness:0 }, o); q.color=pastel(c); if(o.metalness) q.metalness=Math.min(0.3,o.metalness); if(o.roughness!==undefined) q.roughness=Math.max(0.45,o.roughness); return new THREE.MeshStandardMaterial(q); };
 const mat = {
   rc:std(0xc2bdb1), rcSee:std(0x76808d,{transparent:true, opacity:.46, depthWrite:false}), rcEdge:new THREE.MeshBasicMaterial({color:0x2c333d}), floor:std(0xffffff),
   anchor:std(0xffd166,{metalness:.6, roughness:.3}), steel:std(0xc0c7d1,{metalness:.7, roughness:.35}), steelDark:std(0x59616c,{metalness:.6, roughness:.4}),
@@ -471,8 +475,8 @@ mat.road=std(0x8b8780,{polygonOffset:true, polygonOffsetFactor:-2, polygonOffset
 { const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'); g.fillStyle='#bdbab2'; g.fillRect(0,0,128,128); g.strokeStyle='#a9a69e'; g.lineWidth=3; g.strokeRect(0,0,128,128);   // 屋頂平台的地面：有分割縫的混凝土
   for(let i=0;i<70;i++){ g.fillStyle=i%2?'#b3b0a8':'#c6c3bb'; g.fillRect(Math.random()*128, Math.random()*128, 2, 2); } const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(14,7); mat.deck=std(0xffffff); mat.deck.map=t; }                 // 一格 1.2 公尺
 const CLOUDS=[];
-{ const cm=new THREE.MeshBasicMaterial({color:0xc9ced4}); [[-14,9,-22,1.6],[6,11,-26,2.0],[20,8,-20,1.4],[-26,12,-30,2.2],[30,13,-34,2.4]].forEach(([x,y,z,sc])=>{ const c=new THREE.Group();
-    [[0,0,0,1],[1.1,0.1,0,0.75],[-1.1,0,0,0.7],[0.4,0.5,0,0.7]].forEach(([a,b,d,r])=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(r,12,10),cm); m.position.set(a,b,d); c.add(m); }); c.position.set(x,y,z); c.scale.setScalar(sc); scene.add(c); CLOUDS.push(c); }); }
+{ const cm=new THREE.MeshStandardMaterial({color:0xffffff, emissive:0xaebfd2, roughness:1}); [[-14,9,-22,1.6],[6,11,-26,2.0],[20,8,-20,1.4],[-26,12,-30,2.2],[30,13,-34,2.4]].forEach(([x,y,z,sc])=>{ const c=new THREE.Group();
+    [[0,0,0,1],[1.1,0.1,0,0.75],[-1.1,0,0,0.7],[0.4,0.5,0,0.7],[-0.5,0.45,0.2,0.62],[1.7,-0.15,0,0.5],[-1.7,-0.1,0,0.48]].forEach(([a,b,d,r])=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),cm); m.position.set(a,b,d); c.add(m); }); c.position.set(x,y,z); c.scale.setScalar(sc); scene.add(c); CLOUDS.push(c); }); }
 function box(w,h,d,x,y,z,m){ const g=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), m); g.position.set(x,y,z); g.castShadow=g.receiveShadow=true; return g; }
 function cyl(r,len,axis,x,y,z,m,seg=16){ const g=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len,seg), m); if(axis==='z') g.rotation.x=Math.PI/2; if(axis==='x') g.rotation.z=Math.PI/2; g.position.set(x,y,z); g.castShadow=true; return g; }
 function at(mesh,x,y,z){ mesh.position.set(x,y,z); mesh.castShadow=true; return mesh; }
@@ -1566,7 +1570,7 @@ function renderLocker(){ const b=store.get('cwstory_best',{}), s=skinState(), li
         store.set('cwstory_skin',s); applySkin(); award('misc.skin'); renderLocker(); }; }
       row.append(bt); }); }); }
 function openLocker(){ renderLocker(); $('#locker').style.display='flex'; }
-function refreshPlayer(){ const a=LV.actors.you; if(!a) return; const old=a.g, g=makePerson(CAST.you); g.add(label(cname('you'),'#1d4f86',0,2.1,0,0.17));
+function refreshPlayer(){ const a=LV.actors.you; if(!a) return; const old=a.g, g=makePerson(CAST.you); g.add(label(cname('you'),'#1d4f86',0,2.38,0,0.17));
   g.position.copy(old.position); g.rotation.copy(old.rotation); g.visible=old.visible; const oh=old.userData.hold, nh=g.userData.hold; nh.position.copy(oh.position); while(oh.children.length) nh.add(oh.children[0]);
   LV.group.remove(old); LV.group.add(g); a.g=g; }
 // 小跟班：上一天 90 分以上，今天就有人跟；90 分以上的天數到三天，再多一個
@@ -1809,7 +1813,17 @@ function robeMat(){ if(_robe) return _robe; const c=document.createElement('canv
   for(let y=0;y<9;y++) for(let x=0;x<9;x++){ g.beginPath(); g.arc(x*16+(y%2?8:0), y*16, 8, 0.15, Math.PI-0.15); g.stroke(); }
   const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(2,2); return _robe=std(0xffffff,{map:t}); }
 // 小人：瘦長、眼神死、有眼袋的上班族。身高約 1.8。臉朝 +z。
-function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};                     // off＝在辦公室：不戴安全帽、不穿背心和工作靴，造型也不顯示
+// 試做 Q 版：原本的人做好以後，把頭部的東西搬進一個「頭」群組，以脖子（y=1.37）為中心放大；身體變圓
+const NECK=1.37, HEAD_K=1.45, BODY_K=1.16;
+function makePerson(c){ const g=makePerson0(c), u=g.userData, keep=new Set([u.legL,u.legR,u.armL,u.armR,u.hold]), head=new THREE.Group(); head.position.y=NECK;
+  [...g.children].forEach(o=>{ if(keep.has(o)) return; const y=o.position.y, tor=o.geometry && o.geometry.type==='TorusGeometry';
+    if(y>=1.42 || (tor && o.geometry.parameters.radius>0.2 && y<1.33)){ head.add(o); o.position.y-=NECK; }   // 頭、臉、安全帽、頭髮、眼鏡（鮑伯頭下緣那圈也算）；脖子上的毛巾、金鍊、領口不算
+    else if(o.geometry && o.geometry.type==='CylinderGeometry' && Math.abs(y-1.1)<0.01){ o.scale.x=BODY_K; o.scale.z=0.72*BODY_K; }   // 身體
+    else if(tor && (Math.abs(y-0.98)<0.01 || Math.abs(y-1.2)<0.01)){ o.scale.set(BODY_K,0.72*BODY_K,1); }   // 反光條跟著身體變圓
+    else if(tor && Math.abs(y-0.82)<0.01){ o.scale.set(BODY_K*1.05,0.74*BODY_K*1.05,1); }   // 白腰帶也跟著身體變圓（不然包在身體裡看不到）
+    else if(o.geometry && o.geometry.type==='BoxGeometry' && Math.abs(y-0.82)<0.01){ o.position.z=0.18; } });   // 皮帶頭往前，貼在變胖的肚子上
+  head.scale.setScalar(HEAD_K); g.add(head); u.head=head; return g; }
+function makePerson0(c){ const off=!!(L && L.office), cf=c.feat||{};                     // off＝在辦公室：不戴安全帽、不穿背心和工作靴，造型也不顯示
   const g=new THREE.Group(), f = off ? {mustache:cf.mustache, glasses:cf.glasses, ponytail:cf.ponytail, stubble:cf.stubble, bob:cf.bob, bangs:cf.bangs, buzz:cf.buzz, squint:cf.squint, grin:cf.grin, mullet:cf.mullet, floral:cf.floral, belt:cf.belt, flare:cf.flare, whiteshoes:cf.whiteshoes, tattoo:cf.tattoo, khaki:cf.khaki, lashes:cf.lashes} : cf, fx=[], skin=std(c.skin), trim=std(c.trim||0xf4f4f4);
   const vest = off ? (f.floral ? floralMat() : std(f.khaki ? 0xc8b58a : c.shirt||0xf4f6fa)) : c.vestKind==='leopard' ? leopardMat() : c.vestKind==='sequin' ? std(0xffc61f,{emissive:0x3a2600}) : c.vestKind==='robe' ? robeMat() : std(c.vest);
   const hel=std(c.helmet, c.helmetMetal ? {emissive:0x3a2600} : {}), bootM = off ? std(f.whiteshoes ? 0xf2f2ee : 0x2b2f36) : f.boots ? std(0xff4fd8,{emissive:0x551144}) : mat.boot, soleM = f.boots ? std(0xffffff,{emissive:0x888888}) : mat.dark;
@@ -1888,7 +1902,7 @@ function seat(a){ const g=a.g, ch=std(0x3b6fd0), dk=std(0x3a4350); a.seated=true
   g.traverse(o=>{ if(o.userData.blob) o.position.y=SIT+0.014; }); }
 function makeActor(who,x,z){ const c=CAST[who], g=makePerson(c); g.rotation.order='YXZ'; LV.group.add(g);   /* 先轉向、再彎腰：鞠躬、仰頭喝、揮棒都照人自己面對的方向彎，不是照場景的方向 */
   const bl=new THREE.Mesh(new THREE.CircleGeometry(0.38,20), mat.blob); bl.rotation.x=-Math.PI/2; bl.position.y=0.014; bl.userData.blob=true; bl.raycast=()=>{}; g.add(bl);   // 腳下貼地的影子：太陽的影子落在背後，從正面看不到，人會像飄著
-  const tag=label(cname(who), who==='you'?'#1d4f86':'#374151', 0,2.1,0,0.17); g.add(tag);
+  const tag=label(cname(who), who==='you'?'#1d4f86':'#374151', 0,2.38,0,0.17); g.add(tag);
   const a={who,g,x,z,home:{x,z},dest:null,onArrive:null,speed: who==='you'?3.0:4.2, face:Math.PI, ph:Math.random()*6, carry:null, wob:0, bumps:0, touching:false, pushT:0, backAt:0, fined:false};
   if(who!=='you') g.traverse(o=>{ if(o.isMesh||o.isSprite){ o.userData.pick={kind:'npc',who}; LV.pick.push(o); } });
   if(!L.office && ['tie','lin','an','kun'].includes(who)){ const cb=new THREE.Group(); cb.add(box(0.24,0.32,0.02, 0,0,0, mat.dark)); cb.add(box(0.2,0.27,0.006, 0,-0.01,0.013, mat.white)); cb.position.set(0.05,-0.28,0.1); cb.rotation.x=-1.25; g.userData.armL.userData.elbow.add(cb); g.userData.clip=cb; }   // 工地的同事手上有板夾
@@ -2355,7 +2369,7 @@ function nameRoast(){ const n=cname('you'), U=n.toUpperCase(), has=a=>a.some(k=>
   return []; }
 function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed=new Set(); t0=Date.now(); done=false; carry=null; spot.visible=false; ping.visible=false; camGoal=null;
   clearInterval(typer); dlgOpen=false; optsOpen=false; $('#dlg').style.display='none';
-  resetGroup(); L.build(); sun.castShadow=!L.noShadow; scene.background.set(L.office||L.indoor?0x262b32:0x9aa5b0); CLOUDS.forEach(c=>c.visible=!L.office&&!L.indoor);
+  resetGroup(); L.build(); sun.castShadow=!L.noShadow; scene.background = L.office||L.indoor ? new THREE.Color(0xf3e9d6) : skyTex; scene.fog = L.office||L.indoor ? null : skyFog; CLOUDS.forEach(c=>c.visible=!L.office&&!L.indoor);
   $('#card').style.display='none'; $('#card').classList.remove('on'); cardNext=null;
   if(L.bench){ const c=L.cam; target.set(...c.t); theta=c.theta; phi=c.phi; dist=c.dist; minD=c.min||dist*0.35; maxD=c.max||dist*2.5;
     $('#help').textContent = TOUCH ? '點工具盤＝做那一步　一指拖曳＝轉視角　兩指捏合＝縮放　兩指一起移＝平移　右邊＋－＝放大、縮小' : '點右邊工具盤＝做那一步　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
