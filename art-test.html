@@ -350,9 +350,10 @@ const GREET_RIDE = {
   benz:{ tie:'開大 G 來工地？你是業主的小孩喔？那邊的泥巴你去壓一壓。', lin:'車停哪裡？有沒有壓到我的放樣線？', an:'哇！！等一下載我去買珍奶！', kun:'……（摸了一下水箱罩）' },
   bmw:{ tie:'BMW 喔？轉彎記得打方向燈。', lin:'你剛剛進場沒有打方向燈。我有看到。', an:'哇，X6！借我坐副駕啦！', kun:'……方向燈。' },
   ev:{ tie:'特斯拉喔？貸款幾年？算了，不要告訴我，我會難過。', lin:'充電不能接工地的電。', an:'門是往上開的？！太帥了吧！', kun:'……沒聲音。' },
-  heli:{ tie:'直升機？！你的薪水是我的幾倍？風很大欸，我的圖都飛了啦！', lin:'停機坪不在施工圖上。這筆我先記著。', an:'{P}你也太誇張了吧！！', kun:'……（按住安全帽）' },
+  heli:{ tie:'直升機？！你的薪水是我的幾倍？風很大欸，我的圖都飛了啦！', lin:['……直升機？（推眼鏡）','停機坪不在施工圖上。這筆我先記著。'], an:'{P}你也太誇張了吧！！', kun:['……（按住安全帽）','……保護膜，被你吹掉了。去撿。'] },   /* 阿坤師話少：兩句都很短，在意的是板子 */
 };
 const RIDEB = { benz:'……大 G？', bmw:'方向燈咧？！', ev:'……怎麼沒聲音？', heli:'風很大欸！！', jet:'嗯，能吃苦。', bws:'工地神車！', cygnus:'能吃苦的年輕人。', smax:'坐很舒服喔？', gogoro:'……沒聲音？' };
+const RIDEB_KUN = { benz:'……（看了一眼）', bmw:'……方向燈。', ev:'……沒聲音。', heli:'……（按住安全帽）', jet:'……嗯。', bws:'……BWS。', cygnus:'……嗯，能吃苦。', smax:'……坐墊，軟。', gogoro:'……沒聲音。' };   // 阿坤師帶班：落地那一下的反應也照他的個性，話少、不大聲
 const FANBOSS = { tie:'才幾天就收小弟了？好啦，職場就是這樣：有人爬，有人扶梯子。', lin:'跟班不算工時。', an:'哇，{P}有粉絲了耶！', kun:'……（看了阿弟一眼）' };
 Object.assign(CAST.you,{hair:0x3a2a20, shirt:0xf4f6fa}); Object.assign(CAST.tie,{hair:0xa3a3a3, shirt:0xc9d6e8}); Object.assign(CAST.lin,{hair:0x2a2320, shirt:0xf7dfe8});
 Object.assign(CAST.an,{hair:0x6a4630, shirt:0xdfe9ff}); Object.assign(CAST.kun,{hair:0x3a332e, shirt:0xe3e3e3}); Object.assign(CAST.di,{hair:0x2a2320, shirt:0xe6f3e0}); Object.assign(CAST.hao,{hair:0x2a2320, shirt:0xe0f1f4});
@@ -1389,11 +1390,13 @@ function fan(kind,chance){ const fs=Object.values(LV.actors).filter(a=>a.followe
 // 進場時帶班的人多講幾句：看上一天成績、座駕、穿著
 function greet(){ const b=store.get('cwstory_best',{}), prev = li>0 ? b[LEVELS[li-1].id] : null, who=L.boss, sk=skinState(); let lines=[];
   if(prev){ if(prev.n===0) lines.push({who, t:GREET_GOOD[who], mood:'smile'}); else if(prev.n>=3) lines.push({who, t:GREET_BAD[who].replace('{N}',prev.n), mood: who==='tie'?'mad':undefined}); }
-  if(!L.bench && !L.office && !L.indoor && sk.ride!=='r_walk') lines.push({who, t:GREET_RIDE[sk.ride.slice(2)][who]});
+  if(!L.bench && !L.office && !L.indoor && sk.ride!=='r_walk'){ const gr=GREET_RIDE[sk.ride.slice(2)][who]; (Array.isArray(gr)?gr:[gr]).forEach(t=>lines.push({who, t})); }   // 座駕的反應：可以是好幾句
   const loud=(sk.helmet!=='h_yellow'?1:0)+(sk.vest!=='v_blue'?1:0)+sk.acc.length;
   if(loud>=3) lines.push({who, t:GREET_LOUD[who]}); else if(sk.helmet!=='h_yellow') lines.push({who, t:GREET_HAT[who]});
   if(sk.acc.includes('a_boots')) lines.push({who, t:GREET_BOOT[who]});
   lines=lines.slice(0,3);
+  if(sk.ride==='r_heli' && !L.bench && !L.office && !L.indoor){ (L.npcs||[]).filter(w=>w!==who).forEach(w=>{ const gr=GREET_RIDE.heli[w]; if(gr) (Array.isArray(gr)?gr:[gr]).forEach(t=>lines.push({who:w, t})); });   // 直升機進場：現場每個人都要有反應（照各自的個性）
+    if(Object.values(LV.actors).some(a=>a.follower)) lines.push({who:'di', t:'學長是坐直升機來上班的！！我要拍照！', mood:'smile'}); }
   if(Object.values(LV.actors).some(a=>a.follower)){ lines.push({who:'di', t:'學長早！今天也請多多指教！', mood:'smile'}); lines.push({who, t:FANBOSS[who]}); }
   return lines; }
 // 座駕外型（只做外型，不放任何廠牌標誌）。車頭朝 -x。
@@ -1559,7 +1562,7 @@ function stepCut(dt){ if(cut.kind==='pour'){ stepPour(cut,dt); return; }
     g.position.set(pa.x, yardY()+(c.stage?0:Math.abs(Math.sin(c.t*14))*0.03*(1-k)), pa.z); g.rotation.y = e<0.995 ? Math.atan2(pb.z-pa.z, pa.x-pb.x) : Math.PI/2;   /* 車頭照行進方向轉，不是橫著平移 */ if(!c.stage) u.wheels.forEach(w=>w.rotation.z+=dt*22*(1-k*k));
     if(c.stage && u.doors) u.doors.forEach((d,i)=>{ d.rotation.x+=((i?-1:1)*1.75-d.rotation.x)*Math.min(1,dt*4); });
     if(u.bike && c.stage===0) rideOn(g); }
-  if(c.stage===0 && k>=1){ c.stage=1; const me=LV.actors.you; if(heli) heliWelcome(); const dp = u.bike ? rideOff(g) : {x:g.position.x+1.7, z:g.position.z+0.3}; if(L.yard!==undefined) climbIn(dp.x, u.bike ? dp.z : g.position.z+0.4, heli?'heli':'car'); else { const pts=[{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}], go2=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go2 : null; }; me.x=dp.x; me.z=dp.z; me.g.position.set(me.x, gyAt(me.x,me.z), me.z); me.g.visible=true; go2(); } /* 從座駕旁邊下車，走到工作區 */ bubble(L.boss, RIDEB[c.kind], true); fan('ride',1); camGoal={theta:0.5,phi:1.08,dist:12}; }
+  if(c.stage===0 && k>=1){ c.stage=1; const me=LV.actors.you; if(heli) heliWelcome(); const dp = u.bike ? rideOff(g) : {x:g.position.x+1.7, z:g.position.z+0.3}; if(L.yard!==undefined) climbIn(dp.x, u.bike ? dp.z : g.position.z+0.4, heli?'heli':'car'); else { const pts=[{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}], go2=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go2 : null; }; me.x=dp.x; me.z=dp.z; me.g.position.set(me.x, gyAt(me.x,me.z), me.z); me.g.visible=true; go2(); } /* 從座駕旁邊下車，走到工作區 */ bubble(L.boss, (L.boss==='kun' ? RIDEB_KUN : RIDEB)[c.kind], true); fan('ride',1); camGoal={theta:0.5,phi:1.08,dist:12}; }
   else if(c.stage===1 && c.t>=dur+1.9 && !((LV.actors.you.dest || LV.hoisting) && c.t<dur+45)){ c.stage=2; LV.hoisting=false; target.x=L.cx; target.y=L.gy+1.3; const f=c.then; c.then=null; if(f) f(); } }
 
 // ===================== 人物（3D 小人＋頭像） =====================
