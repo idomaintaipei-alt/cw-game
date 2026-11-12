@@ -1833,7 +1833,7 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
     [-1,1].forEach(sd=>{ const x=sd*0.078; g.add(ball(0.05,wh,x,1.585,0.166,1,1.18,0.5)); g.add(ball(0.031,iris,x,1.582,0.19,1,1.22,0.55)); g.add(ball(0.009,wh,x+0.012,1.6,0.207));   // 眼白、眼珠、亮點
       const ln=box(0.09,lf?0.012:0.008,0.012, x,1.642,0.19, mat.dark); ln.rotation.z=-sd*0.08; g.add(ln); if(lf){ const fl=box(0.026,0.009,0.01, x+sd*0.05,1.648,0.186, mat.dark); fl.rotation.z=-sd*0.6; g.add(fl); }   // 上眼線；女生多一撇睫毛
       if(off){ const br=box(0.06,0.012,0.01, x,1.69,0.18, brow); br.rotation.z=-sd*0.12; g.add(br); } g.add(ball(0.03,blush,sd*0.118,1.53,0.165,1,0.55,0.3)); });   // 細眉毛、腮紅
-    const sm=new THREE.Mesh(new THREE.TorusGeometry(0.028,0.0065,6,14,Math.PI), lf ? std(0xc65a5a) : mat.dark); sm.rotation.z=Math.PI; sm.position.set(0,1.497,0.193); g.add(sm); }   // 微笑
+    g.add(box(0.036,0.008,0.01, 0,1.49,0.196, lf ? std(0xb35a5a) : mat.dark)); }   // 小小一字嘴（不笑，笑起來看起來憨憨的）
   else {
   const ey = f.squint ? 0.32 : 1;   // 瞇眼：眼睛壓成一條縫
   [-1,1].forEach(sd=>{ g.add(ball(0.052,mat.shine,sd*0.078,f.squint?1.578:1.585,0.168,1,ey,0.5)); g.add(ball(0.02,mat.eye,sd*0.078,f.squint?1.576:1.572,0.196,1,ey,1)); g.add(ball(0.056,skin,sd*0.078,f.squint?1.6:1.612,0.172,1.05,f.squint?0.4:0.6,0.55));   /* 瞇眼：眼皮壓低、壓扁，貼著眼縫（不然鼓起來像怪眉毛） */ g.add(ball(0.05,mat.bag,sd*0.078,1.544,0.172,1,0.32,0.3)); });
