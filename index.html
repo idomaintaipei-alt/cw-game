@@ -1695,7 +1695,7 @@ let pd=null, dragged=false; const cvs=renderer.domElement;
 cvs.addEventListener('pointerdown',e=>{ pd={x:e.clientX,y:e.clientY,pan:e.button!==0||e.shiftKey, touch:e.pointerType==='touch', axis:null}; dragged=false; try{ cvs.setPointerCapture(e.pointerId); }catch(_){} });   // 右鍵（或中鍵、Shift＋左鍵）拖曳＝平移
 cvs.addEventListener('contextmenu',e=>e.preventDefault());
 const touches=new Map(); let pinch=null;                                                // 兩指：捏合＝縮放，一起移動＝平移
-function panBy(dx,dy){ if(!camHome) return; const k=dist*0.0016, sn=Math.sin(theta), cs=Math.cos(theta), lim=(v,c)=>Math.min(c+18,Math.max(c-18,v));
+function panBy(dx,dy){ if(!camHome) return; const k=dist*0.0016, sn=Math.sin(theta), cs=Math.cos(theta), lim=(v,c)=>{ const R0 = L && L.yard!==undefined ? 32 : 18; return Math.min(c+R0,Math.max(c-R0,v)); };   /* 平移範圍：週二工地大，放寬 */
   target.x=lim(target.x-(cs*dx+sn*dy)*k, camHome.t[0]); target.z=lim(target.z+(sn*dx-cs*dy)*k, camHome.t[2]);
   if(LV.room){ const R=LV.room; target.x=Math.min(R.x1-1.3,Math.max(R.x0+1.3,target.x)); target.z=Math.min(R.z1-1.3,Math.max(R.z0+1.3,target.z)); } }
 cvs.addEventListener('pointerdown',e=>{ if(e.pointerType!=='touch') return; touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -1709,7 +1709,7 @@ cvs.addEventListener('pointermove',e=>{ if(!touches.has(e.pointerId)) return; to
 let camHome=null; function camReset(){ if(!camHome) return; target.set(...camHome.t); camGoal={theta:camHome.theta, phi:camHome.phi, dist:camHome.dist}; }   // 鏡頭回正
 cvs.addEventListener('pointermove',e=>{ if(!pd) return; let dx=e.clientX-pd.x, dy=e.clientY-pd.y; if(!dragged && Math.hypot(dx,dy)<(pd.touch?12:5)) return; dragged=true; camGoal=null; userCamT=performance.now(); if(talkCam) talkCam.free=true;
   if(pd.touch){ if(!pd.axis) pd.axis = Math.abs(dx)>=Math.abs(dy) ? 'h' : 'v'; if(pd.axis==='h') dy=0; else dx=0; dx*=0.8; dy*=0.8; }   /* 手機：一次只轉左右或上下，轉慢一點 */
-  if(pd.pan && camHome){ const k=dist*0.0016, sn=Math.sin(theta), cs=Math.cos(theta), lim=(v,c)=>Math.min(c+18,Math.max(c-18,v));                   // 平移：畫面跟著滑鼠走，離原位最多 18 公尺
+  if(pd.pan && camHome){ const k=dist*0.0016, sn=Math.sin(theta), cs=Math.cos(theta), lim=(v,c)=>{ const R0 = L && L.yard!==undefined ? 32 : 18; return Math.min(c+R0,Math.max(c-R0,v)); };   /* 平移範圍：週二工地大，放寬 */                   // 平移：畫面跟著滑鼠走，離原位最多 18 公尺
     target.x=lim(target.x-(cs*dx+sn*dy)*k, camHome.t[0]); target.z=lim(target.z+(sn*dx-cs*dy)*k, camHome.t[2]);
     if(LV.room){ const R=LV.room; target.x=Math.min(R.x1-1.3,Math.max(R.x0+1.3,target.x)); target.z=Math.min(R.z1-1.3,Math.max(R.z0+1.3,target.z)); } }   // 室內：平移不出房間
   else { theta-=dx*0.006; if(LV.orbit) theta=Math.min(LV.orbit[1],Math.max(LV.orbit[0],theta)); phi=Math.min(1.5,Math.max(0.3,phi-dy*0.006)); } pd={x:e.clientX,y:e.clientY,pan:pd.pan,touch:pd.touch,axis:pd.axis}; });
@@ -2012,7 +2012,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
     if(L.plant) plantWorld(); else if(!L.office && !L.indoor){ siteSigns(); siteWorld(); }
     LV.pick.push(spot.userData.disc);
     if(L.view){ target.set(...L.view.t); theta=L.view.theta; phi=L.view.phi; dist=L.view.dist; } else { target.set(L.cx, L.gy+1.3, 2.5); theta=0.5; phi=1.08; dist=12; }
-    minD=4; maxD=24;
+    minD=4; maxD = L.yard!==undefined ? 45 : 24;   /* 週二在四樓：可以拉遠看整個工地（圍籬放大後約 68×48 公尺） */
     $('#help').textContent = TOUCH ? '左下搖桿＝走路（也可以點地板）　點棧板＝拿材料　點藍圈＝安裝　點同事＝聊天　一指拖曳＝轉視角　兩指或右邊＋－＝縮放' : '點地板＝走路（WASD 也行）　點棧板＝拿材料　點藍色圈圈＝安裝　點同事＝聊天　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   if(LV.room) maxD=Math.min(maxD,15);
   if(vw()<vh() && LV.room) phi=Math.min(phi,0.78);   // 手機直著拿：畫面窄，鏡頭拉遠一點；室內被牆擋住拉不遠，就改成從高一點往下看
