@@ -11,6 +11,7 @@
 <style>
   :root { --bg:#14181d; --panel:rgba(30,36,43,.94); --line:#3a4350; --txt:#e8ecf1; --dim:#9aa4b1; --ok:#3ddc84; --bad:#ff5c5c; --acc:#4da3ff; }
   * { box-sizing:border-box; }
+  #ui { position:fixed; left:0; top:0; width:100%; height:100%; z-index:5; pointer-events:none; transform-origin:0 0; } #ui > * { pointer-events:auto; }   /* 資訊框那一層：永遠貼著眼睛看得到的區域（整頁被放大也一樣） */
   html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }   /* iPhone 橫放會自動把字放大，版面就被撐破：關掉 */
   html,body { margin:0; position:fixed; inset:0; width:100%; height:100%; overflow:hidden; overscroll-behavior:none; touch-action:none; -webkit-user-select:none; user-select:none; background:var(--bg); color:var(--txt); font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; }
   #view { position:fixed; inset:0; overflow:hidden; } #view canvas { display:block; width:100% !important; height:100% !important; touch-action:none; }   /* 畫布永遠填滿外框，不會比螢幕寬 */
@@ -156,6 +157,7 @@
 </head>
 <body>
 <div id="view"></div>
+<div id="ui"></div>
 <header>
   <h1 id="lvTitle">外牆菜鳥的五天</h1>
   <div id="stats">
@@ -1529,9 +1531,14 @@ function refit(){ const vv=window.visualViewport; if(!(vv && vv.scale>1.01) && (
 const VP_A='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no', VP_B='width=device-width, initial-scale=1.0001, minimum-scale=1.0, maximum-scale=1.0001, user-scalable=no';
 function unzoom(){ const m=document.querySelector('meta[name=viewport]'); m.setAttribute('content',VP_B); setTimeout(()=>{ m.setAttribute('content',VP_A); setTimeout(()=>{ scrollTo(0,0); refit(); },120); },80); }   // 把縮放設定換一下再換回來：iPhone 會重新照設定排版，回到 1 倍
 const zoomed = () => !!(window.visualViewport && visualViewport.scale>1.05);
-function zoomCheck(){ const z=zoomed(); $('#zoomHint').style.display = z ? 'block' : 'none'; document.documentElement.classList.toggle('zoomed', z); }
+const UI=document.getElementById('ui');
+['header','#help','#sub','#zoomHint','#camBtns','#testTag','#ticker','#side','#toasts','#err','#dlg','#menu','#cast','#troph','#locker','#card','#fail','#dayEnd','#nameDlg'].forEach(q=>{ const e=document.querySelector(q); if(e) UI.append(e); });   // 資訊框都搬進 #ui（畫布、淡出黑幕、頭上的泡泡留在外面：它們跟著 3D 畫面走）
+function syncUI(){ const vv=window.visualViewport; if(!vv) return; const k=vv.scale;
+  if(k<1.01 && Math.abs(vv.offsetLeft)<1 && Math.abs(vv.offsetTop)<1){ if(UI.style.transform){ UI.style.transform=''; UI.style.width=''; UI.style.height=''; } return; }
+  UI.style.width=(vv.width*k)+'px'; UI.style.height=(vv.height*k)+'px'; UI.style.transform=`translate(${vv.offsetLeft}px,${vv.offsetTop}px) scale(${1/k})`; }   // 整頁被放大 k 倍：這一層反過來縮 1/k，移到看得到的那一塊
+function zoomCheck(){ syncUI(); const z=zoomed(); $('#zoomHint').style.display = z ? 'block' : 'none'; document.documentElement.classList.toggle('zoomed', z); }
 addEventListener('resize',refit); addEventListener('orientationchange',()=>{ [0,150,500].forEach(d=>setTimeout(refit,d)); [350,900].forEach(d=>setTimeout(()=>{ if(window.visualViewport && visualViewport.scale>1.01) unzoom(); },d)); });   // 轉向後：被放大了就自動縮回來   // 轉向後瀏覽器要過一下才給對的大小：多算幾次
-if(window.visualViewport) visualViewport.addEventListener('resize',()=>{ fitView(); zoomCheck(); });
+if(window.visualViewport){ visualViewport.addEventListener('resize',()=>{ fitView(); zoomCheck(); }); visualViewport.addEventListener('scroll',syncUI); }
 document.getElementById('zoomHint').addEventListener('click',unzoom);
 if(window.ResizeObserver) new ResizeObserver(fitView).observe(VIEW);
 fitView();
