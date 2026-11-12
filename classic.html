@@ -1832,7 +1832,7 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
     brow=std(c.hair||0x3a2a20), blush=std(0xf4a6a6), lf=!!f.lashes;   // 主角：小黑點眼睛、細眉毛、腮紅（其他人維持眼神死的上班族）
     [-1,1].forEach(sd=>{ const x=sd*0.072; g.add(ball(0.022,iris,x,1.585,0.188,1,1.25,0.6));   // 小黑點眼睛
       if(lf) [0,1].forEach(k=>{ const fl=box(0.02,0.007,0.008, x+sd*(0.014+k*0.012),1.616-k*0.008,0.195, mat.dark); fl.rotation.z=sd*(0.5+k*0.4); g.add(fl); });   // 女生：眼睛外上角兩撇睫毛
-      if(off){ const br=box(0.06,0.012,0.01, x,1.69,0.18, brow); br.rotation.z=-sd*0.12; g.add(br); } g.add(ball(0.03,blush,sd*0.118,1.53,0.165,1,0.55,0.3)); });   // 細眉毛、腮紅
+      if(off){ const br=box(0.052,0.011,0.01, x,1.632,0.19, brow); br.rotation.z=-sd*0.1; g.add(br); } if(lf) g.add(ball(0.03,blush,sd*0.118,1.53,0.165,1,0.55,0.3)); });   // 細眉毛（在髮際線下面，不會被頭髮包住）；腮紅只有女生
     g.add(box(0.036,0.008,0.01, 0,1.49,0.196, lf ? std(0xb35a5a) : mat.dark)); }   // 小小一字嘴（不笑，笑起來看起來憨憨的）
   else {
   const ey = f.squint ? 0.32 : 1;   // 瞇眼：眼睛壓成一條縫
