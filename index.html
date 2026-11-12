@@ -1709,19 +1709,22 @@ function makeCommonCar(kind,col){ const g=new THREE.Group(), gl=std(0x161d26,{em
 function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pickup','hatch'].includes(kind)) return makeCommonCar(kind); const g=new THREE.Group(), u=g.userData, gl=std(0x2d4a6e,{emissive:0x0c1826}), dk=std(0x1b1e24), amber=std(0xffa51f,{emissive:0x7a4400});
   const ins=pts=>pts.map(q=> q[0]==='q' ? ['q', q[1]-Math.sign(q[1])*0.07, q[2], q[3]-Math.sign(q[3])*0.07, q[4]] : [q[0]-Math.sign(q[0])*0.07, q[1]]);   // 輪廓內縮一個圓角，細節才不會被蓋住
   const wheels=(xs,z,hub,r)=>{ u.wheels=[[-xs,-z],[-xs,z],[xs,-z],[xs,z]].map(([x,zz])=>{ const w=wheel(x,zz,hub,r); g.add(w); return w; }); };
-  if(kind==='heli'){ const red=std(0xe8413c), wt=std(0xf6f6f6);
-    g.add(ball(1,red,0,1.5,0,1.7,1.12,1.12)); g.add(ball(0.93,mat.glass,-0.9,1.58,0,1.12,1.0,1.0)); g.add(ball(1.0,wt,0,0.98,0,1.5,0.78,1.06));
-    g.add(ringX(1.14,0.06,mat.gold,0.35,1.5,0)); g.add(ringX(1.05,0.05,mat.gold,0.75,1.5,0));
-    [-1,1].forEach(sd=>{ const w=new THREE.Mesh(new THREE.CircleGeometry(0.3,20),gl); w.position.set(0.45,1.72,sd*1.075); w.rotation.y=sd>0?0:Math.PI; g.add(w); g.add(box(0.03,0.9,0.02,-0.1,1.45,sd*1.12,dk)); });
-    g.add(ball(0.5,dk,0.3,2.42,0,1.5,0.62,0.9)); g.add(cyl(0.08,0.14,'x',1.1,2.5,0,mat.chrome,10)); g.add(cyl(0.07,0.5,'y',0,2.85,0,dk)); g.add(ball(0.14,mat.chrome,0,3.1,0));
-    const rotor=new THREE.Group(); rotor.position.set(0,3.1,0); for(let i=0;i<3;i++){ const b=new THREE.Group(); b.rotation.y=i*Math.PI*2/3; b.add(box(3.3,0.04,0.26,1.7,0,0,dk)); b.add(box(0.5,0.045,0.27,3.1,0,0,mat.gold)); rotor.add(b); }
-    const disc=new THREE.Mesh(new THREE.CircleGeometry(3.4,36), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.14, side:THREE.DoubleSide, depthWrite:false})); disc.rotation.x=-Math.PI/2; rotor.add(disc); g.add(rotor); u.rotor=rotor; u.disc=disc;
-    const boom=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.26,3.0,12),red); boom.rotation.z=-Math.PI/2; boom.position.set(2.9,1.78,0); boom.castShadow=true; g.add(boom);
-    g.add(extr([[3.9,1.75],[4.5,2.75],[4.72,2.75],[4.5,1.72]],0.1,wt,0.03)); g.add(box(0.5,0.05,1.2,4.0,1.9,0,wt));
-    const tail=new THREE.Group(); tail.position.set(4.55,2.35,0.14); tail.add(box(0.1,1.0,0.04,0,0,0,dk)); tail.add(box(1.0,0.1,0.04,0,0,0,dk)); tail.add(ball(0.07,mat.chrome,0,0,0)); g.add(tail); u.tail=tail;
-    [-0.8,0.8].forEach(z=>{ g.add(cyl(0.055,3.2,'x',0,0.08,z,dk,10)); const tip=cyl(0.055,0.45,'x',-1.8,0.19,z,dk,10); tip.rotation.z=Math.PI/2-0.5;   // 滑橇前端往上翹，接在主管的端點上 g.add(tip);
-      [-0.8,0.8].forEach(x=>{ const st=box(0.06,0.66,0.06,x,0.4,z*0.93,dk); st.rotation.x=z>0?0.2:-0.2; g.add(st); }); });
-    g.add(ball(0.07,mat.red,0.2,1.35,-1.13)); g.add(ball(0.07,std(0x38e06a,{emissive:0x0a7a2a}),0.2,1.35,1.13)); u.strobe=ball(0.08,mat.lamp,4.62,2.82,0); g.add(u.strobe); g.add(cyl(0.12,0.12,'y',-1.3,0.85,0,mat.lamp,12)); }
+  if(kind==='heli'){ const red=std(0xe8413c), wt=std(0xf6f6f6), gold=mat.gold;   // 直升機（機頭朝 -x）：每個零件都貼在機身表面上，不浮、不互穿
+    const BX=1.55, BY=1.0, BZ=0.98, BC=1.45, onBody=(x,y)=>BZ*Math.sqrt(Math.max(0,1-(x/BX)**2-((y-BC)/BY)**2));   // 機身是橢球：算某個高度的表面在哪
+    g.add(ball(1,red,0,BC,0,BX,BY,BZ)); { const bl=new THREE.Mesh(new THREE.SphereGeometry(1,32,10,0,Math.PI*2,1.9,Math.PI-1.9), wt); bl.scale.set(BX*1.006,BY*1.006,BZ*1.006); bl.position.y=BC; g.add(bl); }   // 紅色機身、白色機腹（貼在機身下半部外面的一層殼，交界是一條乾淨的線）
+    { const cg=new THREE.SphereGeometry(1,28,16,-0.95,1.9,0.38,1.12), cn=new THREE.Mesh(cg, mat.glass); cn.scale.set(BX*1.012,BY*1.012,BZ*1.012); cn.position.y=BC; g.add(cn); }   // 前面的擋風玻璃：貼著機身表面的一片曲面
+    { const bd=new THREE.Mesh(new THREE.TorusGeometry(1,0.028,6,48), gold); bd.rotation.x=Math.PI/2; bd.scale.set(BX*1.008,BZ*1.008,1); bd.position.y=BC; g.add(bd); }   // 金色腰線：繞機身一圈，貼在表面
+    g.add(ball(0.5,std(0x3a4350),0.35,2.3,0,1.4,0.5,0.75)); g.add(cyl(0.07,0.48,'y',0,2.75,0,std(0x3a4350),12)); g.add(ball(0.14,mat.chrome,0,3.0,0)); g.add(cyl(0.07,0.22,'x',1.12,2.32,0,mat.chrome,10));   // 引擎罩、旋翼軸、軸頭、排氣管
+    const rotor=new THREE.Group(); rotor.position.set(0,3.0,0); for(let i=0;i<3;i++){ const bl=new THREE.Group(); bl.rotation.y=i*Math.PI*2/3; bl.add(box(3.3,0.04,0.26,1.75,0,0,dk)); bl.add(box(0.5,0.045,0.27,3.15,0,0,gold)); rotor.add(bl); }
+    const disc=new THREE.Mesh(new THREE.CircleGeometry(3.45,36), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.14, side:THREE.DoubleSide, depthWrite:false})); disc.rotation.x=-Math.PI/2; rotor.add(disc); g.add(rotor); u.rotor=rotor; u.disc=disc;
+    const boom=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.24,3.1,14),red); boom.rotation.z=-Math.PI/2; boom.position.set(2.85,1.72,0); boom.castShadow=true; g.add(boom);   // 尾桁：從機身後面伸出去
+    g.add(extr([[3.95,1.7],[4.45,2.65],[4.68,2.65],[4.5,1.66]],0.1,wt,0.03)); g.add(box(0.55,0.05,1.2,3.95,1.82,0,wt)); g.add(box(0.12,0.06,0.06,3.95,1.78,0,dk));   // 垂直尾翼、水平安定面
+    const tail=new THREE.Group(); tail.position.set(4.5,2.25,0.1); tail.add(box(0.1,0.95,0.035,0,0,0,dk)); tail.add(box(0.95,0.1,0.035,0,0,0,dk)); tail.add(ball(0.06,mat.chrome,0,0,0)); g.add(tail); u.tail=tail;   // 尾旋翼：在尾翼旁邊
+    [-1,1].forEach(sd=>{ const z=sd*0.82; g.add(cyl(0.055,3.0,'x',-0.1,0.08,z,dk,10)); const tip=cyl(0.055,0.42,'x',-1.75,0.17,z,dk,10); tip.rotation.z=Math.PI/2-0.5; g.add(tip);   // 滑橇＋前端往上翹
+      [-0.75,0.7].forEach(x=>g.add(cyl(0.045,0.5,'y',x,0.33,z,dk,10))); });   // 滑橇的直腳
+    [-0.75,0.7].forEach(x=>g.add(cyl(0.045,1.64,'z',x,0.58,0,dk,10)));   // 橫管：兩根滑橇之間，接在機腹底下
+    g.add(ball(0.06,mat.red,0.2,1.35,-onBody(0.2,1.35)-0.02)); g.add(ball(0.06,std(0x38e06a,{emissive:0x0a7a2a}),0.2,1.35,onBody(0.2,1.35)+0.02)); u.strobe=ball(0.07,mat.lamp,4.6,2.7,0); g.add(u.strobe);   // 左紅右綠的航行燈、尾翼頂的閃燈
+    g.add(cyl(0.11,0.1,'y',-0.8,0.6,0,mat.lamp,12)); }   // 機頭下面的探照燈（貼在機腹）
   else if(kind==='benz'){ const paint=std(0x15161a), W=1.84;                    // 大 G：方方正正、圓頭燈、葉子板上的方向燈、車尾備胎
     g.add(extr(ins([[-1.9,0.44],[-1.9,1.08],['q',-1.9,1.15,-1.8,1.15],[1.8,1.15],['q',1.87,1.15,1.87,1.08],[1.87,0.44]]),W,paint,0.06));
     g.add(extr([[-0.74,1.12],[-0.63,1.86],['q',-0.61,1.93,-0.5,1.93],[1.7,1.93],['q',1.8,1.93,1.8,1.84],[1.8,1.12]],W-0.1,paint,0.05));
@@ -1765,7 +1768,8 @@ function rideOn(g){ const me=LV.actors.you; if(!me) return; const u=g.userData, 
   mu.armL.rotation.x=mu.armR.rotation.x=-1.05; mu.armL.rotation.z=0.12; mu.armR.rotation.z=-0.12; me.g.traverse(o=>{ if(o.userData.blob) o.visible=false; }); }
 function rideOff(g){ const me=LV.actors.you; if(me) me.g.traverse(o=>{ if(o.userData.blob) o.visible=true; }); g.updateMatrixWorld(true); _rv.set(g.userData.seat.x, 0, 0.36); g.localToWorld(_rv); return {x:_rv.x, z:_rv.z}; }   // 下車：站在坐墊旁邊
 let cut=null;   // 進場動畫：stage 0 開進來／降落，1 下車走進場，2 結束（座駕留在場邊）
-function runEntrance(kind, then){ const g=makeRide(kind); LV.group.add(g); LV.myRide=g; LV.actors.you.g.visible=false; cut={kind,g,t:0,stage:0,then}; camGoal={theta:L.yard!==undefined?-0.25:0.1,phi:1.05,dist:22}; award('misc.ride'); stepCut(0); }
+function runEntrance(kind, then){ const g=makeRide(kind); LV.group.add(g); LV.myRide=g;
+  if(kind==='heli'){ const u=g.userData; LV.fx.push(dt=>{ if(!u.landed || !(u.sp>0)) return; u.sp=Math.max(0,u.sp-dt*(u.sp>12?5:3)); u.rotor.rotation.y+=dt*u.sp; u.tail.rotation.z+=dt*u.sp*0.9; u.disc.material.opacity=u.sp>10 ? Math.min(0.16,u.sp/34*0.16) : 0; }); }   /* 直升機降落後：螺旋槳慢慢減速到停（大約 9 秒） */ LV.actors.you.g.visible=false; cut={kind,g,t:0,stage:0,then}; camGoal={theta:L.yard!==undefined?-0.25:0.1,phi:1.05,dist:22}; award('misc.ride'); stepCut(0); }
 // 灌漿動畫：壓送車從後門沿便道開進來停在樓下 → 撐開支撐腳、伸出臂架到這一層 → 混凝土由遠灌到近，工人跟在後面推平 → 收臂、往前開，從前門出去
 function setSeg(m,a,b){ m.position.copy(a).add(b).multiplyScalar(0.5); m.lookAt(b); m.scale.z=Math.max(0.01,a.distanceTo(b)); }   // 把一根桿子擺在 a、b 兩點之間
 function pumpTruck(){ const g=new THREE.Group(), ty=std(0xe0a91f), dk=std(0x23272d), wn=std(0x9fd0f0,{emissive:0x24465a});          // 真實比例：車長約 11 公尺、寬 2.5、高 3.4（人高 1.8）
@@ -1807,7 +1811,7 @@ function stepCut(dt){ if(cut.kind==='pour'){ stepPour(cut,dt); return; }
   const c=cut, g=c.g, u=g.userData, heli=c.kind==='heli', dur=heli?3.4:2.6; c.t+=dt; const k=Math.min(1,c.t/dur);
   if(c.stage<2 && !LV.hoisting){ const follow = c.stage===0 && !heli, tx = follow ? g.position.x : c.stage===0 ? L.cx-8 : (LV.actors.you.x+L.cx)/2, ty = (c.stage===0 ? yardY() : L.gy)+(c.stage===0 && heli ? 3.2 : 1.3), q=Math.min(1,dt*3); target.x+=(tx-target.x)*q; target.y+=(ty-target.y)*q; if(follow) target.z+=(g.position.z-target.z)*q; else if(c.stage===1) target.z+=(LV.actors.you.z-target.z)*q; }   /* 開車、騎車：鏡頭跟著車子走（停車格在北門附近，不跟會跑出畫面） */
   if(heli){ const e=1-Math.pow(1-k,2), sp = c.stage ? Math.max(2,30-(c.t-dur)*6) : 34; g.position.set(L.cx-13.5, yardY()+(1-e)*14, 7.5); /* 降在車道旁邊的空地，不停在路中間 */ g.rotation.y=2.75+(1-e)*2.2; g.rotation.z = c.stage ? 0 : Math.sin(c.t*2.2)*0.05;
-    u.rotor.rotation.y+=dt*sp; u.tail.rotation.z+=dt*30; u.disc.material.opacity=Math.min(0.16, sp/34*0.16)*(sp>8?1:0); u.strobe.visible=(c.t*2.5)%1<0.2; }
+    if(!c.stage){ u.sp=34; u.rotor.rotation.y+=dt*34; u.tail.rotation.z+=dt*30; u.disc.material.opacity=0.16; } else u.landed=true; u.strobe.visible=(c.t*2.5)%1<0.2; }   /* 降落後：交給 spinDown 慢慢停 */
   else { const e=1-Math.pow(1-k,3); const ps=parkSpot(), P=q=>{ const v=Math.max(0,Math.min(1,(q-0.82)/0.18)); return {x:L.cx+ps.rx-ps.turn*v*v*(3-2*v), z:ps.z-(1-q)*(ps.z-ps.z0)}; }   /* 沿著便道開進來，最後一段往左彎進停車區的空格 */, pa=P(e), pb=P(Math.min(1,e+0.004));   /* 路線：最後一段往左彎進車道旁的空地 */
     g.position.set(pa.x, yardY()+(c.stage?0:Math.abs(Math.sin(c.t*14))*0.03*(1-k)), pa.z); g.rotation.y = e<0.995 ? Math.atan2(pb.z-pa.z, pa.x-pb.x) : (ps.z0>ps.z ? -Math.PI/2 : Math.PI/2);   /* 車頭照行進方向轉，不是橫著平移；停好時車頭朝最後開的方向（週五從南邊大門進來，車頭朝北；原本固定朝南，停好會突然轉 180 度） */ if(!c.stage) u.wheels.forEach(w=>w.rotation.z+=dt*22*(1-k*k));
     if(c.stage && u.doors) u.doors.forEach((d,i)=>{ d.rotation.x+=((i?-1:1)*1.75-d.rotation.x)*Math.min(1,dt*4); });
@@ -2124,6 +2128,8 @@ function followSun(p=target){ const r=Math.round(p.dot(SUN_R)/SUN_TEX)*SUN_TEX, 
 let camShake=0;                                                                        // 畫面震動（揮棒打到時）
 function placeCam(){ followSun(); const dx=Math.sin(phi)*Math.sin(theta), dz=Math.sin(phi)*Math.cos(theta), R=LV.room; let d=dist;
   if(R){ const m=0.4; if(dx>1e-4) d=Math.min(d,(R.x1-m-target.x)/dx); else if(dx<-1e-4) d=Math.min(d,(R.x0+m-target.x)/dx); if(dz>1e-4) d=Math.min(d,(R.z1-m-target.z)/dz); else if(dz<-1e-4) d=Math.min(d,(R.z0+m-target.z)/dz); d=Math.max(0.8,d); }   // 室內：鏡頭碰到牆之前先拉近
+  if(L && L.yard!==undefined && !L.bench){ const B={x0:-3.55,x1:13.15,z0:-10.85,z1:8.55,y0:yardY()-2,y1:L.gy-0.12}, py=Math.cos(phi), inB=(x,y,z)=>x>B.x0 && x<B.x1 && z>B.z0 && z<B.z1 && y>B.y0 && y<B.y1;   // 週二：大樓的一到三樓（四樓樓板以下）裡面沒有做，鏡頭不准鑽進去
+    if(!inB(target.x,target.y,target.z) && inB(target.x+d*dx,target.y+d*py,target.z+d*dz)){ let lo=0, hi=d; for(let i=0;i<14;i++){ const m=(lo+hi)/2; if(inB(target.x+m*dx,target.y+m*py,target.z+m*dz)) hi=m; else lo=m; } d=Math.max(0.8,lo-0.15); } }   // 會鑽進去：拉近，停在牆外（或樓板上面）
   camera.position.set(target.x+d*dx, target.y+d*Math.cos(phi), target.z+d*dz); camera.lookAt(target);
   if(camShake>0){ camera.position.x+=(Math.random()-0.5)*camShake*0.6; camera.position.y+=(Math.random()-0.5)*camShake*0.6; }
   const nn=Math.min(0.5,Math.max(0.03,d*0.02)); if(Math.abs(camera.near-nn)>0.005){ camera.near=nn; camera.updateProjectionMatrix(); } }   // 鏡頭越遠，近裁切面越遠：深度比較準，地上貼的東西不會閃
@@ -2612,6 +2618,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
     const slots = L.office ? [[L.cx+2.98,1.2],[L.cx+2.98,3.4],[L.cx-2.98,2.6]] : pickHomes(L.npcs.length+fanCount());   /* 多挑的位置給小弟待命 */ /* 椅子拉近桌子，手才搆得到鍵盤 */ L.npcs.forEach((w,k)=>{ const a=makeActor(w, slots[k][0], slots[k][1]); if(L.office) seat(a); });   /* 辦公室：坐在自己的工位 */ if(L.office) [['di',L.cx-2.98,4.8],['hao',L.cx+2.98,5.6]].forEach(([w,x,z])=>seat(makeActor(w,x,z)));   // 兩個小弟也坐在工位上
     for(let k=0, nf=fanCount(); k<nf; k++){ const f=makeActor(k?'hao':'di', L.cx+(k?0.9:-0.9), 2.5); f.follower=true; f.g.scale.setScalar(0.86); const h=slots[L.npcs.length+k]; f.post = h ? {x:h[0], z:h[1]} : {x:L.cx+(k?0.9:-0.9), z:2.5}; }   // post＝沒事做的時候站的地方（不擋料、不擋路）
     if(L.plant) plantWorld(); else if(!L.office && !L.indoor){ siteSigns(); siteWorld(); }
+    LV.fx.push(crewChat);   // 背景工人講垃圾話
     LV.pick.push(spot.userData.disc);
     if(L.view){ target.set(...L.view.t); theta=L.view.theta; phi=L.view.phi; dist=L.view.dist; } else { target.set(L.cx, L.gy+1.3, 2.5); theta=0.5; phi=1.08; dist=12; }
     minD=4; maxD = L.yard!==undefined ? 45 : 24;   /* 週二在四樓：可以拉遠看整個工地（圍籬放大後約 68×48 公尺） */
@@ -2714,11 +2721,26 @@ $('#zIn').onclick=()=>zoomBy(0.8); $('#zOut').onclick=()=>zoomBy(1.25);
 // ===================== 撞人、對話泡泡、碎念 =====================
 let bumpTotal=0, lastAct=performance.now(), nextIdle=performance.now()+9000;
 const bubs={}, _v=new THREE.Vector3();
-function bubble(who,text,mad,pen){ const a=LV.actors[who]; if(!a) return; let b=bubs[who]; if(!b){ b=bubs[who]={el:document.createElement('div')}; $('#bubbles').append(b.el); }
+function bubble(who,text,mad,pen){ const obj = who && typeof who==='object' ? who : null, a = obj ? null : LV.actors[who]; if(!a && !obj) return; const key = obj ? 'o'+obj.uuid : who;   /* who 也可以直接給一個人（背景工人） */
+  let b=bubs[key]; if(!b){ b=bubs[key]={el:document.createElement('div')}; $('#bubbles').append(b.el); } b.obj=obj;
   b.el.className='bub'+(mad?' mad':''); b.el.textContent=fill(text); if(pen){ const s=document.createElement('span'); s.className='pen'; s.textContent=pen; b.el.append(s); }
-  b.el.style.display='block'; b.until=performance.now()+Math.max(4500, 2200+b.el.textContent.length*260); a.lookT=b.until; /* 照字數算：至少 4.5 秒，每多一個字多 0.26 秒 */ b.el.style.animation='none'; void b.el.offsetWidth; b.el.style.animation=''; }
+  b.el.style.display='block'; b.until=performance.now()+Math.max(4500, 2200+b.el.textContent.length*260); if(a) a.lookT=b.until; /* 照字數算：至少 4.5 秒，每多一個字多 0.26 秒 */ b.el.style.animation='none'; void b.el.offsetWidth; b.el.style.animation=''; }
+// 背景工人的隨機垃圾話（黑色幽默）：每 5～10 秒，挑一個畫面裡看得到、沒被敲倒的人講一句
+const CREW_TALK = { all:['今天又是充實的一天，充實到想離職。','老闆說今年會加薪，我笑了一整個早上。','安全帽戴好，頭殼壞掉公司不賠的。','這進度喔，要嘛加班，要嘛加班。','聽說隔壁工地發年終，我們發便當。','主任說安全第一，進度第零。','我腰椎跟這棟樓一樣，都還在施工中。','中午吃什麼？吃土啦。','圖上畫的跟現場的，只有名字一樣。','這根柱子歪了嗎？……不要問，問了就要拆。','再撐一下就退休了。（今年二十五歲）','加班費？那是什麼？可以吃嗎？','聽說要評鑑，連廁所都要掃三遍。','工期是用來超的，預算是用來追加的。','檳榔一顆，力氣十倍，牙齒剩一半。','設計部的又下來了，八成圖又改了。','我在這做三年了，還是不知道這棟要蓋幾樓。','休息十分鐘，結果琳姊走過來了。'],
+  tie:['綁一個結一塊錢的話，我早就財富自由了。','手綁到抽筋，主任還說太慢。','鋼筋綁到我晚上都夢到自己被綁。'],
+  hammer:['敲不進去就換一支大一點的槌子。','敲歪了？那叫現場調整。','我耳朵已經聽不到加班兩個字了。'],
+  write:['數量對不上……算了，寫對的那個。','這張單子簽了，出事就是我的。','點了三遍，三遍都不一樣。'],
+  haul:['搬完這箱我就……還有八十箱。','這箱比我的人生還重。','腰：我辭職。'], walk:['走來走去，看起來比較像在做事。','這趟走完，今天的運動量就夠了。'],
+  plant:['三明治板？我只想吃三明治。','堆高機都比我會做事。','廠長說今天要出貨，昨天也這樣說。'], office:['開會開到一半，會議又生出一個會議。','咖啡自費，加班免費。'], rain:['雨衣是防水的，薪水是防漲的。','下雨停工，但是不停罵。'] };
+let chatT=6;
+function crewChat(dt){ if(!L || dlgOpen || (cut && cut.stage<2) || done) return; chatT-=dt; if(chatT>0) return; chatT=5+Math.random()*5;
+  const act=new Set(Object.values(LV.actors).map(a=>a.g)), list=[], v=new THREE.Vector3();
+  LV.group.traverse(o=>{ const u=o.userData; if(!(u && u.legL && u.armR) || act.has(o) || u.down) return; for(let q=o;q;q=q.parent) if(!q.visible) return; o.getWorldPosition(v); if(v.distanceTo(target)>24) return; const pr=v.clone().project(camera); if(pr.z>1 || Math.abs(pr.x)>0.85 || Math.abs(pr.y)>0.8) return; list.push(o); });   // 畫面裡看得到的人
+  if(!list.length) return; const o=pickOne(list), k=o.userData.crew && o.userData.crew.kind, pool=(CREW_TALK[k]||[]).concat(L.plant?CREW_TALK.plant:L.office?CREW_TALK.office:L.indoor?CREW_TALK.rain:[], CREW_TALK.all);
+  bubble(o, pickOne(pool)); }
 function clearBubbles(){ Object.keys(bubs).forEach(k=>{ bubs[k].el.remove(); delete bubs[k]; }); }
-function placeBubbles(now){ for(const k in bubs){ const b=bubs[k], a=LV.actors[k]; if(!a||now>b.until){ b.el.style.display='none'; continue; }
+function placeBubbles(now){ for(const k in bubs){ const b=bubs[k], a=b.obj ? null : LV.actors[k]; if((!a && !(b.obj && b.obj.parent)) || now>b.until){ b.el.style.display='none'; continue; }
+  if(b.obj){ b.obj.getWorldPosition(_v); _v.y+=2.45*b.obj.scale.y; _v.project(camera); if(_v.z>1){ b.el.style.display='none'; continue; } b.el.style.display='block'; } else   /* 背景工人：泡泡跟著他的頭；在鏡頭後面就不顯示 */
   _v.set(a.x, gyAt(a.x,a.z)+2.32, a.z).project(camera); b.el.style.left=((_v.x+1)/2*vw())+'px'; b.el.style.top=((1-_v.y)/2*vh())+'px'; } }
 let patience=100, failed=false, warned=false, patShown=100;
 function patUI(){ patShown=patience; const f=$('#patFill'); f.style.width=Math.round(patience)+'%'; f.style.background = patience>55 ? 'var(--ok)' : patience>28 ? '#ffd166' : 'var(--bad)'; }
