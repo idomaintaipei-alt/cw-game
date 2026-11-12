@@ -575,8 +575,8 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
   [0,1.4].forEach(a=>{ S(box(1.1,2.2,1.1, ox-8.0-a,y0+1.1,oz+0.4, std(0x2f7fc4))); S(box(1.2,0.12,1.2, ox-8.0-a,y0+2.26,oz+0.4, mat.white)); });   // 流動廁所：樓梯再過去的西邊
   excavator(cx-25,y0,10.5,2.4); excavator(cx+6.5,y0,-16.3,-0.4);   // 怪手：西邊空地、主樓後面（各配一堆土）
   backYard(cx, y0, S);   // 工務所後面：鋼筋加工棚、帷幕牆材料暫存區、模板堆
-  if(hi) parkingLot(y0, [[cx-9.9,13.0,18.0],[cx-12.5,13.0,18.0],[cx-15.1,13.0,18.0],[cx-17.7,13.0,18.0],[cx-9.9,18.4,20.6],[cx-15.6,18.4,20.6]],
-    [['ev',cx-13.8,15.5],['bmw',cx-16.4,15.5]], [['jet',cx-10.6,19.5],['bws',cx-11.5,19.5],['cygnus',cx-12.4,19.5],['gogoro',cx-13.3,19.5],['smax',cx-14.2,19.5],['bws',cx-15.1,19.5]]);   // 停車區：北門內側，直升機降落區的北邊
+  if(hi) parkingLot(y0, [[cx-4.0,15.1,20.1],[cx-1.4,15.1,20.1],[cx+1.2,15.1,20.1],[cx+3.8,15.1,20.1],[cx+6.4,15.1,20.1],[cx+9.0,15.1,20.1],[cx+11.6,15.1,20.1],[cx-9.9,13.0,18.0],[cx-12.5,13.0,18.0],[cx-15.1,13.0,18.0],[cx-17.7,13.0,18.0],[cx-9.9,18.4,20.6],[cx-15.6,18.4,20.6]],
+    [['sedan',cx-13.8,15.5],['pickup',cx-16.4,15.5],['sedan',cx-2.7,17.6,0x2f4a66],['hatch',cx-0.1,17.6,0xe8e9e4],['pickup',cx+2.5,17.6],['sedan',cx+5.1,17.6,0x1b1e24],['hatch',cx+7.7,17.6,0x4f7d4a],['sedan',cx+10.3,17.6]], [['plainA',cx-10.6,19.5],['plainB',cx-11.5,19.5],['plainC',cx-12.4,19.5],['plainA',cx-13.3,19.5],['plainB',cx-14.2,19.5],['plainA',cx-15.1,19.5]]);   /* 同事開的都是普通車 */   // 停車區：北門內側，直升機降落區的北邊
   // 料堆：鋼筋、模板、水泥、鋼管、水桶
   for(let k=0;k<7;k++) S(cyl(0.045,6,'z', cx+14.2+k*0.092,y0+0.155,4.2, mat.rebar,6)); [2.2,6.2].forEach(z=>S(box(1.1,0.11,0.12, cx+14.5,y0+0.055,z, mat.wood)));
   S(box(1.25,0.5,2.45, cx+14.6,y0+0.25,9.2, mat.wood)); S(box(1.25,0.85,2.45, cx+16.2,y0+0.425,9.5, mat.wood));
@@ -819,8 +819,8 @@ function plantWorld(){ const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShad
   noticeBoard(cx-1.6, 17.6, y0, [['工程名稱','爆肝科技二廠擴建工程（外牆三明治板）'],['建造執照','（115）建字第 9528 號（隔壁那棟是 9527）'],['起造人','爆肝科技股份有限公司'],['設計人','某建築師事務所（說今天會出圖）'],['監造人','同上（還是自己監自己）'],['承造人','爆肝營造股份有限公司'],
     ['工地主任','鐵叔（兩個工地輪流跑）'],['專任工程人員','在週二那個工地'],['職業安全衛生','琳姊（兩個工地一起管）'],['開工日期','115 年 5 月 1 日'],['預定完工','今天（據說可以準時下班）'],['陳情專線','（響了也沒人敢接）']]);   // 工程告示牌
   scissorLift(cx+12.2, y0, -4.2);   // 鋼構東側：高空作業車
-  parkingLot(y0, [[cx-8.6,11.3,15.1],[cx-11.2,11.3,15.1],[cx-13.8,11.3,15.1],[cx-14.6,12.4,14.8],[cx-19.0,12.4,14.8]],
-    [['ev',cx-12.5,13.2]], [['bws',cx-15.0,13.6],['jet',cx-15.9,13.6],['gogoro',cx-16.8,13.6],['cygnus',cx-17.7,13.6],['bws',cx-18.6,13.6]]);   // 停車區：北邊圍牆內側（直升機降落區北邊）
+  parkingLot(y0, [[cx-1.8,11.5,15.3],[cx+0.8,11.5,15.3],[cx+3.4,11.5,15.3],[cx+6.0,11.5,15.3],[cx+8.6,11.5,15.3],[cx-8.6,11.3,15.1],[cx-11.2,11.3,15.1],[cx-13.8,11.3,15.1],[cx-14.6,12.4,14.8],[cx-19.0,12.4,14.8]],
+    [['hatch',cx-12.5,13.2],['sedan',cx-0.5,13.4,0x2f4a66],['pickup',cx+2.1,13.4],['sedan',cx+4.7,13.4],['hatch',cx+7.3,13.4,0xe8e9e4]], [['plainB',cx-15.0,13.6],['plainA',cx-15.9,13.6],['plainC',cx-16.8,13.6],['plainA',cx-17.7,13.6],['plainB',cx-18.6,13.6]]);   /* 同事開的都是普通車 */   // 停車區：北邊圍牆內側（直升機降落區北邊）
   const fk=new THREE.Group(), or=std(0xf08a1c); fk.position.set(cx+12.2,y0,3.6); fk.rotation.y=-0.5; fk.add(box(1.1,0.7,1.9, 0,0.6,0, or)); fk.add(box(1.0,0.9,0.9, 0,1.4,-0.3, dk)); [[-0.5,0.6],[0.5,0.6],[-0.5,-0.6],[0.5,-0.6]].forEach(([a,b])=>fk.add(cyl(0.28,0.22,'x', a,0.28,b, mat.tire,14)));
   [-0.3,0.3].forEach(a=>{ fk.add(box(0.08,2.2,0.08, a,1.2,1.0, dk)); fk.add(box(0.1,0.05,1.1, a,0.5,1.55, mat.steel)); }); fk.add(box(0.95,0.5,0.9, 0,0.85,1.6, wh)); S(fk);                                // 堆高機，叉著一捆板
   [[13.5,8.5,4],[15.2,8.8,3],[14.0,-2.5,5]].forEach(([a,z,n])=>{ for(let k=0;k<n;k++) S(box(1.0,0.12,3.2, cx+a,y0+0.14+k*0.13,z, k%2?mat.face:wh)); S(box(1.0,0.01,3.2, cx+a,y0+0.085+n*0.13,z, mat.film)); [-1,1].forEach(e=>S(box(1.1,0.08,0.1, cx+a,y0+0.04,z+e*1.1, mat.wood))); });   // 成捆的三明治板
@@ -914,7 +914,7 @@ function scissorLift(x,y,z){ const g=new THREE.Group(); g.position.set(x,y,z); c
 // 停車區：地上畫白線，同事的汽車停在格子裡、機車排一排（車頭朝北）；你的格子空著等你
 function parkingLot(y0, slots, cars, bikes){ const wt=std(0xf4f4f0), ln=(w,d,x,z)=>{ const m=box(w,0.012,d, x,y0+0.026,z, wt); m.castShadow=false; stat(m); };
   slots.forEach(([x,z0,z1])=>ln(0.1, z1-z0, x, (z0+z1)/2));                                                                // 格子之間的分隔線
-  cars.concat(bikes).forEach(([k,x,z])=>{ const g=makeRide(k); g.position.set(x,y0,z); g.rotation.y=Math.PI/2; g.traverse(o=>{ o.castShadow=false; }); stat(g); }); }
+  cars.concat(bikes).forEach(([k,x,z,col])=>{ const g=['sedan','pickup','hatch'].includes(k) ? makeCommonCar(k,col) : makeRide(k); g.position.set(x,y0,z); g.rotation.y=Math.PI/2; g.traverse(o=>{ o.castShadow=false; }); stat(g); }); }
 function siteSigns(){ const cx=L.cx;
   const g1 = L.yard!==undefined;   /* 四樓那一關：立牌插在一樓、北邊大門兩側的圍籬外面，面向馬路（工地這種牌子都放在大門口），不會被隔音帆布擋住 */
   standBoard(['安全第一','進度也是第一','品質還是第一','（預算最後）'], g1?cx-12.0:cx+5.8, g1?22.4:2.3, g1?0:-0.6,2.6,'#f2cf1d','#1b1e24', g1?yardY():undefined);
@@ -1424,6 +1424,9 @@ const BIKES = {
   cygnus:{ paint:0x1f4fbf, accent:0xe8ecf2, rim:0x2a2e35, r:0.27, wb:1.30, tailY:0.9,  lights:'eagle',   exhaust:true },
   smax:  { paint:0x23324a, accent:0x8a939e, rim:0x2a2e35, r:0.29, wb:1.42, tailY:0.92, lights:'twin',    exhaust:true, screen:true, big:true },
   bws:   { paint:0x6b7079, accent:0x1b1e24, rim:0x1b1e24, r:0.285, tw:0.15, wb:1.30, tailY:0.88, lights:'bug', exhaust:true, rugged:true },
+  plainA:{ paint:0x8e959c, accent:0x5a6068, rim:0x3a3f47, r:0.26, wb:1.28, tailY:0.86, lights:'basic', exhaust:true },   // 同事的普通速克達：灰
+  plainB:{ paint:0xe8e9e4, accent:0x8e959c, rim:0x3a3f47, r:0.26, wb:1.28, tailY:0.86, lights:'basic', exhaust:true },   // 白
+  plainC:{ paint:0x7a2a2e, accent:0x3a3f47, rim:0x3a3f47, r:0.26, wb:1.28, tailY:0.86, lights:'basic', exhaust:true },   // 暗紅
   gogoro:{ paint:0xf2f4f6, accent:0x8a939e, rim:0x3a3f47, r:0.27, wb:1.30, tailY:0.84, lights:'oval',    round:true },
 };
 function makeBike(kind){ const S=BIKES[kind], g=new THREE.Group(), u=g.userData, P=std(S.paint), A=std(S.accent), dk=std(0x1b1e24), gr=std(0x3a3f47), rim=std(S.rim), lamp=mat.lamp;
@@ -1454,6 +1457,7 @@ function makeBike(kind){ const S=BIKES[kind], g=new THREE.Group(), u=g.userData,
   else if(S.lights==='eagle'){ [-1,1].forEach(e=>{ const m=box(0.03,0.07,0.13, hx+0.01,0.86,e*0.085, dk); m.rotation.x=-e*0.3; add(m); const l=box(0.034,0.026,0.11, hx,0.87,e*0.085, lamp); l.rotation.x=-e*0.3; add(l);   // 勁戰七代：雙鷹眼（往外上斜）
       add(cyl(0.02,0.03,'x', hx-0.002,0.82,e*0.06, lamp,14)); }); }
   else if(S.lights==='twin'){ [-1,1].forEach(e=>{ add(box(0.035,0.085,0.14, hx,0.8,e*0.11, dk)); add(box(0.04,0.05,0.12, hx-0.004,0.8,e*0.11, lamp)); add(box(0.01,0.012,0.16, hx-0.004,0.88,e*0.11, lamp)); }); }   // S-MAX：左右兩顆＋上面的 LED 日行燈
+  else if(S.lights==='basic'){ add(cyl(0.055,0.04,'x', hx,0.86,0, lamp,16)); add(ringX(0.058,0.01,mat.chrome,hx-0.01,0.86,0)); }   // 普通款：一顆圓頭燈
   else if(S.lights==='bug'){ add(box(0.035,0.16,0.32, hx+0.015,0.84,0, dk)); [-1,1].forEach(e=>{ add(cyl(0.062,0.04,'x', hx,0.84,e*0.08, lamp,20)); add(ringX(0.064,0.012,dk,hx-0.012,0.84,e*0.08)); }); }   // BWS：兩顆圓形大燈
   else { add(ball(0.08,lamp,hx+0.01,0.84,0,0.5,0.62,1.35)); add(ball(0.095,gr,hx+0.025,0.84,0,0.45,0.75,1.4)); }             // Gogoro：中間一顆橢圓頭燈
   [-1,1].forEach(e=>add(box(0.03,0.025,0.05, -0.6*k,0.55,e*(S.big?0.24:0.22), std(0xffa51f,{emissive:0x7a4400}))));   // 前方向燈：在擋腳板兩側                    // 前方向燈
@@ -1467,7 +1471,22 @@ function makeBike(kind){ const S=BIKES[kind], g=new THREE.Group(), u=g.userData,
     add(box(0.34,0.02,0.3, 0.86,0.9,0, dk)); [0.72,0.86,1.0].forEach(x=>add(box(0.02,0.025,0.3, x,0.915,0, dk)));          // 後貨架（工地載東西）
     add(cyl(0.012,0.4,'z', -0.34,1.13,0, dk,8)); }                                                                         // 龍頭橫桿                                        // 後扶手
   u.seat={x:0.36*k, y:0.81}; return g; }
-function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); const g=new THREE.Group(), u=g.userData, gl=std(0x2d4a6e,{emissive:0x0c1826}), dk=std(0x1b1e24), amber=std(0xffa51f,{emissive:0x7a4400});
+// 同事開的普通車（不放廠牌）：sedan＝銀色轎車、pickup＝白色發財車、hatch＝紅色小車。車頭朝 -x
+function makeCommonCar(kind,col){ const g=new THREE.Group(), gl=std(0x2d4a6e,{emissive:0x0c1826}), dk=std(0x1b1e24), hub=std(0x9aa1a8), add=m=>{ g.add(m); return m; };
+  const wheels=(xs,z,r)=>[[-xs,-z],[-xs,z],[xs,-z],[xs,z]].forEach(([x,zz])=>add(wheel(x,zz,hub,r)));
+  if(kind==='pickup'){ const wt=std(col!==undefined?col:0xf2f2ee), W=1.6;                                                                       // 發財車：前面一個方方的駕駛室，後面一個開放的貨斗
+    add(box(1.5,1.35,W, -1.45,1.15,0, wt)); add(box(0.04,0.6,W-0.2, -2.21,1.45,0, gl)); [-1,1].forEach(e=>add(box(0.8,0.5,0.03, -1.4,1.45,e*(W/2+0.005), gl)));   // 駕駛室、擋風玻璃、側窗
+    add(box(3.9,0.18,W-0.06, 0,0.48,0, dk));   /* 底盤比車身窄一點，側面不跟駕駛室疊在同一個面 */ add(box(2.35,0.08,W, 0.75,0.62,0, wt)); [-1,1].forEach(e=>add(box(2.35,0.4,0.05, 0.75,0.85,e*(W/2-0.025), wt))); add(box(0.05,0.4,W, 1.92,0.85,0, wt)); add(box(0.05,0.55,W, -0.43,0.92,0, wt));   // 底盤、貨斗
+    [-1,1].forEach(e=>{ add(box(0.04,0.12,0.22, -2.22,0.85,e*0.55, mat.lamp)); add(box(0.04,0.14,0.12, 1.95,0.75,e*0.62, mat.red)); }); add(box(0.06,0.2,W+0.04, -2.22,0.55,0, dk));   // 大燈、尾燈、保險桿
+    wheels(1.25,0.72,0.32); return g; }
+  const sedan = kind==='sedan', paint=std(col!==undefined?col:sedan?0xb9bec4:0xa8242c), W=sedan?1.75:1.68, L2=sedan?2.25:1.9;
+  add(extr(sedan ? [[-L2,0.35],[-L2-0.05,0.7],['q',-L2,0.86,-1.6,0.88],[-0.85,0.92],['q',-0.45,1.36,0.3,1.38],[0.95,1.36],['q',1.6,1.3,1.95,0.95],[L2,0.9],[L2,0.35]]
+                 : [[-L2,0.35],[-L2-0.05,0.68],['q',-L2,0.85,-1.4,0.9],[-0.8,0.98],['q',-0.45,1.42,0.2,1.45],[1.3,1.43],['q',1.75,1.4,L2,1.0],[L2,0.35]], W, paint, 0.06));   // 車身的側面輪廓（轎車有車尾行李箱、小車是掀背）
+  add(extr(sedan ? [[-0.8,0.95],['q',-0.42,1.32,0.3,1.34],[0.9,1.32],['q',1.5,1.27,1.8,0.96]] : [[-0.75,1.0],['q',-0.42,1.38,0.2,1.41],[1.25,1.39],['q',1.68,1.36,1.85,1.03]], W-0.12, gl, 0.03));   // 車窗
+  add(box(2*L2-0.2,0.08,W+0.02, 0,0.45,0, dk));                                                                             // 下面一圈黑色飾條
+  [-1,1].forEach(e=>{ add(box(0.06,0.1,0.32, -L2-0.02,0.72,e*(W/2-0.25), mat.lamp)); add(box(0.06,0.1,0.3, L2+0.01,0.82,e*(W/2-0.22), mat.red)); add(box(0.12,0.06,0.04, -0.4,1.0,e*(W/2+0.03), dk)); });   // 大燈、尾燈、後照鏡
+  wheels(sedan?1.35:1.2, W/2-0.12, 0.31); return g; }
+function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pickup','hatch'].includes(kind)) return makeCommonCar(kind); const g=new THREE.Group(), u=g.userData, gl=std(0x2d4a6e,{emissive:0x0c1826}), dk=std(0x1b1e24), amber=std(0xffa51f,{emissive:0x7a4400});
   const ins=pts=>pts.map(q=> q[0]==='q' ? ['q', q[1]-Math.sign(q[1])*0.07, q[2], q[3]-Math.sign(q[3])*0.07, q[4]] : [q[0]-Math.sign(q[0])*0.07, q[1]]);   // 輪廓內縮一個圓角，細節才不會被蓋住
   const wheels=(xs,z,hub,r)=>{ u.wheels=[[-xs,-z],[-xs,z],[xs,-z],[xs,z]].map(([x,zz])=>{ const w=wheel(x,zz,hub,r); g.add(w); return w; }); };
   if(kind==='heli'){ const red=std(0xe8413c), wt=std(0xf6f6f6);
