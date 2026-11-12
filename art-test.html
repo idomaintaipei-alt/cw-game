@@ -545,6 +545,13 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
   for(let k=1;k<=Math.floor(TH/2);k++){ S(cyl(0.03,8.6,'x', cx-14.6,y0+k*2.0,-1.2, mat.steelDark,6)); S(cyl(0.03,10.9,'z', cx-10.4,y0+k*2.0,-6.85, mat.steelDark,6)); }
   const netF=new THREE.Mesh(new THREE.PlaneGeometry(8.7,TH+0.6), mat.net); netF.position.set(cx-14.6,y0+(TH+0.6)/2,-1.1); stat(netF);
   const netS=new THREE.Mesh(new THREE.PlaneGeometry(11.0,TH+0.6), mat.net); netS.rotation.y=Math.PI/2; netS.position.set(cx-10.3,y0+(TH+0.6)/2,-6.85); stat(netS);
+  // 西面、北面也搭鷹架＋掛網（四面都要有防護）
+  for(let k=0;k<=5;k++) S(cyl(0.03,TH+1,'y', cx-19.4,y0+(TH+1)/2,-1.6-k*2.1, mat.steelDark,6));                                   // 西面立桿
+  for(let k=0;k<=4;k++) S(cyl(0.03,TH+1,'y', cx-18.8+k*2.1,y0+(TH+1)/2,-12.88, mat.steelDark,6));                                  // 北面立桿
+  for(let k=1;k<=Math.floor(TH/2);k++){ S(cyl(0.03,11.3,'z', cx-19.4,y0+k*2.0,-7.05, mat.steelDark,6)); S(cyl(0.03,8.9,'x', cx-14.95,y0+k*2.0,-12.88, mat.steelDark,6));   // 橫桿
+    S(box(0.55,0.05,10.6, cx-19.08,y0+k*2.0-0.07,-7.0, mat.wood)); S(box(8.0,0.05,0.55, cx-14.8,y0+k*2.0-0.085,-12.58, mat.wood)); }   /* 踏板：四面各差 0.5～1 公分高，轉角不疊在同一個高度 */
+  [[11.85,-7.025,'x',cx-19.47],[9.2,cx-14.9,'z',-12.95],[0.52,cx-19.21,'z',-1.1],[0.6,-12.65,'x',cx-10.3]].forEach(([w,c,ax,f])=>{ const n=new THREE.Mesh(new THREE.PlaneGeometry(w,TH+0.6), mat.net);   // 西面、北面的網，再補兩個轉角
+    if(ax==='x'){ n.rotation.y=Math.PI/2; n.position.set(f,y0+(TH+0.6)/2,c); } else n.position.set(c,y0+(TH+0.6)/2,f); stat(n); });
   for(let k=1;k<=Math.floor(TH/2);k++){ S(box(8.6,0.05,0.55, cx-14.6,y0+k*2.0-0.06,-1.48, mat.wood)); S(box(0.55,0.05,10.9, cx-10.68,y0+k*2.0-0.075,-6.85, mat.wood)); }   /* 側面的踏板低 1.5 公分，轉角跟正面的踏板不會疊在同一個高度 */                                   // 鷹架上每一層的施工平台（踏板）
   const rod=(p0,p1,r,m)=>{ const d=new THREE.Vector3().subVectors(p1,p0), o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),6), m); o.position.copy(p0).add(p1).multiplyScalar(0.5); o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), d.normalize()); S(o); };   // 兩點之間拉一根桿子或鋼索
   const pf=std(0xf08a1c), plate=std(0x8e959c);
