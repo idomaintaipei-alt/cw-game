@@ -418,7 +418,7 @@ const mat = {
   girtBad:std(0xd9534f,{metalness:.5, roughness:.4}), alu:std(0x56677a,{metalness:.6, roughness:.35}), alu2:std(0x7a8ca0,{metalness:.6, roughness:.35}),
   glass:std(0x78beff,{transparent:true, opacity:.32, metalness:.1, roughness:.05}), seal:std(0x4a4a4a), gasket:std(0x161616), mortar:std(0x9b9a92),
   hole:new THREE.MeshBasicMaterial({color:0x050505}), resin:std(0xa3161a), resinCured:std(0x5c0c0e), brush:std(0x3b7dd8), card:std(0xd8d2c4),
-  face:std(0xdfe3e8,{metalness:.35, roughness:.45}), foam:std(0xe6c86e,{roughness:.9}), film:std(0x7fc4ff,{transparent:true, opacity:.55, roughness:.3}),
+  face:std(0x9fb6ca,{metalness:.35, roughness:.45}),   /* 三明治板的面板：淺灰藍（原本接近白色，跟白車、白牆分不出來） */ foam:std(0xe6c86e,{roughness:.9}), film:std(0x7fc4ff,{transparent:true, opacity:.55, roughness:.3}),
   mark:std(0xffd166,{emissive:0x664400}), clash:std(0xff3b3b,{transparent:true, opacity:.55}), good:std(0x3ddc84,{transparent:true, opacity:.6, emissive:0x0b4020}),
   ghost:new THREE.MeshBasicMaterial({color:0x4da3ff, wireframe:true, transparent:true, opacity:.8}),
   wood:std(0x8a6a42,{roughness:.9}), crate:std(0xc79a5a,{roughness:.85}),
@@ -797,7 +797,7 @@ function factory(){ const y0=L.gy, S=m=>{ m.castShadow=false; return stat(m); },
     [-1,1].forEach(e=>{ const r=box(0.14,0.22,4.25, x,3.92,-4.1-e*2.0, st); r.rotation.x=-e*0.32; S(r); }); });                        // 斜梁：兩邊低、中間屋脊高，下端接在柱頭上
   [-0.5,-2.3,-4.1,-5.9,-7.7].forEach(z=>S(box(14.2,0.1,0.07, 3.5,3.42+0.33*(4.0-Math.abs(z+4.1)),z, mat.steel)));                    // 屋頂檁條
   GY.forEach(y=>{ S(box(3.3,0.15,0.06, -1.85,y,0.03, mat.steel)); S(box(8.4,0.15,0.06, 6.4,y,0.03, mat.steel)); });                   // 這道牆其他跨的檁條
-  S(box(14.2,3.3,0.1, 3.55,1.4,-8.25, mat.face)); [10.66,-3.66].forEach(x=>S(box(0.1,3.3,8.1, x,1.4,-4.15, mat.face))); }             // 後牆、左右兩側的牆：已經封好的三明治板（原本只有右側，左側整面空著）
+  const NF=m=>{ m.userData.noFade=true; return S(m); }; NF(box(14.2,3.3,0.1, 3.55,1.4,-8.25, mat.face)); [10.66,-3.66].forEach(x=>NF(box(0.1,3.3,8.1, x,1.4,-4.15, mat.face))); }   /* 擋到主角也不變透明（原本鏡頭繞到後面，整面牆幾乎看不見） */             // 後牆、左右兩側的牆：已經封好的三明治板（原本只有右側，左側整面空著）
 // 室內的房間：地板只鋪到牆，四面都有牆；鏡頭永遠留在房間裡面（placeCam 會在碰到牆之前把鏡頭拉近），看不到牆的背面和房間外面
 function room(x0,x1,z0,z1,h,wm,door){ const y0=L.gy, W=x1-x0, D=z1-z0, fg=new THREE.PlaneGeometry(W,D), uv=fg.attributes.uv; for(let i=0;i<uv.count;i++) uv.setXY(i, uv.getX(i)*W/200, uv.getY(i)*D/200);
   const f=new THREE.Mesh(fg, mat.office); f.rotation.x=-Math.PI/2; f.position.set((x0+x1)/2,y0,(z0+z1)/2); f.receiveShadow=true; stat(f);
@@ -850,9 +850,9 @@ function plantWorld(){ const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShad
   [[cx-18.4,6.5,'co',1.5,1.0],[cx-16.6,7.0,'roc',1.5,1.0],[cx-14.8,6.5,undefined,1.5,0.9]].forEach(([x,h,k,w,hh])=>safetyFlag(x,y0,18.4,0,h,k,w,hh));   // 北門外三支旗：公司旗、國旗（中間最高）、工安旗（跟週二一樣）
   noticeBoard(cx-1.6, 17.6, y0, [['工程名稱','爆肝科技二廠擴建工程（外牆三明治板）'],['建造執照','（115）建字第 9528 號（隔壁那棟是 9527）'],['起造人','爆肝科技股份有限公司'],['設計人','某建築師事務所（說今天會出圖）'],['監造人','同上（還是自己監自己）'],['承造人','爆肝營造股份有限公司'],
     ['工地主任','鐵叔（兩個工地輪流跑）'],['專任工程人員','在週二那個工地'],['職業安全衛生','琳姊（兩個工地一起管）'],['開工日期','115 年 5 月 1 日'],['預定完工','今天（據說可以準時下班）'],['陳情專線','（響了也沒人敢接）']]);   // 工程告示牌
-  scissorLift(cx+12.2, y0, -4.2);   // 鋼構東側：高空作業車
+  scissorLift(10.71+0.15+0.6, y0, -4.2);   // 廠房東側牆外面：高空作業車貼著牆（平台離牆 15 公分），在鎖牆頂的收邊
   parkingLot(y0, [[cx-1.8,11.5,15.3],[cx+0.8,11.5,15.3],[cx+3.4,11.5,15.3],[cx+6.0,11.5,15.3],[cx+8.6,11.5,15.3],[cx-8.6,11.3,15.1],[cx-11.2,11.3,15.1],[cx-13.8,11.3,15.1],[cx-14.6,12.4,14.8],[cx-19.0,12.4,14.8]],
-    [['hatch',cx-12.5,13.2],['sedan',cx-0.5,13.4,0x2f4a66],['pickup',cx+2.1,13.4],['sedan',cx+4.7,13.4],['hatch',cx+7.3,13.4,0xe8e9e4]], [['plainB',cx-15.0,13.6],['plainA',cx-15.9,13.6],['plainC',cx-16.8,13.6],['plainA',cx-17.7,13.6],['plainB',cx-18.6,13.6]]);   /* 同事開的都是普通車 */   // 停車區：北邊圍牆內側（直升機降落區北邊）
+    [['hatch',cx-12.5,13.2],['sedan',cx-0.5,13.4,0x2f4a66],['pickup',cx+2.1,13.4,0x3f7fc1],['sedan',cx+4.7,13.4,0x2f5d50],['hatch',cx+7.3,13.4,0xc9a46a]], [['plainB',cx-15.0,13.6],['plainA',cx-15.9,13.6],['plainC',cx-16.8,13.6],['plainA',cx-17.7,13.6],['plainB',cx-18.6,13.6]]);   /* 同事開的都是普通車 */   // 停車區：北邊圍牆內側（直升機降落區北邊）
   const fk=new THREE.Group(), or=std(0xf08a1c); fk.position.set(cx+12.2,y0,3.6); fk.rotation.y=-0.5; fk.add(box(1.1,0.7,1.9, 0,0.6,0, or)); fk.add(box(1.0,0.9,0.9, 0,1.4,-0.3, dk)); [[-0.5,0.6],[0.5,0.6],[-0.5,-0.6],[0.5,-0.6]].forEach(([a,b])=>fk.add(cyl(0.28,0.22,'x', a,0.28,b, mat.tire,14)));
   [-0.3,0.3].forEach(a=>{ fk.add(box(0.08,2.2,0.08, a,1.2,1.0, dk)); fk.add(box(0.1,0.05,1.1, a,0.5,1.55, mat.steel)); }); fk.add(box(0.95,0.5,0.9, 0,0.85,1.6, wh)); S(fk);                                // 堆高機，叉著一捆板
   [[13.5,8.5,4],[15.2,8.8,3],[14.0,-2.5,5]].forEach(([a,z,n])=>{ for(let k=0;k<n;k++) S(box(1.0,0.12,3.2, cx+a,y0+0.14+k*0.13,z, k%2?mat.face:wh)); S(box(1.0,0.01,3.2, cx+a,y0+0.085+n*0.13,z, mat.film)); [-1,1].forEach(e=>S(box(1.1,0.08,0.1, cx+a,y0+0.04,z+e*1.1, mat.wood))); });   // 成捆的三明治板
@@ -939,10 +939,10 @@ function scissorLift(x,y,z){ const g=new THREE.Group(); g.position.set(x,y,z); c
   const arms=[], LA=2.2; for(let i=0;i<3;i++) for(const sd of [-1,1]) for(const e of [-1,1]){ const a=box(0.06,0.08,LA, sd*(e<0?0.5:0.43),0,0, dk); g.add(add(a)); arms.push({a,i,e}); }   /* 交叉的兩支左右錯開，不疊在同一個面 */   // 三層剪刀臂（左右兩側、交叉兩支）
   const pf=new THREE.Group(); g.add(pf); pf.add(add(box(1.2,0.1,2.4, 0,0,0, yl))); [[-0.58,0],[0.58,0]].forEach(([a])=>pf.add(add(box(0.04,0.04,2.4, a,1.05,0, yl)))); [-1.18,1.18].forEach(b=>pf.add(add(box(1.2,0.04,0.04, 0,1.05,b, yl))));
   [[-0.58,-1.18],[0.58,-1.18],[-0.58,1.18],[0.58,1.18]].forEach(([a,b])=>pf.add(add(box(0.04,1.05,0.04, a,0.55,b, yl))));   // 平台＋欄杆
-  const w=makePerson({skin:0xd9a577, vest:0xff7a1a, helmet:0xffd21f, feat:{}}); w.position.set(-0.2,0.05,0.3); w.rotation.y=-Math.PI/2; w.traverse(o=>{ if(o.userData.blob) o.visible=false; }); pf.add(w); const u=w.userData;   // 平台上的工人：面向鋼構，手往上鎖螺絲
-  stat(g); const upd=(dt,t)=>{ const q=(Math.sin(t*0.35)+1)/2, h=0.6+Math.min(1,q*1.25)*3.4, step=h/3, ang=Math.asin(Math.min(0.99,step/LA)), half=Math.cos(ang)*LA/2;   // 平台高度 0.6～4 公尺（上面停一下）
-    arms.forEach(({a,i,e})=>{ a.position.set(a.position.x, 0.6+step*(i+0.5), 0); a.rotation.x=e*ang; a.scale.z=1; }); pf.position.y=0.6+h+0.05;
-    u.armR.rotation.x=-2.4+Math.sin(t*6)*0.15; u.armL.rotation.x=-2.2; }; upd(0,0); LV.fx.push(upd); }   // 一建好就先擺好姿勢
+  const w=makePerson({skin:0xd9a577, vest:0xff7a1a, helmet:0xffd21f, feat:{}}); w.position.set(-0.05,0.05,0.3); w.rotation.y=-Math.PI/2; w.traverse(o=>{ if(o.userData.blob) o.visible=false; }); pf.add(w); w.userData.crew={kind:'lift', x, y, z}; const u=w.userData; const dr=new THREE.Group(); dr.add(box(0.07,0.2,0.07, 0,-0.06,0, std(0x2b2f36))); dr.add(box(0.08,0.08,0.22, 0,0.04,0.08, std(0xf2b01e))); dr.add(cyl(0.008,0.08,'z', 0,0.04,0.23, mat.steel,6)); dr.position.set(0,-0.3,0.05); u.armR.userData.elbow.add(dr);   // 平台上的工人：面向牆，右手拿電動起子
+  stat(g); const upd=(dt,t)=>{ const q=(Math.sin(t*0.35)+1)/2, h=0.6+Math.min(1,q*1.25)*0.85, step=h/3, ang=Math.asin(Math.min(0.99,step/LA)), half=Math.cos(ang)*LA/2;   // 平台高度 0.6～4 公尺（上面停一下）
+    arms.forEach(({a,i,e})=>{ a.position.set(a.position.x, 0.6+step*(i+0.5), 0); a.rotation.x=e*ang; a.scale.z=1; }); pf.position.y=0.6+h+0.05;   // 平台 1.25～2.1 公尺：人的手剛好到牆頂（3 公尺）
+    const up=q>0.75; u.armR.rotation.x = up ? -2.05+Math.sin(t*7)*0.1 : -0.3; u.armL.rotation.x = up ? -1.55 : -0.2; };   /* 升到頂：右手往上鎖、左手扶板；升降中：手放下 */ upd(0,0); LV.fx.push(upd); }   // 一建好就先擺好姿勢
 // 停車區：地上畫白線，同事的汽車停在格子裡、機車排一排（車頭朝北）；你的格子空著等你
 function parkingLot(y0, slots, cars, bikes){ const wt=std(0xf4f4f0), ln=(w,d,x,z)=>{ const m=box(w,0.012,d, x,y0+0.026,z, wt); m.castShadow=false; stat(m); };
   slots.forEach(([x,z0,z1])=>ln(0.1, z1-z0, x, (z0+z1)/2));                                                                // 格子之間的分隔線
