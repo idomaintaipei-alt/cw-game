@@ -31,7 +31,7 @@
   body.incut #joy { display:none !important; }
   #actBtn { position:fixed; right:16px; bottom:calc(34px + var(--lift,0px)); z-index:4; display:none; min-width:96px; min-height:56px; padding:8px 16px; border-radius:14px; background:#1d4f86; border:2px solid #7cc0ff; color:#fff; font-size:16px; font-weight:bold; box-shadow:0 4px 14px rgba(0,0,0,.4); }   /* 手機：右下角的動作鍵 */
   #ptr { position:fixed; left:0; top:0; z-index:4; width:40px; height:40px; display:none; place-items:center; border-radius:50%; background:#4da3ff; border:2px solid #fff; color:#fff; font-size:20px; font-weight:900; pointer-events:none; box-shadow:0 2px 10px rgba(0,0,0,.4); }   /* 藍圈不在畫面裡：邊緣的箭頭 */
-  #goal .goBtn { display:inline-block; margin-top:6px; padding:5px 12px; font-size:13px; background:#1d4f86; border-color:#7cc0ff; }
+  #goalCard { display:none !important; }   /* 不顯示「現在的目標」：施工順序要玩家自己想，畫面還給遊戲 */
   body.dlgopen #joy, body.dlgopen #actBtn, body.incut #actBtn, body.dlgopen #ptr, body.incut #ptr { display:none !important; }   /* 對話、過場的時候收起來 */
   body.joyon #testTag { left:50% !important; right:auto !important; transform:translateX(-50%); bottom:calc(4px + var(--lift,0px)) !important; font-size:10px !important; padding:3px 8px !important; white-space:nowrap; }   /* 測試版標籤：放在搖桿和動作鍵中間 */
   @media (max-height:500px) and (orientation:landscape){ body.joyon #camBtns { left:auto; right:8px; top:58%; } #joy { width:108px; height:108px; bottom:calc(12px + var(--lift,0px)); } #joy::before { inset:26px; } }   /* 打橫：三顆鏡頭按鈕回到右邊，左下給搖桿 */
@@ -196,7 +196,7 @@
 <div id="testTag" style="display:none; position:fixed; left:12px; bottom:12px; z-index:3; font-size:12px; background:#7a3340; color:#fff; padding:5px 10px; border-radius:6px">測試版：造型和座駕全部解鎖</div>
 <div id="ticker"><b>公司廣播</b><span id="tickTxt"></span></div>
 <div id="side">
-  <div class="card"><h2>現在的目標</h2><div id="goal"></div></div>
+  <div class="card" id="goalCard"><h2>現在的目標</h2><div id="goal"></div></div>
   <div class="card" id="trayCard" style="display:none"><h2>工具盤（點正確的下一步）</h2><div id="tray"></div></div>
 </div>
 <div id="toasts"></div>
@@ -735,7 +735,7 @@ function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas')
 const LV = { group:null, parts:{}, refs:{}, pallets:{}, pick:[], actors:{} };
 const anims = [];
 function resetGroup(){ if(LV.group){ scene.remove(LV.group); LV.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
+  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; if(typeof occOn!=='undefined') occOn.clear(); LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
 function part(id){ return LV.parts[id] || (LV.parts[id]={meshes:[],ghosts:[]}); }
 function ghostOf(id, mesh){ if(mesh.isSprite) return; const gh=new THREE.Mesh(mesh.geometry, mat.ghost); gh.position.copy(mesh.position); gh.rotation.copy(mesh.rotation); gh.visible=false; (LV.host||LV.group).add(gh); part(id).ghosts.push(gh); }
 function add(id, mesh){ mesh.visible=false; mesh.userData.home=mesh.position.clone(); (LV.host||LV.group).add(mesh); part(id).meshes.push(mesh); ghostOf(id,mesh); return mesh; }
@@ -1594,8 +1594,7 @@ let L=null, li=0, cur=0, score=100, ncr=0, placed=new Set(), t0=Date.now(), done
 const stepOf = id => L.steps.find(x=>x.id===id);
 const need = () => L.steps[cur];
 function stats(){ $('#step').textContent=Math.min(cur+1,L.steps.length); $('#score').textContent=score; $('#ncr').textContent=ncr; }
-function setGoal(){ const g=$('#goal'); g.textContent=''; if(done) return; const st=need(); const h=document.createElement('span'); richText(h, segsOf(st.hint)); g.append(h);
-  if(carry && L && !L.bench){ const gb=document.createElement('button'); gb.className='goBtn'; gb.textContent='帶我去藍圈 ▶'; gb.onclick=e=>{ e.stopPropagation(); if(!dlgOpen) goSpot(); }; g.append(document.createElement('br'), gb); }   /* 手上拿著料：可以自己走過去（選哪個料要自己想，所以拿料不帶路） */ const s=document.createElement('small');
+function setGoal(){ const g=$('#goal'); g.textContent=''; if(done) return; const st=need(); const h=document.createElement('span'); richText(h, segsOf(st.hint)); g.append(h); const s=document.createElement('small');
   s.textContent = L.bench ? '點下面工具盤裡正確的下一步。' : !carry ? '去後面，拿對的材料，或接對的工作。' : ITEM[L.id+'.'+st.id] ? `手上拿著「${st.pal||st.name}」，扛到藍色圈圈。` : `走到藍色圈圈，做「${st.name}」。`; g.append(s); }
 function showGhost(id){ Object.keys(LV.parts).forEach(k=>LV.parts[k].ghosts.forEach(g=>g.visible=(k===id))); }
 function dropIn(id,temp,from=0,to=1e9){ const p=LV.parts[id]; if(!p) return; const h=0.3;        // 放下去：從上面 30 公分輕輕放，一個接一個；不是從天上掉下來
@@ -1892,7 +1891,7 @@ function actInfo(){ if(!L || L.bench || done || dlgOpen || failed || (cut && cut
   if(prank && Object.values(LV.actors).some(o=>o!==p && Math.hypot(o.x-p.x,o.z-p.z)<0.95)) return prank==='bat' ? '揮棒' : '動手';   // 跟 E 鍵一樣：拿著來亂的東西站在同事旁邊＝動手（後果自負）
   const pk=Object.keys(LV.pranks).find(id=>rectDist(LV.pranks[id].obs,p.x,p.z).d<0.7); if(pk) return prank===pk ? '放回去' : '拿起來';
   if(carry || prank) return null;
-  let best=null, bd=1.0; Object.entries(LV.pallets).forEach(([id,q])=>{ const d=rectDist(q.obs,p.x,p.z).d; if(d<bd && !placed.has(id)){ bd=d; best=id; } }); return best ? '拿「'+plain(stepOf(best).pal||stepOf(best).name)+'」' : null; }
+  let best=null, bd=1.0; Object.entries(LV.pallets).forEach(([id,q])=>{ const d=rectDist(q.obs,p.x,p.z).d; if(d<bd && !placed.has(id)){ bd=d; best=id; } }); if(!best) return null; const nm=plain(stepOf(best).pal||stepOf(best).name); return ITEM[L.id+'.'+best] ? '拿「'+nm+'」' : '來'+nm; }   // 材料＝拿「預埋件」；工作（立牌）＝來放樣、來聯絡灌漿廠
 const pressE=()=>{ dispatchEvent(new KeyboardEvent('keydown',{key:'e'})); dispatchEvent(new KeyboardEvent('keyup',{key:'e'})); };
 document.getElementById('actBtn').addEventListener('click',e=>{ e.stopPropagation(); pressE(); });
 const _pv=new THREE.Vector3();
@@ -1906,6 +1905,17 @@ function hudTick(){ document.body.classList.toggle('dlgopen', !!dlgOpen); if(!TO
       P.style.transform=`translate(${Math.round(ax+vx*k-20)}px,${Math.round(ay+vy*k-20)}px) rotate(${Math.atan2(vy,vx).toFixed(3)}rad)`; on=true; } }
   P.style.display = on ? 'grid' : 'none'; }
 setInterval(hudTick,120);
+// 擋住角色的東西變半透明：從鏡頭往角色的胸口和腳邊各拉一條線，線上的東西（人、地板、本來就透明的不算）換成半透明的材質；不擋了就換回來
+var occRay=new THREE.Raycaster(), occOn=new Map();   // var：換關卡的程式可能比這裡先跑
+const fadeCache=new WeakMap(); function fadeMat(m){ let f=fadeCache.get(m); if(!f){ f=m.clone(); f.transparent=true; f.opacity=Math.min(m.opacity,0.22); f.depthWrite=false; fadeCache.set(m,f); } return f; }   // 同一種材質只做一份半透明的
+function occTick(){ if(!L || L.bench || !LV.actors.you || !LV.group) return; const me=LV.actors.you, skip=new Set(); Object.values(LV.actors).forEach(a=>a.g.traverse(o=>skip.add(o)));
+  const hit=new Set(), cp=camera.position;
+  if(me.g.visible && !L.office) for(const hy of [1.1,0.25]){ const tp=new THREE.Vector3(me.x, me.g.position.y+hy, me.z), dir=tp.clone().sub(cp), len=dir.length(); occRay.set(cp, dir.normalize()); occRay.camera=camera; occRay.near=0.2; occRay.far=len-0.35;   /* camera：線碰到名牌（sprite）時要用 */
+    occRay.intersectObjects(LV.group.children,true).forEach(h=>{ const o=h.object; if(!o.isMesh || skip.has(o) || o.userData.blob || o===spot) return; const m0=occOn.has(o)?occOn.get(o):o.material; if(Array.isArray(m0)) return; if(m0.transparent && !occOn.has(o)) return;
+      let q=o, v=true; while(q){ if(!q.visible) v=false; q=q.parent; } if(v) hit.add(o); }); }
+  occOn.forEach((m,o)=>{ if(!hit.has(o)){ o.material=m; occOn.delete(o); } });                                         // 不擋了：換回原本的材質
+  hit.forEach(o=>{ if(!occOn.has(o)){ occOn.set(o,o.material); o.material=fadeMat(o.material); } }); }                  // 擋住了：換成半透明
+setInterval(occTick,100);
 var helpT=null; function touchHud(){ if(!TOUCH) return; const on = !!(L && !L.bench); $('#joy').style.display = on ? 'block' : 'none'; document.body.classList.toggle('joyon', on);   // 手機：要走路的關卡才有搖桿
   const h=$('#help'); h.classList.remove('fadeout'); clearTimeout(helpT); helpT=setTimeout(()=>h.classList.add('fadeout'), 10000); }   // 說明開場顯示 10 秒，之後收起來，不擋畫面                                                                  // 手機：放大、縮小、回正三顆按鈕
 const zoomBy=f=>{ if(cut && cut.stage<2) return; camGoal=null; userCamT=performance.now(); if(talkCam){ talkCam.free=true; talkCam.zoomed=true; } dist=Math.min(maxD,Math.max(minD,dist*f)); };
