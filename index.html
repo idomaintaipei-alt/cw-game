@@ -12,11 +12,12 @@
   :root { --bg:#14181d; --panel:rgba(30,36,43,.94); --line:#3a4350; --txt:#e8ecf1; --dim:#9aa4b1; --ok:#3ddc84; --bad:#ff5c5c; --acc:#4da3ff; }
   * { box-sizing:border-box; }
   html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }   /* iPhone 橫放會自動把字放大，版面就被撐破：關掉 */
-  html,body { margin:0; position:fixed; inset:0; width:100%; height:100%; overflow:hidden; overscroll-behavior:none; touch-action:pan-x pan-y; -webkit-user-select:none; user-select:none; background:var(--bg); color:var(--txt); font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; }
+  html,body { margin:0; position:fixed; inset:0; width:100%; height:100%; overflow:hidden; overscroll-behavior:none; touch-action:none; -webkit-user-select:none; user-select:none; background:var(--bg); color:var(--txt); font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; }
   #view { position:fixed; inset:0; overflow:hidden; } #view canvas { display:block; width:100% !important; height:100% !important; touch-action:none; }   /* 畫布永遠填滿外框，不會比螢幕寬 */
-  button { touch-action:manipulation; }   /* 連點按鈕不會放大整頁 */
+  * { touch-action:none; }   /* 每一個元件都不准拖、不准放大整頁（這個設定不會自己傳給裡面的元件，手指放在資訊框上捏，整頁就被放大了） */
   input { -webkit-user-select:text; user-select:text; }   /* 輸入名字的框要能打字 */
-  .overlay .box, #dayEnd .inner, #dlg { touch-action:pan-y; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }   /* 清單、對話框裡面可以上下滑 */   /* 手機：手指拖曳交給遊戲，不讓瀏覽器捲動或放大 */
+  .overlay .box, #dayEnd .inner, #dlg, .overlay .box *, #dayEnd .inner *, #dlg * { touch-action:pan-y; } .overlay .box, #dayEnd .inner, #dlg { -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }   /* 整頁不能拖、不能放大；只有清單、對話框裡面可以上下滑 */
+  #zoomHint { position:fixed; left:0; right:0; top:0; z-index:20; display:none; padding:6px 10px; background:#b45309; color:#fff; font-size:13px; text-align:center; }   /* 整頁被放大了：提示怎麼縮回來 */   /* 手機：手指拖曳交給遊戲，不讓瀏覽器捲動或放大 */
   button { background:#2a323c; color:var(--txt); border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-size:14px; cursor:pointer; font-family:inherit; }
   button:hover { border-color:var(--acc); }
   #camBtns { position:fixed; right:10px; top:50%; transform:translateY(-50%); z-index:4; display:none; flex-direction:column; gap:10px; }   /* 手機：放大、縮小、鏡頭回正 */
@@ -167,6 +168,7 @@
 </header>
 <div id="help"></div>
 <div id="sub"></div>
+<div id="zoomHint">畫面被放大了：用兩根手指往內捏，縮回原本大小</div>
 <div id="camBtns"><button id="zIn" aria-label="放大">＋</button><button id="zOut" aria-label="縮小">－</button><button id="zHome" class="small" aria-label="鏡頭回正">回正</button></div>
 <div id="fade"></div>
 <div id="testTag" style="display:none; position:fixed; left:12px; bottom:12px; z-index:3; font-size:12px; background:#7a3340; color:#fff; padding:5px 10px; border-radius:6px">測試版：造型和座駕全部解鎖</div>
@@ -1522,10 +1524,10 @@ function fitView(){ const w=vw(), h=vh(), a=w/h; camera.aspect=a; camera.fov = a
   camera.updateProjectionMatrix(); renderer.setSize(w,h,false);   /* false＝只改解析度，顯示大小交給 CSS（永遠填滿外框） */
   const vv=window.visualViewport, de=document.documentElement, hid = vv ? Math.max(0, de.clientHeight-(vv.offsetTop+vv.height)) : 0, ios=/iP(hone|od|ad)/.test(navigator.userAgent);
   de.style.setProperty('--lift', Math.round(Math.max(hid, ios && h>w ? 72 : 0))+'px'); }   // 下面被瀏覽器工具列蓋住多少，對話框就往上讓多少；iPhone 直拿時 Safari 的工具列浮在畫面上，固定讓 72
-function refit(){ if(scrollX||scrollY) scrollTo(0,0); fitView();
-  const vv=window.visualViewport; if(vv && vv.scale>1.02){ const m=document.querySelector('meta[name=viewport]'), c=m.getAttribute('content'); m.setAttribute('content', c+', initial-scale=1.0001'); setTimeout(()=>m.setAttribute('content',c),60); } }   // 整頁被放大了：把縮放設定重寫一次，逼它回到原本大小
-addEventListener('resize',refit); addEventListener('orientationchange',()=>[0,120,400,900].forEach(d=>setTimeout(refit,d)));   // 轉向後瀏覽器要過一下才給對的大小：多算幾次
-if(window.visualViewport){ visualViewport.addEventListener('resize',refit); visualViewport.addEventListener('scroll',()=>{ if(scrollX||scrollY) scrollTo(0,0); }); }
+function refit(){ const vv=window.visualViewport; if(!(vv && vv.scale>1.01) && (scrollX||scrollY)) scrollTo(0,0); fitView(); zoomCheck(); }   // 整頁沒被放大時才把位置歸零（放大的時候去拉它，會跟手指搶，畫面就抖）
+function zoomCheck(){ const vv=window.visualViewport; $('#zoomHint').style.display = vv && vv.scale>1.05 ? 'block' : 'none'; }
+addEventListener('resize',refit); addEventListener('orientationchange',()=>[0,150,500].forEach(d=>setTimeout(refit,d)));   // 轉向後瀏覽器要過一下才給對的大小：多算幾次
+if(window.visualViewport) visualViewport.addEventListener('resize',()=>{ fitView(); zoomCheck(); });
 if(window.ResizeObserver) new ResizeObserver(fitView).observe(VIEW);
 fitView();
 
@@ -1840,8 +1842,9 @@ addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; const k=e
 addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
 addEventListener('keydown',e=>{ if(e.target.tagName!=='INPUT' && e.key.toLowerCase()==='c' && !(cut && cut.stage<2)) camReset(); });
 ['gesturestart','gesturechange','gestureend'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));   /* iPhone 的 Safari 不理「禁止放大」的設定：兩指捏合會放大整頁，這裡攔下來，交給遊戲的鏡頭縮放 */
-document.addEventListener('touchmove',e=>{ if(e.touches.length>1 || e.target===renderer.domElement) e.preventDefault(); },{passive:false});
-let lastTap=0; document.addEventListener('touchend',e=>{ const n=Date.now(); if(n-lastTap<300 && e.target===renderer.domElement) e.preventDefault(); lastTap=n; },{passive:false});   /* 連點兩下不要放大整頁 */
+const scrollable = el => el && el.closest && el.closest('.overlay .box, #dayEnd .inner, #dlg');
+document.addEventListener('touchmove',e=>{ if(e.touches.length>1 || !scrollable(e.target)) e.preventDefault(); },{passive:false});   /* 兩指一律不准放大整頁；一指只有在清單、對話框裡面可以滑 */
+let lastTap=0; document.addEventListener('touchend',e=>{ const n=Date.now(); if(n-lastTap<300 && !(e.target.closest && e.target.closest('button,input'))) e.preventDefault(); lastTap=n; },{passive:false});   /* 連點兩下不要放大整頁 */
 if(TOUCH) $('#camBtns').style.display='flex';                                                                  // 手機：放大、縮小、回正三顆按鈕
 const zoomBy=f=>{ if(cut && cut.stage<2) return; camGoal=null; userCamT=performance.now(); if(talkCam){ talkCam.free=true; talkCam.zoomed=true; } dist=Math.min(maxD,Math.max(minD,dist*f)); };
 $('#zIn').onclick=()=>zoomBy(0.8); $('#zOut').onclick=()=>zoomBy(1.25); $('#zHome').onclick=()=>{ if(!(cut && cut.stage<2)) camReset(); };
