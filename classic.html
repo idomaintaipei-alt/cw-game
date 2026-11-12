@@ -1974,6 +1974,9 @@ function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
   if(a.bow>0 && a.g.visible){ const th=0.75*Math.sin(Math.PI*(1-a.bow/0.9)), off=0.8*Math.sin(th); a.g.rotation.x=th; a.g.position.x-=Math.sin(a.face)*off; a.g.position.z-=Math.cos(a.face)*off; a.g.position.y+=0.8*(1-Math.cos(th));   // 鞠躬：以腰（0.8 公尺高）為中心往前彎，腳留在原地
     u.legL.rotation.x=u.legR.rotation.x=-th; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=0; }); u.armL.rotation.x=u.armR.rotation.x=-0.15; a.bowing=true; }
   else if(a.bowing){ a.bowing=false; a.g.rotation.x=0; }
+  if(a.pick>0 && a.g.visible){ a.pick=Math.max(0,a.pick-dt); const k=Math.sin(Math.PI*Math.min(1,(0.6-a.pick)/0.6));   // 蹲下撿東西：大腿往前、膝蓋彎、身體往下沉、手伸到地上（不是只彎腰）
+    u.legL.rotation.x=u.legR.rotation.x=-1.2*k; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=1.75*k; }); a.g.position.y-=0.3*k; a.g.rotation.x=0.3*k; u.armL.rotation.x=u.armR.rotation.x=-0.95*k; a.picking=true; }
+  else if(a.picking){ a.picking=false; a.g.rotation.x=0; }
   if(u.fx) for(const f of u.fx) f(t); }
 // 被球棒打到：安全帽（連皇冠、燈圈）、眼鏡、墨鏡、光圈、板夾從身上拆下來各自噴飛；額頭流血、噴血滴；坐著的人椅子留下來滑開轉圈，人從座位上飛出去
 function knockFly(t,ux,uz){ const g=t.g, u=g.userData, k=t.knock, sets={}; g.updateMatrixWorld(true);
@@ -2199,12 +2202,12 @@ function cashFx(dt){ const C=LV.cash; if(!C) return; C.t+=dt;
   C.bills.forEach(b=>{ if(b.rest || b.took) return; const m=b.m; b.v.y=Math.max(b.v.y-6*dt,-1.1); b.v.x*=1-dt*0.8; b.v.z*=1-dt*0.8;   // 紙鈔：空氣阻力大，飄下來
     m.position.x+=(b.v.x+Math.sin(C.t*5+b.w.x)*0.4)*dt; m.position.y+=b.v.y*dt; m.position.z+=(b.v.z+Math.cos(C.t*4+b.w.y)*0.4)*dt; m.rotation.x+=b.w.x*dt; m.rotation.y+=b.w.y*dt; m.rotation.z+=b.w.z*dt;
     const c=clampXZ(m.position.x,m.position.z); m.position.x=c.x; m.position.z=c.z; const gy=gyAt(c.x,c.z); if(m.position.y<=gy+0.01){ b.rest=true; m.position.y=gy+0.006+Math.random()*0.004; m.rotation.set(-Math.PI/2,0,Math.random()*6); } });   // 落地平躺
-  C.fs.forEach(f=>{ if(!f.cashGrab) return; if(f.bow>0) f.bow=Math.max(0,f.bow-dt); let b=f.cashBill;   /* 彎腰撿：0.5 秒起身 */ if(b && b.took) b=f.cashBill=null;
+  C.fs.forEach(f=>{ if(!f.cashGrab) return; let b=f.cashBill; if(b && b.took) b=f.cashBill=null;
     if(!b){ let bd=1e9; C.bills.forEach(q=>{ if(!q.rest || q.took || (q.by && q.by!==f)) return; const d=Math.hypot(q.m.position.x-f.x,q.m.position.z-f.z); if(d<bd){ bd=d; b=q; } }); f.cashBill=b; f.cashT=0; if(b) b.by=f; }
     if(!b){ if(C.bills.every(q=>q.took || q.rest)){ f.cashGrab=false; f.dest=null; if(!C.said){ C.said=true; bubble(f.who,'學長！！以後我跟你混！！',true); } } return; }   // 撿完了：回去做事
-    f.cashT=(f.cashT||0)+dt; const d=Math.hypot(b.m.position.x-f.x,b.m.position.z-f.z); if(d<0.35 || (f.cashT>2.5 && d<1.6)){ b.took=true; b.m.visible=false; f.bow=0.35;   /* 卡在東西旁邊 2.5 秒：伸手撈一下也算 */ f.dest=null; if(Math.random()<0.12) bubble(f.who,pickOne(['這張是我的！','不要搶！！','學長好帥！！','我的我的我的！']),true); }   // 彎腰撿一張
+    f.cashT=(f.cashT||0)+dt; const d=Math.hypot(b.m.position.x-f.x,b.m.position.z-f.z); if(d<0.35 || (f.cashT>2.5 && d<1.6)){ b.took=true; b.m.visible=false; f.pick=0.6;   /* 卡在東西旁邊 2.5 秒：伸手撈一下也算 */ f.dest=null; if(Math.random()<0.12) bubble(f.who,pickOne(['這張是我的！','不要搶！！','學長好帥！！','我的我的我的！']),true); }   // 彎腰撿一張
     else if(f.cashT>4){ b.by=null; b.took=true; b.m.visible=false; f.cashBill=null; }   /* 真的拿不到（掉在棧板中間）：當作被別人撿走 */
-    else if(!(f.bow>0)) f.dest={x:b.m.position.x, z:b.m.position.z}; }); }
+    else if(!(f.pick>0)) f.dest={x:b.m.position.x, z:b.m.position.z}; }); }
 function linRun(){ const a=LV.actors.lin, p=LV.actors.you; if(a&&p){ a.dest={x:p.x+0.95,z:p.z+0.35}; a.onArrive=null; } }
 function linHome(){ const a=LV.actors.lin; if(a){ a.dest={x:a.home.x,z:a.home.z}; a.onArrive=null; } }
 
