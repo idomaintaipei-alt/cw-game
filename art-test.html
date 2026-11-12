@@ -530,8 +530,16 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
   [-26,22].forEach(z=>[cx-9.3,cx-4.7].forEach(x=>S(box(0.3,2.7,0.3, x,y0+1.35,z, mat.mark))));
   // 另一棟：結構體，正面和側面包著鷹架和防塵網（週二在四樓，這棟就蓋到六層）
   const bx=[cx-18.5,cx-14.8,cx-11.1], bz=[-12,-7,-2], H=3.4, NF=hi?6:3, TH=H*NF, wn0=std(0x9fd0f0,{emissive:0x24465a});
-  bx.forEach(x=>bz.forEach(z=>{ S(box(0.5,TH+0.02,0.5, x,y0+(TH+0.02)/2,z, mat.rc));   /* 柱頂比樓板高 2 公分：頂面不跟樓板同高，不會閃 */ [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>S(cyl(0.02,0.9,'y', x+a*0.15,y0+TH+0.45,z+b*0.15, mat.rebar,6))); }));
-  for(let k=1;k<=NF;k++) S(box(8.0,0.25,10.6, cx-14.8,y0+H*k-0.125,-7, mat.rc));
+  const NS=m=>{ m.userData.noFade=true; return S(m); };   // 不會因為擋到主角變透明
+  bx.forEach(x=>bz.forEach(z=>{ NS(box(0.5,TH+0.02,0.5, x,y0+(TH+0.02)/2,z, mat.rc));   /* 柱頂比樓板高 2 公分：頂面不跟樓板同高，不會閃 */ [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>S(cyl(0.02,0.9,'y', x+a*0.15,y0+TH+0.45,z+b*0.15, mat.rebar,6))); }));
+  for(let k=1;k<NF;k++) NS(box(8.0,0.25,10.6, cx-14.8,y0+H*k-0.125,-7, mat.rc));   // 已經灌好的樓板
+  { const top=y0+TH, lo=y0+H*(NF-1), ply=std(0xb98a4e), tim=mat.wood;                                                       // 屋頂還沒灌漿：模板＋角材＋支撐
+    NS(box(8.0,0.03,10.6, cx-14.8,top-0.015,-7, ply));                                                                       // 模板（夾板）：人就踩在上面綁板筋
+    [[cx-18.82,-7,0.04,10.68],[cx-10.78,-7,0.04,10.68],[cx-14.8,-12.32,8.04,0.04],[cx-14.8,-1.68,8.04,0.04]].forEach(([x,z,w,d])=>NS(box(w,0.3,d, x,top+0.12,z, ply)));   // 四邊的側模
+    for(let x=cx-18.6; x<=cx-11.0+1e-6; x+=0.45) NS(box(0.05,0.08,10.5, x,top-0.07,-7, tim));                                // 小角材（沿 z），一排一排頂著夾板
+    const near=(x,z)=>bx.some(a=>bz.some(b=>Math.abs(x-a)<0.45 && Math.abs(z-b)<0.45));
+    for(let z=-11.65; z<=-2.0+1e-6; z+=1.2){ NS(box(7.9,0.1,0.1, cx-14.8,top-0.16,z, tim));                                  // 大角材（沿 x），架在支撐上（側面不跟柱子側面同一個面）
+      for(let x=cx-18.3; x<=cx-11.3+1e-6; x+=1.0) if(!near(x,z)){ const h=top-0.21-lo; NS(cyl(0.024,h,'y', x,lo+h/2,z, mat.steelDark,6)); NS(box(0.14,0.01,0.14, x,lo+0.005,z, mat.steelDark)); } } }   // 鋼管支撐（避開柱子）＋底板
   for(let k=0;k<=4;k++) S(cyl(0.03,TH+1,'y', cx-18.8+k*2.1,y0+(TH+1)/2,-1.2, mat.steelDark,6));
   for(let k=0;k<=5;k++) S(cyl(0.03,TH+1,'y', cx-10.4,y0+(TH+1)/2,-1.6-k*2.1, mat.steelDark,6));
   for(let k=1;k<=Math.floor(TH/2);k++){ S(cyl(0.03,8.6,'x', cx-14.6,y0+k*2.0,-1.2, mat.steelDark,6)); S(cyl(0.03,10.9,'z', cx-10.4,y0+k*2.0,-6.85, mat.steelDark,6)); }
@@ -2276,7 +2284,7 @@ function occRestore(){ occOn.forEach((v,o)=>{ o.material=v.m; }); occOn.clear();
 function occTick(){ if(!L || L.bench || !LV.actors.you || !LV.group) return; if(LV.hoisting || (cut && cut.stage<2)){ if(occOn.size) occRestore(); return; }   /* 搭電梯、進場過場的時候不做（鏡頭貼著電梯走，電梯會一下透明一下不透明） */ const me=LV.actors.you, skip=new Set(); Object.values(LV.actors).forEach(a=>a.g.traverse(o=>skip.add(o)));
   const hit=new Set(), cp=camera.position;
   if(me.g.visible && !L.office) for(const hy of [1.1,0.25]){ const tp=new THREE.Vector3(me.x, me.g.position.y+hy, me.z), dir=tp.clone().sub(cp), len=dir.length(); occRay.set(cp, dir.normalize()); occRay.camera=camera; occRay.near=0.2; occRay.far=len-0.35;   /* camera：線碰到名牌（sprite）時要用 */
-    occRay.intersectObjects(LV.group.children,true).forEach(h=>{ const o=h.object; if(!o.isMesh || skip.has(o) || o.userData.blob || o===spot || thinMesh(o)) return; const m0=occOn.has(o)?occOn.get(o).m:o.material; if(Array.isArray(m0)) return; if(m0.transparent && !occOn.has(o)) return;
+    occRay.intersectObjects(LV.group.children,true).forEach(h=>{ const o=h.object; if(!o.isMesh || skip.has(o) || o.userData.blob || o.userData.noFade || o===spot || thinMesh(o)) return; const m0=occOn.has(o)?occOn.get(o).m:o.material; if(Array.isArray(m0)) return; if(m0.transparent && !occOn.has(o)) return;
       let q=o, v=true; while(q){ if(!q.visible) v=false; q=q.parent; } if(v) hit.add(o); }); }
   const now=performance.now(); occOn.forEach((v,o)=>{ if(hit.has(o)) v.t=now; else if(now-v.t>700){ o.material=v.m; occOn.delete(o); } });   /* 不擋了 0.7 秒才換回來：不會一閃一閃 */                                         // 不擋了：換回原本的材質
   hit.forEach(o=>{ if(!occOn.has(o)){ occOn.set(o,{m:o.material, t:now}); o.material=fadeMat(o.material); } }); }                  // 擋住了：換成半透明
