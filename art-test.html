@@ -553,6 +553,7 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
   S(board(['工務所','（冷氣只吹主管那間）'], ox,y0+2*OH+0.75,fz+cd+0.42,0,3.0,'#12161b','#ffffff')); [-2.9,2.6].forEach(a=>safetyFlag(ox+a,y0+2*OH+0.3,oz-0.6,0,2.4));   // 招牌掛在屋簷前緣上面；公安旗插在屋頂
   [0,1.4].forEach(a=>{ S(box(1.1,2.2,1.1, ox-8.0-a,y0+1.1,oz+0.4, std(0x2f7fc4))); S(box(1.2,0.12,1.2, ox-8.0-a,y0+2.26,oz+0.4, mat.white)); });   // 流動廁所：樓梯再過去的西邊
   excavator(cx-25,y0,10.5,2.4); excavator(cx+6.5,y0,-16.3,-0.4);   // 怪手：西邊空地、主樓後面（各配一堆土）
+  backYard(cx, y0, S);   // 工務所後面：鋼筋加工棚、帷幕牆材料暫存區、模板堆
   // 料堆：鋼筋、模板、水泥、鋼管、水桶
   for(let k=0;k<7;k++) S(cyl(0.045,6,'z', cx+14.2+k*0.092,y0+0.155,4.2, mat.rebar,6)); [2.2,6.2].forEach(z=>S(box(1.1,0.11,0.12, cx+14.5,y0+0.055,z, mat.wood)));
   S(box(1.25,0.5,2.45, cx+14.6,y0+0.25,9.2, mat.wood)); S(box(1.25,0.85,2.45, cx+16.2,y0+0.425,9.5, mat.wood));
@@ -796,8 +797,30 @@ function safetyFlag(x,y,z,ry,h=3.4){ const g=new THREE.Group(); g.position.set(x
   const pf=fr.geometry.attributes.position, pb=bk.geometry.attributes.position, ph=Math.random()*6;
   const wave=(dt,t)=>{ for(let i=0;i<pf.count;i++){ const u=pf.getX(i)+W/2, d=Math.sin(t*3.2+ph-u*4.2)*0.07*u; pf.setZ(i,d); } pf.needsUpdate=true;
     for(let i=0;i<pb.count;i++){ const u=W/2-pb.getX(i), d=Math.sin(t*3.2+ph-u*4.2)*0.07*u; pb.setZ(i,-d-0.004); } pb.needsUpdate=true; fr.geometry.computeBoundingBox(); bk.geometry.computeBoundingBox(); };
-  wave(0,0); LV.fx.push(wave);   // 一建好就先擺一次波浪（正反兩片錯開 4 毫米）   // 背面那片轉了 180 度：位置左右相反、z 也相反
+  wave(0,0); LV.fx.push(wave); g.traverse(o=>{ o.castShadow=false; });   // 不投影子：工地地面的東西都不投，旗桿單獨一條影子很怪   // 一建好就先擺一次波浪（正反兩片錯開 4 毫米）   // 背面那片轉了 180 度：位置左右相反、z 也相反
   return stat(g); }
+// 工務所後面（西北角，x cx-36～-21、z -24～-4）：鋼筋加工棚、帷幕牆材料暫存區、模板堆，各有人在做事
+function backYard(cx, y0, S){ const st=std(0x59616c), rf=std(0x6f8aa8), wd=mat.wood, rb=mat.rebar, al=std(0xc9ced6), sl=std(0x8a6a45);
+  { const x0=cx-31, z0=-8, W=8, D=5, H=3.2; [[-1,-1],[1,-1],[-1,1],[1,1],[0,-1],[0,1]].forEach(([a,b])=>S(box(0.12,H,0.12, x0+a*(W/2-0.1),y0+H/2,z0+b*(D/2-0.1), st)));   // 鋼筋加工棚：鋼柱
+    const roof=new THREE.Group(); roof.position.set(x0,y0+H+0.05,z0); roof.rotation.x=0.06; roof.add(box(W+0.6,0.05,D+0.6, 0,0,0, rf)); for(let k=0;k<=Math.round((W+0.6)/0.3);k++) roof.add(box(0.05,0.05,D+0.6, -(W+0.6)/2+k*0.3,0.04,0, std(0x5b7493))); S(roof);   // 鐵皮屋頂
+    S(box(3.2,0.85,0.9, x0-1.2,y0+0.43,z0+0.4, st)); S(box(3.3,0.06,1.0, x0-1.2,y0+0.88,z0+0.4, std(0x3a3f47)));   // 彎鋼筋的工作台
+    [-2.4,-1.6,-0.8,0,0.6].forEach((a,i)=>{ const r=cyl(0.018,2.8,'x', x0-1.2+a*0.1,y0+0.93,z0+0.1+i*0.12, rb,6); S(r); });   // 台上的鋼筋
+    S(box(0.9,1.0,0.8, x0+2.3,y0+0.5,z0+0.3, std(0x2f7fc4))); S(box(0.5,0.25,0.5, x0+2.3,y0+1.12,z0+0.3, st));   // 鋼筋切斷機
+    S(board(['鋼筋加工區'], x0,y0+H-0.3,z0+D/2+0.32,0,1.6,'#1f7a3d','#ffffff'));
+    [-1,1].forEach(e=>{ for(let k=0;k<10;k++) S(cyl(0.02,6,'x', x0, y0+0.17+Math.floor(k/5)*0.045, z0-D/2-1.2+e*0.7+(k%5)*0.045, rb,6)); [-2.4,0,2.4].forEach(a=>S(box(0.12,0.12,0.4, x0+a,y0+0.06,z0-D/2-1.2+e*0.7+0.1, wd))); }); }   // 棚子後面兩捆鋼筋，壓在墊木上
+  { const x0=cx-25, z0=-18;                                                                                                // 帷幕牆材料暫存區：兩座 A 字架，靠著玻璃單元；鋁擠型一捆一捆放在墊木上
+    [-1.6,1.6].forEach(a=>{ const g=new THREE.Group(); g.position.set(x0+a,y0,z0); S(g); g.add(box(2.6,0.12,1.4, 0,0.06,0, st));
+      [-1,1].forEach(e=>{ if(e<0) g.add(box(2.6,0.08,0.08, 0,1.6,0, st)); [-1.2,1.2].forEach(xx=>{ const l=box(0.08,1.75,0.08, xx,0.85,e*0.3, st); l.rotation.x=-e*0.35; g.add(l); });
+        for(let k=0;k<3;k++){ const pn=new THREE.Group(); pn.position.set(0,0.95,e*(0.38+k*0.06)); pn.rotation.x=-e*0.35; pn.add(box(1.9,1.6,0.03, 0,0,0, mat.glass)); pn.add(box(1.96,0.06,0.05, 0,0.8,0, al)); pn.add(box(1.96,0.06,0.05, 0,-0.8,0, al)); [-0.97,0.97].forEach(xx=>pn.add(box(0.06,1.66,0.05, xx,0,0, al))); g.add(pn); } }); });   // 玻璃單元（鋁框＋玻璃），兩面各靠三片
+    for(let r=0;r<2;r++){ for(let k=0;k<12;k++) S(box(5.6,0.07,0.07, x0, y0+0.2+Math.floor(k/6)*0.075+r*0, z0+3.0+r*1.1+(k%6)*0.08, al)); [-2.2,0,2.2].forEach(a=>S(box(0.12,0.12,0.7, x0+a,y0+0.06,z0+3.2+r*1.1, wd))); }   // 兩捆鋁擠型
+    S(board(['帷幕牆材料暫存區','（請勿堆放其他物品）'], x0,y0+2.3,z0+5.1,0,2.4,'#f2cf1d','#1b1e24')); S(box(0.06,2.1,0.06, x0-1.15,y0+1.05,z0+5.1, st)); S(box(0.06,2.1,0.06, x0+1.15,y0+1.05,z0+5.1, st)); }
+  { const x0=cx-34.5, z0=-19;                                                                                              // 模板堆：幾疊合板＋角材
+    [[0,0,9],[2.6,0.2,6],[0.4,2.8,7]].forEach(([a,b,n])=>{ for(let k=0;k<n;k++) S(box(2.4,0.04,1.2, x0+a+(k%2)*0.04,y0+0.14+k*0.045,z0+b, std(0xb88a4e))); [-0.8,0.8].forEach(e=>S(box(0.1,0.1,1.3, x0+a+e,y0+0.05,z0+b, wd))); });
+    for(let k=0;k<14;k++) S(box(3.6,0.09,0.09, x0+1.2,y0+0.05+Math.floor(k/7)*0.095,z0+5.4+(k%7)*0.1, sl)); }   // 角材
+  bgCrew([ {kind:'hammer', x:cx-32.2, y:y0, z:-6.8, ry:Math.PI, vest:0xd9e021},                          // 鋼筋加工棚：在工作台彎鋼筋
+    {kind:'walk', carry:'rebar', a:{x:cx-35.0,z:-12.65}, b:{x:cx-29.0,z:-12.65}, y:y0, vest:0x7b8794},     // 扛鋼筋
+    {kind:'write', x:cx-29.0, y:y0, z:-15.5, ry:Math.PI/2, vest:0xff7a1a},                                   // 帷幕牆材料：點料
+    {kind:'tie', x:cx-33.2, y:y0, z:-17.6, ry:Math.PI/2, vest:0xd9e021} ], S); }                          // 模板堆旁：整理模板
 // 怪手：履帶、轉台、車身、駕駛室、配重、大臂＋小臂＋挖斗；旁邊一堆土。車身慢慢左右轉、手臂一下一下往下挖
 function excavator(x,y,z,ry,pile=true){ const g=new THREE.Group(); g.position.set(x,y,z); g.rotation.y=ry; const yl=std(0xf2b01e), dk=std(0x2b2f36), gl=std(0x9fd0f0,{emissive:0x24465a}), add=m=>{ m.traverse(o=>{ o.castShadow=false; }); return m; };
   [-0.95,0.95].forEach(e=>{ g.add(add(box(3.4,0.7,0.6, 0,0.35,e, dk))); for(let i=-3;i<=3;i++) g.add(add(box(0.08,0.72,0.62, i*0.48,0.35,e, std(0x3a3f47)))); });   // 履帶
