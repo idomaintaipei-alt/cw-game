@@ -1082,7 +1082,7 @@ function stat(mesh){ (LV.host||LV.group).add(mesh); return mesh; }
 function camGlide(c){ camGoal={theta:c.theta, phi:c.phi, dist:c.dist}; const T=new THREE.Vector3(...c.t), lv=LV; let k=0; LV.fx.push(dt=>{ if(LV!==lv || k>=1) return; k=Math.min(1,k+dt*1.2); target.lerp(T, Math.min(1,dt*4)); if(k>=1) target.copy(T); }); }   // 鏡頭慢慢移到 c（看的點、角度、遠近）
 // 週三的梁柱接頭（單位公尺，孔在原點、往 -z 鑽）：邊梁＋樓板正面在 z=0；左邊一支柱子凸出 5 公分；鑽孔那一塊（x ±0.21、y ±0.15、深 0.32）挖空，放半透明的方塊
 // 週三的樓板邊（跟週二同一款）：樓板頂 y=0.1、底 y=-0.1、邊在 z=0；漏埋的位置在原點，透視只從紅圈看得進去
-function slabEdgeD3(){ const R=(w,h,d,x,y,z)=>stat(box(w,h,d,x,y,z,mat.rc)), lm=new THREE.LineBasicMaterial({color:0x4a463f}), E=(w,h,d,x,y,z)=>{ const l=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w,h,d)), lm); l.position.set(x,y,z); stat(l); };
+function slabEdgeD3(){ const R=(w,h,d,x,y,z)=>stat(box(w,h,d,x,y,z,mat.rc)), lm=new THREE.LineBasicMaterial({color:0x4a463f}), E=(w,h,d,x,y,z)=>{ const l=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w+0.004,h+0.004,d+0.004)), lm); l.position.set(x,y,z); stat(l); };   /* 輪廓線往外 2 公釐：不會被樓板的面蓋掉（上緣原本看不到） */
   R(1.4,0.2,1.2, -0.9,0,-0.6); R(1.4,0.2,1.2, 0.9,0,-0.6); R(0.4,0.2,0.88, 0,0,-0.76); E(3.2,0.2,1.2, 0,0,-0.6);                    // 樓板：中間挖一塊給透視
   stat(box(0.4,0.2,0.32, 0,0,-0.16, std(0xc2bdb1,{transparent:true, opacity:.45, depthWrite:false})));                                 // 透視：半透明的混凝土
   { const sh=new THREE.Shape(); sh.moveTo(-0.2,-0.1); sh.lineTo(0.2,-0.1); sh.lineTo(0.2,0.1); sh.lineTo(-0.2,0.1); sh.lineTo(-0.2,-0.1); const ho=new THREE.Path(); ho.absellipse(0,0,0.15,0.085,0,Math.PI*2,true); sh.holes.push(ho);
