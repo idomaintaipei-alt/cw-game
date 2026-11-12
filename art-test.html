@@ -321,12 +321,16 @@ const FINAL = { tie:'{P}！最後一次警告。再鬧，你就回家。', lin:'
 const KICK = { tie:'夠了！{P}，東西收一收，今天不用做了。', lin:'行為異常，停工處分。請你離開工地。', an:'我真的要跟鐵叔講了。……鐵叔！！', kun:'……出去。' };
 const ANNOY = { tie:'你很閒喔？去做事！', lin:'聊天也算工時嗎？', an:'好啦好啦，先做事啦～', kun:'……（指了指棧板）' };
 const WHY = { bump:'你一直撞同事，被請出工地。', long:'你扛著料撞到人，被請出工地。', chat:'你一直纏著同事聊天，被請出工地。' };
-CAST.di = { name:'阿弟', role:'工地小跟班', helmet:0xffd21f, vest:0x5d7a8c, skin:0xf2cfae, feat:{}, bio:'剛來三個月。誰厲害就跟誰。', quote:'「學長！我幫你拿！」（從來沒有真的拿過）',
+// 小弟的名字和造型：每次開遊戲隨機抽兩個（不重複）
+const FAN_LOOK = { '阿志':{feat:{glasses:true, towel:true}}, '阿志弟':{feat:{glasses:true, bangs:true}}, '阿豪':{feat:{shades:true, stubble:true}}, '志龍':{feat:{bangs:true}, hair:0xd9a62e},
+  '和尚':{feat:{towel:true}, hair:'skin'}, '蚊子':{feat:{glasses:true, tape:true}}, '蠍子':{feat:{mustache:true, stubble:true}, skin:0xc58c5c} };   // 和尚：光頭（頭髮跟皮膚同色）；蠍子：曬得比較黑
+const FAN_PICK = (()=>{ const a=Object.keys(FAN_LOOK); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a.slice(0,2); })();
+CAST.di = { name:FAN_PICK[0], role:'工地小跟班', helmet:0xffd21f, vest:0x5d7a8c, skin:FAN_LOOK[FAN_PICK[0]].skin||0xf2cfae, feat:Object.assign({},FAN_LOOK[FAN_PICK[0]].feat), bio:'剛來三個月。誰厲害就跟誰。', quote:'「學長！我幫你拿！」（從來沒有真的拿過）',
   chat:['學長！你剛剛那個超帥的！','學長，我以後也要像你一樣零異常！','學長，便當我幫你拿！（已經偷吃一口）'] };
-CAST.hao = { name:'阿豪', role:'工地小跟班', helmet:0xffd21f, vest:0x5d7a8c, skin:0xe6bd94, feat:{glasses:true}, bio:'阿弟帶來的。筆記抄得很勤，但都抄錯。', quote:'「學長說的都對！」',
+CAST.hao = { name:FAN_PICK[1], role:'工地小跟班', helmet:0xffd21f, vest:0x6b8a5e, skin:FAN_LOOK[FAN_PICK[1]].skin||0xe6bd94, feat:Object.assign({},FAN_LOOK[FAN_PICK[1]].feat), bio:FAN_PICK[0]+'帶來的。筆記抄得很勤，但都抄錯。', quote:'「學長說的都對！」',
   chat:['學長，這句我抄下來了！','學長，鐵叔以前也沒有你厲害吧？（小聲）','學長喝水！'] };
 IDLE.di = ['學長好帥……','（認真看學長的背影）','學長等一下要不要喝涼的？'];
-IDLE.hao = ['（抄筆記）','學長走路都有風……','阿弟，學長是我先認的！'];
+IDLE.hao = ['（抄筆記）','學長走路都有風……',FAN_PICK[0]+'，學長是我先認的！'];
 const FAN = {
   hello:['學長早！','學長今天也好帥！','學長早安！我幫你占好位置了！'],
   offer:['學長我幫你拿！……好重，還是你來。','學長小心腳步！','學長這個我來！（沒有動）'],
@@ -362,9 +366,10 @@ const GREET_OUTFIT = {
 const RIDE_LV = { heli:3, benz:2, bmw:2, ev:1, jet:1, bws:1, cygnus:1, smax:1, gogoro:1 }, OUTFIT_LV = { robe:2, cape:2, sequin:1, halo:1 };   // 驚訝程度
 const RIDEB = { benz:'……大 G？', bmw:'方向燈咧？！', ev:'……怎麼沒聲音？', heli:'風很大欸！！', jet:'嗯，能吃苦。', bws:'工地神車！', cygnus:'能吃苦的年輕人。', smax:'坐很舒服喔？', gogoro:'……沒聲音？' };
 const RIDEB_KUN = { benz:'……（看了一眼）', bmw:'……方向燈。', ev:'……沒聲音。', heli:'……（按住安全帽）', jet:'……嗯。', bws:'……BWS。', cygnus:'……嗯，能吃苦。', smax:'……坐墊，軟。', gogoro:'……沒聲音。' };   // 阿坤師帶班：落地那一下的反應也照他的個性，話少、不大聲
-const FANBOSS = { tie:'才幾天就收小弟了？好啦，職場就是這樣：有人爬，有人扶梯子。', lin:'跟班不算工時。', an:'哇，{P}有粉絲了耶！', kun:'……（看了阿弟一眼）' };
+const FANBOSS = { tie:'才幾天就收小弟了？好啦，職場就是這樣：有人爬，有人扶梯子。', lin:'跟班不算工時。', an:'哇，{P}有粉絲了耶！', kun:'……（看了'+FAN_PICK[0]+'一眼）' };
 Object.assign(CAST.you,{hair:0x3a2a20, shirt:0xf4f6fa}); Object.assign(CAST.tie,{hair:0xa3a3a3, shirt:0xc9d6e8}); Object.assign(CAST.lin,{hair:0x2a2320, shirt:0xf7dfe8});
 Object.assign(CAST.an,{hair:0x6a4630, shirt:0xdfe9ff}); Object.assign(CAST.kun,{hair:0x3a332e, shirt:0xe3e3e3}); Object.assign(CAST.di,{hair:0x2a2320, shirt:0xe6f3e0}); Object.assign(CAST.hao,{hair:0x2a2320, shirt:0xe0f1f4});
+['di','hao'].forEach((id,i)=>{ const lk=FAN_LOOK[FAN_PICK[i]]; if(lk.hair) CAST[id].hair = lk.hair==='skin' ? CAST[id].skin : lk.hair; });   // 志龍金髮、和尚光頭
 const cname = id => { const c=CAST[id]; return typeof c.name==='function' ? c.name() : c.name; };
 const fill = s => s.replace(/\{P\}/g, cname('you'));
 // 對話裡的重點：用 **…** 包起來。重點剛好是這裡的名詞，對話框下面就會自動出現白話解釋
@@ -785,8 +790,10 @@ function siteOffice(){ const cx=L.cx, y0=L.gy, wall=std(0xe9e6dc), dk=std(0x3a43
     [2.64,1.16].forEach(y=>S(box(2.56,0.08,0.1, cx+a,y0+y,zf-0.06, mat.white))); [-1.24,0,1.24].forEach(e=>S(box(0.07,1.5,0.1, cx+a+e,y0+1.9,zf-0.06, mat.white)));   // 窗框（背面離牆 1 公分，不跟牆面搶）
     const bl=std(0xe9e7df); S(box(2.46,0.06,0.07, cx+a,y0+2.57,zf-0.14, bl)); for(let k=0;k<15;k++){ const sl=box(2.4,0.008,0.05, cx+a,y0+2.5-k*0.045,zf-0.14, bl); sl.rotation.x=0.55; S(sl); }   // 百葉簾：頂軌、葉片（斜的，拉下一半）
     S(box(2.42,0.025,0.06, cx+a,y0+2.5-15*0.045,zf-0.14, std(0xd8d5cb))); S(cyl(0.004,0.9,'y', cx+a+1.05,y0+2.0,zf-0.18, std(0xcfcabb),6)); });   // 底軌、拉繩
-  { const zf=8.5, x=cx+4.0, ac=std(0xf4f5f2); S(box(1.9,0.5,0.32, x,y0+3.02,zf-0.17, ac)); S(box(1.76,0.06,0.02, x,y0+2.83,zf-0.335, std(0x9aa1a8))); S(box(1.8,0.016,0.012, x,y0+3.18,zf-0.335, std(0xd5d8dc))); S(box(1.8,0.016,0.012, x,y0+3.13,zf-0.335, std(0xd5d8dc)));   /* 室內機：寬 1.9、高 0.5（跟 2.4 公尺的窗比起來才不會太小） */   // 分離式冷氣：室內機、出風口葉片、進風格柵
-    S(box(0.05,0.018,0.004, x+0.72,y0+2.95,zf-0.332, std(0x3fae4f,{emissive:0x2a8a3a}))); const pp=std(0xdcdcd6); S(cyl(0.012,0.5,'x', x+1.2,y0+2.85,zf-0.03, pp,8)); S(cyl(0.012,2.75,'y', x+1.45,y0+1.5,zf-0.03, pp,8)); }   // 運轉燈、排水管：先往右橫走，再沿著窗戶外側往下
+  [[4.0,1],[-3.8,-1]].forEach(([a,sd])=>{ const zf=8.5, x=cx+a, ac=std(0xf4f5f2), pp=std(0xdcdcd6);                                   // 兩扇窗上面各一台分離式冷氣
+    S(box(1.9,0.5,0.32, x,y0+3.02,zf-0.17, ac)); S(box(1.76,0.06,0.02, x,y0+2.83,zf-0.335, std(0x9aa1a8))); [3.18,3.13].forEach(y=>S(box(1.8,0.016,0.012, x,y0+y,zf-0.335, std(0xd5d8dc))));   // 室內機：寬 1.9、高 0.5；出風口、進風格柵
+    S(box(0.05,0.018,0.004, x+0.72,y0+2.95,zf-0.332, std(0x3fae4f,{emissive:0x2a8a3a})));                                                    // 運轉燈
+    S(cyl(0.012,0.5,'x', x+sd*1.2,y0+2.85,zf-0.03, pp,8)); S(cyl(0.012,2.75,'y', x+sd*1.45,y0+1.5,zf-0.03, pp,8)); });                    // 排水管：往窗戶外側橫走，再沿著牆往下
   S(board(['工程進度表','預定 100%','實際 41%','（下雨不算）'], cx-1.9,y0+2.1,-1.91,0,1.6,'#ffffff','#1b1e24')); { const fl=new THREE.Mesh(new THREE.BoxGeometry(1.2,0.8,0.006), [mat.white,mat.white,mat.white,mat.white,new THREE.MeshBasicMaterial({map:flagTex()}),mat.white]); fl.position.set(cx+0.1,y0+2.35,-1.915); S(fl); S(cyl(0.015,1.3,'x', cx+0.1,y0+2.77,-1.9, mat.steel,8)); }   // 公安旗：掛在後牆中間 S(board(['雨天備案','1. 室內繼續做','2. 沒有 2'], cx+2.05,y0+2.1,-1.91,0,1.45,'#f2cf1d','#1b1e24'));
   S(box(0.3,0.05,2.0, cx-6.38,y0+1.62,2.1, mat.wood)); [[1.4,0xf4f4f4],[1.85,0xffd21f],[2.3,0xe04545],[2.75,0xffd21f]].forEach(([z,col])=>S(ball(0.16,std(col),cx-6.36,y0+1.74,z,1,0.72,1)));   // 安全帽架
   S(box(0.42,0.06,1.9, cx-6.25,y0+0.46,2.1, mat.wood)); [1.3,2.9].forEach(z=>S(box(0.36,0.44,0.06, cx-6.25,y0+0.22,z, dk)));                                                              // 長椅
@@ -1789,8 +1796,10 @@ function makePerson0(c){ const off=!!(L && L.office), cf=c.feat||{};            
   if(!f.mustache) g.add(box(0.07,0.012,0.012,0,1.475,0.196,mat.dark));
   // 安全帽，或辦公室的頭髮
   if(off){ const hd=new THREE.Mesh(new THREE.SphereGeometry(0.21,24,12,0,Math.PI*2,0,Math.PI*0.5), std(c.hair||0x2a2320)); hd.position.set(0,1.585,0.01); hd.rotation.x=-0.3; hd.castShadow=true; g.add(hd); }
-  else { const dome=new THREE.Mesh(new THREE.SphereGeometry(0.218,24,12,0,Math.PI*2,0,Math.PI/2),hel); dome.position.set(0,1.6,0.01); dome.castShadow=true; g.add(dome);
-    const brim=cyl(0.25,0.025,'y',0,1.61,0.04,hel,24); brim.scale.z=1.1; g.add(brim); g.add(box(0.05,0.03,0.32,0,1.82,0.01,hel)); }
+  else { const DS=1.06, dome=new THREE.Mesh(new THREE.SphereGeometry(0.218,28,14,0,Math.PI*2,0,Math.PI/2),hel); dome.scale.y=DS; dome.position.set(0,1.6,0.01); dome.castShadow=true; g.add(dome);   // 帽殼（稍微高一點）
+    [[0,0.014],[-0.065,0.008],[0.065,0.008]].forEach(([xo,t])=>{ const rb=new THREE.Mesh(new THREE.TorusGeometry(Math.sqrt(0.221*0.221-xo*xo),t,6,28,Math.PI),hel); rb.rotation.y=Math.PI/2; rb.scale.y=DS; rb.position.set(xo,1.6,0.01); g.add(rb); });   // 頂上三條加強肋：沿著帽殼彎下來，不會凸出去
+    const brim=cyl(0.25,0.018,'y',0,1.605,0.045,hel,32); brim.scale.z=1.12; g.add(brim); { const lip=new THREE.Mesh(new THREE.TorusGeometry(0.25,0.01,6,32),hel); lip.rotation.x=Math.PI/2; lip.scale.y=1.12; lip.position.set(0,1.605,0.045); g.add(lip); }   // 帽簷＋圓角收邊
+    { const st=new THREE.Group(), gr=std(0x2fa84f); st.add(cyl(0.034,0.004,'z',0,0,0,mat.white,20)); st.add(box(0.044,0.012,0.004,0,0,0.003,gr)); st.add(box(0.012,0.044,0.004,0,0,0.003,gr)); st.position.set(0,1.72,0.192); st.rotation.x=-0.58; g.add(st); } }   // 正面的工安貼紙：白底綠十字
   if(!off && c.helmetFx==='rainbow'){ const led=new THREE.Mesh(new THREE.TorusGeometry(0.222,0.016,8,28), std(0xffffff,{emissive:0xffffff})); led.rotation.x=Math.PI/2; led.position.set(0,1.645,0.01); g.add(led);
     fx.push(t=>{ const h=(t*0.4)%1; hel.color.setHSL(h,1,0.58); hel.emissive.setHSL(h,1,0.22); led.material.emissive.setHSL((h+0.5)%1,1,0.6); }); }
   if(!off && c.crown){ const band=new THREE.Mesh(new THREE.CylinderGeometry(0.168,0.172,0.06,20,1,true), std(0xffc61f,{emissive:0x3a2600, side:THREE.DoubleSide})); band.position.set(0,1.74,0.01); g.add(band);
