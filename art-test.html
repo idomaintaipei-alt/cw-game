@@ -1559,8 +1559,23 @@ function refreshPlayer(){ const a=LV.actors.you; if(!a) return; const old=a.g, g
 function fanCount(){ if(!L||L.bench||L.office||li===0) return 0; const b=store.get('cwstory_best',{}), prev=b[LEVELS[li-1].id];            // 小跟班：第一天（辦公室）沒有；前一天 90 分以上才有一個，
   const n=LEVELS.slice(0,li).filter(l=>b[l.id] && b[l.id].s>=90).length; return !(prev && prev.s>=90) ? 0 : n>=3 ? 2 : 1; }                                // 這一天之前已經有三天 90 分以上才有兩個（只算這一週裡今天以前的天數）
 function fan(kind,chance){ const fs=Object.values(LV.actors).filter(a=>a.follower); if(!fs.length || Math.random()>chance) return; bubble(pickOne(fs).who, pickOne(FAN[kind])); }
+// 名字取髒話：先把空白、符號拿掉、全形轉半形、轉小寫，再比對（會出現在正常英文名字裡的字，例如 cock、dick，要單獨出現才算）
+const RUDE_ZH = ['幹','操你','操妳','操他','肏','屌','機掰','雞掰','機八','雞八','雞巴','機巴','鸡巴','靠北','靠杯','靠腰','靠么','靠夭','靠邀','哭爸','哭么','王八蛋','他媽','他妈','你媽的','三小','洨','傻逼','傻屄','煞筆',
+  '法克','發克','伐克','法庫','謝特','雪特','歇特','必取','碧池','婊','賤人','懶叫','懶趴','卵葩','老二','雞雞','陰莖','陰道','陰部','屄','屁眼'];
+const RUDE_EN = ['fuck','fuk','fck','phuck','shit','bitch','btch','cunt','pussy','penis','vagina','asshole','wtf','motherf','whore','slut','ganni','ganlin','kannina','kanlin','caonima','cnm','tmd'], RUDE_EN_WORD = ['cock','dick','tits','boobs','lp','sb'];   /* gan 拿掉：甘姓的拼音也是 Gan */
+function rudeName(n){ if(!n) return false; const raw=String(n).replace(/[！-～]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0xFEE0)).toLowerCase(), t=raw.replace(/[\s\p{P}\p{S}_]+/gu,'');   /* 拿掉空白、標點、符號（中文字留著） */
+  return RUDE_ZH.some(w=>t.includes(w)) || RUDE_EN.some(w=>t.includes(w)) || RUDE_EN_WORD.some(w=>new RegExp('(^|[^a-z])'+w+'([^a-z]|$)').test(raw)); }
+const RUDE_D1 = { tie:['三小？{P}？你爸媽是跟你有仇喔？名字取這款，我在工地喊你一聲，整排師傅都以為我在嗆人！','我跟你講，在我工地，名字取得比你屌的，最後都去扛料。以後你就叫「菜鳥」，聽到沒？'],
+  an:'呃……{P}？這個名字我等一下要打在交接單上，人資會不會退件啊……', lin:'名字不雅，列入觀察。（記了一筆）', kun:'……（看了名牌三秒，搖頭）', di:'學長的名字好有個性！我也想改！' };
+const RUDE_LATER = { tie:[null,'{P}，又是你。每次點名都像在罵髒話，我嘴巴很累你知道嗎？','{P}，今天業主會來巡，你名牌給我翻過去戴。','{P}，我昨天作夢都在喊你名字，醒來被我老婆罵。','{P}，最後一天了。我拜託你，下禮拜去戶政事務所改名，錢我出。'],   // 第幾天講哪一句（週一另外講）
+  an:[null,'{P}……今天業主可能會來，名牌可以先翻過去嗎？','{P}……我昨天跟我媽說同事叫這個名字，她叫我換工作。','{P}……今天業主可能會來，名牌可以先翻過去嗎？','{P}，這禮拜辛苦了。名字的事，我們下禮拜再聊。'],
+  lin:[null,'名字不雅，觀察第二天。','名字不雅，觀察第三天。','名字不雅，觀察第四天。我在想要不要開異常單。','名字不雅，觀察第五天。結論：建議改名。'], kun:'……（又看了一次名牌）' };
+const rudeLine = (who,d)=>{ const v=RUDE_LATER[who]; return Array.isArray(v) ? v[d]||v[v.length-1] : v; };
 // 進場時帶班的人多講幾句：看上一天成績、座駕、穿著
 function greet(){ const b=store.get('cwstory_best',{}), prev = li>0 ? b[LEVELS[li-1].id] : null, who=L.boss, sk=skinState(); let lines=[];
+  if(rudeName(cname('you'))){ const here=[who].concat((L.npcs||[]).filter(w=>w!==who));                                // 名字取髒話：先虧名字
+    if(li===0){ RUDE_D1.tie.forEach(t=>{ if(here.includes('tie')) lines.push({who:'tie', t, mood:'mad'}); }); here.filter(w=>w!=='tie' && RUDE_D1[w]).forEach(w=>lines.push({who:w, t:RUDE_D1[w]})); if(LV.actors.di) lines.push({who:'di', t:RUDE_D1.di, mood:'smile'}); }   // 週一：每個人都虧，鐵叔最兇
+    else { if(RUDE_LATER[who]) lines.push({who, t:rudeLine(who,li), mood: who==='tie'?'mad':undefined}); if(who!=='tie' && here.includes('tie')) lines.push({who:'tie', t:rudeLine('tie',li), mood:'mad'}); } }   // 之後：帶班的人一句，鐵叔在場也補一句
   if(prev){ if(prev.n===0) lines.push({who, t:GREET_GOOD[who], mood:'smile'}); else if(prev.n>=3) lines.push({who, t:GREET_BAD[who].replace('{N}',prev.n), mood: who==='tie'?'mad':undefined}); }
   const said=t=>Array.isArray(t)?t:[t], rk = !L.bench && !L.office && !L.indoor && sk.ride!=='r_walk' ? sk.ride.slice(2) : null, rLv = rk ? RIDE_LV[rk]||1 : 0;   // 座駕
   const outfit = L.office ? [] : [sk.vest==='v_robe'&&'robe', sk.acc.includes('a_cape')&&'cape', sk.vest==='v_sequin'&&'sequin', sk.acc.includes('a_halo')&&'halo'].filter(Boolean), oLv = outfit.reduce((m,k)=>Math.max(m,OUTFIT_LV[k]),0), top = outfit.filter(k=>OUTFIT_LV[k]===oLv);   // 衣服：辦公室不穿造型，不講
