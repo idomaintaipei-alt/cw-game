@@ -650,15 +650,18 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
   const XL=x0+(x1-x0)*3/14;                                                                                                          // 北面分兩段：施工電梯那一段維持原樣，右邊是大廳
   const Q=(ax,f,sg)=>(w,h,d,along,y,off,m)=>S(ax==='z' ? box(w,h,d, along,y,f+sg*off, m) : box(d,h,w, f+sg*off,y,along, m));             // 沿著某一面放東西（along＝沿牆方向，off＝離牆多遠）
   // 還沒裝玻璃的樓層：樓板邊（混凝土帶）、裡面暗暗的、每根直料位置有裝好的托架；前面搭門型鷹架、掛綠色安全網
-  const wipBays=(ax,f,a0,a1,sg,k0)=>{ const P=Q(ax,f,sg), len=a1-a0, mid=(a0+a1)/2, n=Math.round(len/1.2), dkm=std(0x2f3338);
+  const wipBays=(ax,f,a0,a1,sg,k0,sy=Y)=>{ const P=Q(ax,f,sg), len=a1-a0, mid=(a0+a1)/2, n=Math.round(len/1.2), dkm=std(0x2f3338);   // sy＝鷹架從多高開始（不是地面＝懸挑式鷹架）
     for(let k=k0;k<3;k++){ const yb=Y+3.6*k, top=k===2?Y+HH-0.03:Y+3.6*(k+1); P(len,top-yb-0.45,0.02, mid,(yb+0.25+top-0.2)/2,0.012, dkm);   // 暗暗的室內
       for(let i=0;i<=n;i++) P(0.14,0.12,0.16, a0+len*i/n, top-0.1, 0.1, mat.steel); }                                              // 托架（裝在上面那層樓板邊）
     for(let k=k0+1;k<=3;k++) P(len-0.02, 0.4, 0.06, mid, Y+3.6*k+(k===3?-0.27:0), 0.03, mat.rc);   /* k0 那一條下面已經有窗間牆了，不重複 */                                          // 樓板邊：混凝土帶
-    const sc=mat.steelDark, yl=std(0xf2b01e), nb=Math.max(2,Math.round(len/1.83)), Hs=HH+1.1;                                           // 門型鷹架：從地面搭到四樓上面 1.1 公尺（當護欄）
-    for(let i=0;i<=nb;i++){ const a=a0+len*i/nb; [0.45,1.35].forEach(o=>P(0.05,Hs,0.05, a,Y+Hs/2,o, sc)); }
-    for(let y=Y+1.9; y<Y+Hs; y+=1.9){ [0.45,1.35].forEach(o=>P(len,0.04,0.04, mid,y,o, sc)); P(len,0.04,0.95, mid,y-0.02,0.9, std(0x8e959c)); P(len,0.18,0.03, mid,y+0.09,1.38, yl);   // 每一層：橫桿、踏板、踢腳板
+    const sc=mat.steelDark, yl=std(0xf2b01e), nb=Math.max(2,Math.round(len/1.83)), Hs=Y+HH+1.1-sy;                                      // 門型鷹架：搭到四樓上面 1.1 公尺（當護欄）
+    for(let i=0;i<=nb;i++){ const a=a0+len*i/nb; [0.45,1.35].forEach(o=>P(0.05,Hs,0.05, a,sy+Hs/2,o, sc)); }
+    if(sy>Y){ P(len,0.04,0.95, mid,sy-0.02,0.9, std(0x8e959c)); P(len,0.18,0.03, mid,sy+0.09,1.38, yl);                   // 懸挑式：最底下一層踏板＋踢腳板
+      for(let i=0;i<=nb;i++){ const a=a0+len*i/nb; P(0.1,0.14,1.5, a,sy-0.11,0.75, std(0x3d4a57));             // 每根立桿底下一支鋼梁，插在樓板裡挑出來
+        if(ax==='z'){ const dz=1.25, dy=2.64, c=box(0.025,0.025,Math.hypot(dz,dy), a+0.09,sy-0.04+dy/2,f+sg*(1.3-dz/2), mat.steelDark); c.rotation.x=sg*Math.atan2(dy,dz); S(c); } } }   // 鋼索：從鋼梁外端斜斜往上拉到上一層的牆面（不從下面撐，才不會碰到大廳的格柵）
+    for(let y=sy+1.9; y<sy+Hs; y+=1.9){ [0.45,1.35].forEach(o=>P(len,0.04,0.04, mid,y,o, sc)); P(len,0.04,0.95, mid,y-0.02,0.9, std(0x8e959c)); P(len,0.18,0.03, mid,y+0.09,1.38, yl);   // 每一層：橫桿、踏板、踢腳板
       for(let i=0;i<nb;i++){ const a=a0+len*(i+0.5)/nb, L2=Math.hypot(len/nb,1.9), r=Math.atan2(1.9,len/nb); [-1,1].forEach(e=>{ const b=ax==='z' ? box(L2,0.035,0.035, a,y-0.95,f+sg*1.4, sc) : box(0.035,0.035,L2, f+sg*1.4,y-0.95,a, sc); if(ax==='z') b.rotation.z=e*r; else b.rotation.x=e*r; S(b); }); } }   // 外側交叉拉桿
-    const net=new THREE.Mesh(new THREE.PlaneGeometry(len,Hs), mat.net); if(ax==='z'){ net.position.set(mid,Y+Hs/2,f+sg*1.45); } else { net.rotation.y=Math.PI/2; net.position.set(f+sg*1.45,Y+Hs/2,mid); } stat(net); };   // 綠色安全網
+    const net=new THREE.Mesh(new THREE.PlaneGeometry(len,Hs), mat.net); if(ax==='z'){ net.position.set(mid,sy+Hs/2,f+sg*1.45); } else { net.rotation.y=Math.PI/2; net.position.set(f+sg*1.45,sy+Hs/2,mid); } stat(net); };   // 綠色安全網
   // 電動吊籠：從四樓樓板邊伸出去的懸臂吊兩條鋼索，吊著一個平台，兩個人在打膠
   const gondola=(f,a,y)=>{ const yl=std(0xf2b01e), dk=mat.steelDark, W=3.0; S(box(0.7,0.12,W, f+0.75,y,a, std(0x8e959c))); [[0.42],[1.08]].forEach(([o])=>S(box(0.05,1.0,W, f+o,y+0.55,a, yl)));   // 平台、前後欄杆（只畫上緣與立板）
     [-1,1].forEach(e=>{ S(box(0.7,1.1,0.05, f+0.75,y+0.55,a+e*W/2, yl)); S(cyl(0.012,Y+HH-y+0.4,'y', f+0.75,(y+Y+HH+0.4)/2,a+e*(W/2-0.2), dk,6)); S(box(1.6,0.12,0.12, f+0.55,Y+HH+0.45,a+e*(W/2-0.2), dk)); });   // 兩側欄杆、鋼索、樓頂的懸臂
@@ -670,7 +673,9 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
   const lobbyWip=(xa,xb)=>{ const mid=(xa+xb)/2, f=z1, wb=std(0xf2f2f2), rd=std(0xd62828);
     for(let i=-2;i<=2;i++){ S(box(1.1,0.8,0.45, mid+i*1.15,Y+0.4,f+3.6, i%2?rd:wb)); }
     S(board(['大廳施工中','請由施工電梯進出','（電梯阿姨在等你）'], mid,Y+1.6,f+3.85,0,2.0,'#f2cf1d','#1b1e24')); [-0.95,0.95].forEach(e=>S(box(0.06,1.6,0.06, mid+e,Y+0.8,f+3.8, mat.steelDark))); };
-  face('z',z1,x0,XL,1); face('z',z1,XL,x1,1,2,true); lobby(XL,x1);
+  face('z',z1,x0,XL,1); lobby(XL,x1); wipBays('z',z1,XL,x1,1,2,Y+7.2);   // 大廳上面的三樓還沒裝玻璃：懸挑式鷹架從二樓樓板挑出來（不落地，不擋大廳門口）
+  { const P=Q('z',z1,1); P(x1-XL-0.02,0.55,0.08, (XL+x1)/2,Y+7.0,0.05, mat.rc);   // 二樓樓板邊：大廳格柵的上緣收在這條底下
+    bgCrew([{kind:'hammer', x:XL+(x1-XL)*0.62, y:Y+7.2+1.9, z:z1+0.9, ry:Math.PI, vest:0xd9e021}], S); }   // 鷹架上的工人：在裝托架
   { const gz0=1.2, gz1=7.4, gl=gz1-gz0, gm=(gz0+gz1)/2, gx=x0-0.255, fr=mat.steelDark;                                           // 植生牆：西面一、二樓，面對進場的路
     S(box(0.1,6.3,gl, gx,Y+0.6+3.15,gm, mat.green)); S(box(0.28,0.6,gl+0.1, x0-0.32,Y+0.3,gm, std(0x6d6a63)));                    // 綠牆、底下的植栽槽
     for(let i=0;i<=5;i++) S(box(0.03,6.36,0.03, gx-0.06,Y+0.6+3.15,gz0+gl*i/5, fr)); for(let k=0;k<=3;k++) S(box(0.03,0.03,gl, gx-0.06,Y+0.6+k*2.1,gm, fr)); }   // 鋼格框
