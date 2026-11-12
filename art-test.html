@@ -791,7 +791,54 @@ function siteOffice(){ const cx=L.cx, y0=L.gy, wall=std(0xe9e6dc), dk=std(0x3a43
   S(box(0.74,0.012,1.1, cx+5.8,y0+0.94,1.5, mat.white)); S(cyl(0.04,0.8,'x', cx+5.8,y0+0.98,2.35, mat.white,10)); S(cyl(0.04,0.8,'x', cx+5.85,y0+0.98,2.46, std(0xdfe8f2),10));
   S(box(0.8,0.06,1.5, cx+5.8,y0+0.74,4.6, mat.wood)); [[-0.34,-0.68],[0.34,-0.68],[-0.34,0.68],[0.34,0.68]].forEach(([a,b])=>S(box(0.06,0.74,0.06, cx+5.8+a,y0+0.37,4.6+b, dk)));        // 辦公桌、螢幕、椅子
   S(box(0.04,0.4,0.62, cx+6.0,y0+1.08,4.6, dk)); S(box(0.02,0.34,0.56, cx+5.975,y0+1.08,4.6, std(0x7fd0ff,{emissive:0x2a6f9a}))); S(box(0.05,0.12,0.05, cx+6.02,y0+0.83,4.6, dk)); S(box(0.2,0.02,0.24, cx+6.02,y0+0.78,4.6, dk));   /* 螢幕的支架和底座 */
-  S(box(0.5,0.08,0.5, cx+5.0,y0+0.48,4.6, std(0x3b6fd0))); S(box(0.08,0.55,0.5, cx+4.76,y0+0.8,4.6, std(0x3b6fd0))); S(cyl(0.035,0.4,'y', cx+5.0,y0+0.24,4.6, dk,8)); S(box(0.56,0.04,0.07, cx+5.0,y0+0.03,4.6, dk)); S(box(0.07,0.04,0.56, cx+5.0,y0+0.03,4.6, dk)); }   /* 椅子的腳和腳座 */
+  S(box(0.5,0.08,0.5, cx+5.0,y0+0.48,4.6, std(0x3b6fd0))); S(box(0.08,0.55,0.5, cx+4.76,y0+0.8,4.6, std(0x3b6fd0))); S(cyl(0.035,0.4,'y', cx+5.0,y0+0.24,4.6, dk,8)); S(box(0.56,0.04,0.07, cx+5.0,y0+0.03,4.6, dk)); S(box(0.07,0.04,0.56, cx+5.0,y0+0.03,4.6, dk));   /* 椅子的腳和腳座 */
+  // 牆上釘滿的紙：每張歪一點、上面兩角有圖釘；有幾張疊在一起（前後差 2 公釐）
+  const tacks=[0xd62828,0x2f6fd0,0x2fa84f,0xf2c21b];
+  const sheet=(wall,a,y,w,h,kind,title,seed,dz=0)=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h), std(0xffffff,{map:sheetTex(kind,title,seed,kind==='note'?256:512,kind==='note'?256:Math.round(512*h/w)), roughness:0.9})), g=new THREE.Group(); g.add(m);
+    [-1,1].forEach(e=>g.add(ball(Math.max(0.012,w*0.025), std(tacks[(seed+e+4)%4]), e*(w/2-w*0.06), h/2-h*0.07, 0.008))); g.rotation.z=((seed*37)%9-4)*0.012;   // 圖釘、歪一點
+    const off=0.006+dz; if(wall==='back') g.position.set(cx+a,y0+y,-1.925+off); else if(wall==='left'){ g.position.set(cx-6.525+off,y0+y,a); g.rotation.order='YXZ'; g.rotation.y=Math.PI/2; } else { g.position.set(cx+6.7-off,y0+y,a); g.rotation.order='YXZ'; g.rotation.y=-Math.PI/2; }
+    g.traverse(o=>{ o.castShadow=false; }); stat(g); };
+  // 三面牆排滿：兩到三排、大小交錯、有些疊在一起；避開窗、進度表、公安旗、安全帽架、雨衣、鐵櫃、圖桌、辦公桌
+  const BLD=['A棟','B棟','C棟'], DIR=['北向','東向','南向','西向'], KIND=['elev','gantt','elev','floors','elev','elev','gantt','floors'], NOTE=['缺 3 片|玻璃','吊車|週六?','打膠|等雨停','鐵叔|回電','SGS|拉拔 週五','膠條|退貨','B棟|追料','電梯|阿姨休假','放樣|重做','保固|誰負責?'];
+  const keep={back:[[-5.5,-2.9,1.05,2.8],[-2.8,-1.0,1.25,2.95],[-0.6,0.8,1.85,2.9],[4.85,6.9,0,1.45],[-6.2,-5.4,0,1.55],[2.9,5.5,1.05,2.8]], left:[[0.95,3.25,1.35,2.05],[4.25,6.35,0.75,2.0],[6.7,8.5,1.35,3.05]], right:[[-1.95,-1.3,0,1.45],[0.55,2.65,0,1.05],[3.75,5.45,0,1.4]]};
+  let sd=30; const fill=(wall,a0,a1)=>{ [[2.68,'big'],[1.98,'big'],[1.42,'small']].forEach(([y,sz],row)=>{ let a=a0+row*0.17;
+    while(a<a1){ const k=KIND[sd%KIND.length], w = sz==='small' ? (sd%3?0.42:0.16) : (sd%3===0?0.84:0.6), h = w<0.2 ? 0.16 : w*0.71, yy=y+((sd*13)%7-3)*0.02, c=a+w/2;
+      const hit=keep[wall].some(([x0,x1,y0b,y1b])=>c+w/2>x0-0.04 && c-w/2<x1+0.04 && yy+h/2>y0b-0.03 && yy-h/2<y1b+0.03);
+      if(c+w/2<=a1 && !hit){ if(w<0.2) sheet(wall,c,yy,w,h,'note',NOTE[sd%NOTE.length],sd,0.004); else sheet(wall,c,yy,w,h,k, k==='elev' ? BLD[sd%3]+' '+DIR[(sd>>1)%4]+'立面　帷幕單元' : k==='gantt' ? BLD[sd%3]+' 施工進度表（第 '+(2+sd%4)+' 版）' : BLD[sd%3]+' 樓層進度', sd, (sd%2)*0.002); }
+      sd++; a += hit ? 0.2 : w-0.03+((sd*7)%5)*0.015; } }); };   /* 一張一張往旁邊排，有的稍微疊到前一張 */
+  fill('back',-6.4,6.55); fill('left',-1.85,8.4); fill('right',-1.85,8.35);
+  sheet('left',6.45,2.3,0.4,0.36,'cal','11 月',13,0.006);                                                                                              // 月曆
+  [[cx+5.6,4.95],[cx+5.62,4.25]].forEach(([x,z],i)=>{ S(cyl(0.04,0.1,'y', x,y0+0.82,z, std(i?0xffffff:0xd8312e),12)); });                                                   // 桌上兩個馬克杯
+  [0,1,2].forEach(k=>S(box(0.3,0.012,0.42, cx+5.55+k*0.015,y0+0.776+k*0.012,4.25-k*0.02, mat.white)));                                                                    // 一疊文件
+  }
+// 工務所牆上的紙：kind＝elev（立面進度：一格一個帷幕單元）、gantt（施工進度表）、floors（樓層進度表）、note（便利貼）、cal（月曆）
+function sheetTex(kind, title, seed, W=512, H=362){ let r=seed*9301+49297; const rnd=()=>((r=(r*9301+49297)%233280)/233280); const Q=0.7, c=document.createElement('canvas'); c.width=Math.round(W*Q); c.height=Math.round(H*Q); const g=c.getContext('2d'), F=(px,b)=>(b?'bold ':'')+px+'px "Microsoft JhengHei","Noto Sans TC",sans-serif'; g.scale(Q,Q);   /* 實際解析度七成：牆上近百張，手機記憶體省一半 */
+  const HL=(x,y,w,h,col)=>{ g.fillStyle=col; g.fillRect(x,y,w,h); }, X=(x,y,w,h)=>{ g.strokeStyle='rgba(70,70,70,.85)'; g.lineWidth=2; g.beginPath(); g.moveTo(x+3,y+3); g.lineTo(x+w-3,y+h-3); g.moveTo(x+w-3,y+3); g.lineTo(x+3,y+h-3); g.stroke(); },
+        O=(x,y,rw,rh)=>{ g.strokeStyle='#d62828'; g.lineWidth=3; g.beginPath(); g.ellipse(x,y,rw,rh,-0.1,0,Math.PI*2); g.stroke(); }, YEL='rgba(255,232,40,.6)', GRN='rgba(110,225,110,.55)', PNK='rgba(255,120,190,.45)';
+  if(kind==='note'){ g.fillStyle=['#fff27a','#ffc2dd','#bfe9ff','#c9f5b5'][seed%4]; g.fillRect(0,0,W,H); g.fillStyle='#1b1e24'; g.font=F(Math.round(W*0.13),true); title.split('|').forEach((t,i)=>g.fillText(t, W*0.08, H*0.3+i*H*0.26)); return new THREE.CanvasTexture(c); }
+  g.fillStyle='#fbfaf4'; g.fillRect(0,0,W,H); g.fillStyle='#1b1e24'; g.font=F(22,true); g.fillText(title, 44, 30);   /* 標題往右，左上角的圖釘不會蓋到字 */
+  if(kind==='elev'){ const nf=9+Math.floor(rnd()*5), nb=8+Math.floor(rnd()*5), x0=46, y0=44, cw=(W-x0-16)/nb, ch=(H-y0-34)/nf, done=Math.floor(nf*(0.3+rnd()*0.5)), ok=Math.floor(done*rnd()*0.8);
+    for(let f=0;f<nf;f++){ const y=y0+(nf-1-f)*ch; g.fillStyle='#4b5563'; g.font=F(13); g.fillText((f+1)+'F', 8, y+ch*0.7);
+      for(let b=0;b<nb;b++){ const x=x0+b*cw; if(f<ok) HL(x,y,cw,ch,GRN); else if(f<done || (f===done && b<nb*rnd())) HL(x,y,cw,ch,YEL); g.strokeStyle='#6b7280'; g.lineWidth=1; g.strokeRect(x,y,cw,ch); if(rnd()<0.05) X(x,y,cw,ch); } }
+    const fb=done+1+Math.floor(rnd()*2), bb=Math.floor(rnd()*nb); if(fb<nf){ O(x0+(bb+0.5)*cw, y0+(nf-1-fb+0.5)*ch, cw*0.9, ch*0.9); g.fillStyle='#d62828'; g.font=F(15,true); g.fillText('缺料', Math.min(W-50,x0+(bb+1.2)*cw), y0+(nf-1-fb+0.2)*ch); }
+    g.fillStyle='#374151'; g.font=F(13); g.fillText('黃＝已裝　綠＝已驗收　X＝退貨/破片', 16, H-10); }
+  if(kind==='gantt'){ const tasks=['預埋件','放樣','托架','單元板吊裝','打膠','水密試驗','驗收'], nw=14, x0=118, y0=48, cw=(W-x0-12)/nw, rh=(H-y0-30)/tasks.length, today=5+Math.floor(rnd()*5);
+    g.font=F(12); g.fillStyle='#4b5563'; for(let w=0;w<nw;w++) g.fillText('W'+(w+1), x0+w*cw+2, y0-6);
+    tasks.forEach((t,i)=>{ const y=y0+i*rh, a=Math.floor(i*1.4), d=2+Math.floor(rnd()*4); g.fillStyle='#1b1e24'; g.font=F(15); g.fillText(t, 10, y+rh*0.65); g.strokeStyle='#d1d5db'; g.strokeRect(x0,y,nw*cw,rh);
+      HL(x0+a*cw, y+rh*0.2, d*cw, rh*0.28, '#93b4d9'); const act=Math.max(0,Math.min(d+1, today-a)); if(act>0) HL(x0+(a+(i>2?1:0))*cw, y+rh*0.52, act*cw, rh*0.28, '#e07b39');   // 預定、實際
+      if(a+d<=today && i<3) HL(4,y+2,x0-8,rh-4,YEL); if(i>2 && a<today) { g.fillStyle='#d62828'; g.font=F(13,true); g.fillText('落後', x0+(a+d)*cw+4, y+rh*0.7); } });
+    g.strokeStyle='#d62828'; g.lineWidth=2.5; g.beginPath(); g.moveTo(x0+today*cw, y0-14); g.lineTo(x0+today*cw, H-26); g.stroke(); g.fillStyle='#d62828'; g.font=F(13,true); g.fillText('今天', x0+today*cw-14, H-10);
+    X(W-150,y0+rh*5,110,rh); g.fillStyle='#555'; g.font=F(12); g.fillText('（第 3 版作廢）', W-150, H-10); }
+  if(kind==='floors'){ const cols=['預埋','托架','單元板','打膠','驗收'], nf=12, x0=54, y0=44, cw=(W-x0-12)/cols.length, rh=(H-y0-12)/nf, top=4+Math.floor(rnd()*5);
+    g.font=F(13,true); cols.forEach((t,j)=>{ g.fillStyle='#374151'; g.fillText(t, x0+j*cw+cw*0.2, y0-8); });
+    for(let f=0;f<nf;f++){ const y=y0+(nf-1-f)*rh; g.fillStyle='#4b5563'; g.font=F(12); g.fillText((f+1)+'F', 10, y+rh*0.75);
+      cols.forEach((t,j)=>{ const x=x0+j*cw; g.strokeStyle='#9ca3af'; g.lineWidth=1; g.strokeRect(x,y,cw,rh); const lv=top-j*1.5-f*0.9;
+        if(lv>0){ HL(x+1,y+1,cw-2,rh-2, j===4?GRN:YEL); g.fillStyle='#15803d'; g.font=F(14,true); g.fillText('✓', x+cw*0.42, y+rh*0.8); } else if(rnd()<0.08) X(x,y,cw,rh); }); }
+    O(x0+2.5*cw, y0+(nf-1-top+0.5)*rh, cw*1.4, rh*1.1); }
+  if(kind==='cal'){ const x0=12, y0=58, cw=(W-24)/7, rh=(H-y0-10)/5, wd=['日','一','二','三','四','五','六']; g.font=F(14,true); wd.forEach((t,i)=>{ g.fillStyle=i===0?'#d62828':'#374151'; g.fillText(t, x0+i*cw+cw*0.4, y0-8); });
+    for(let d=1;d<=30;d++){ const k=d+5, x=x0+(k%7)*cw, y=y0+Math.floor(k/7)*rh; if(y>H-rh) break; g.strokeStyle='#d1d5db'; g.strokeRect(x,y,cw,rh); g.fillStyle='#374151'; g.font=F(14); g.fillText(String(d), x+4, y+16); if(d<12) X(x,y,cw,rh); if(d===12) HL(x,y,cw,rh,PNK);
+      if(d===20){ O(x+cw/2,y+rh/2,cw*0.48,rh*0.46); g.fillStyle='#d62828'; g.font=F(11,true); g.fillText('風雨試驗', x+2, y+rh-6); } } }
+  return new THREE.CanvasTexture(c); }
 // 週五的廠房：鋼構（柱、斜梁、屋頂檁條）、地坪；後牆和左右兩側的牆已經封好板。前面這道外牆（x -3.4～10.6）是這一關要裝的
 function factory(){ const y0=L.gy, S=m=>{ m.castShadow=false; return stat(m); }, X=[-3.5,-0.1,2.1,4.9,7.7,10.5], st=mat.steelDark, GY=[0.4,1.6,2.8];
   S(box(14.3,0.08,8.2, 3.55,y0+0.04,-4.1, mat.rc));                                                                                   // 地坪
@@ -1150,7 +1197,15 @@ const LEVELS = [
     stat(board(['透視','裡面沒有預埋件','還沒鑽孔'], -0.36,-0.06,0.004,0,0.24,'#4b5563','#ffffff'));   /* 放在紅圈左邊，不擋透視的地方 */
     add('drill', cyl(0.006,0.075,'z', 0,0,-0.0375, mat.hole));
     add('clean', cyl(0.0035,0.22,'z', 0,0,0.05, mat.steel)); add('clean', cyl(0.0075,0.03,'z', 0,0,-0.055, mat.brush));
-    add('premix', box(0.12,0.12,0.004, 0.2,-0.08,0.04, mat.card)); add('premix', at(new THREE.Mesh(new THREE.SphereGeometry(0.014,16,12), mat.resin), 0.2,-0.08,0.05));
+    add('premix', box(0.14,0.11,0.004, 0.25,-0.24,0.003, mat.card));                                                                   // 試打用的紙板：貼在梁上
+    [[0.205,0xf1e4e2],[0.25,0xe39a9a],[0.295,null]].forEach(([x,c])=>add('premix', ball(0.013, c===null?mat.resin:std(c), x,-0.24,0.009, 1.5,1,0.5)));   // 三坨試打的膠：偏白（沒混勻）→ 粉紅 → 均勻深紅
+    add('premix', label('試打：均勻才能用','#374151', 0.42,-0.24,0.07,0.032));   /* 放在紙板右邊，不會被槍擋住 */
+    { const gun=new THREE.Group(), gy=std(0x8e959c), dk=std(0x2b2f36), wt=std(0xeef1f4), glove=std(0xd9d9d9), slv=std(0x2f6fd0);   // 藥劑槍：槍口在原點，槍身往 +z（朝鏡頭）
+      gun.add(cyl(0.006,0.09,'z',0,0,0.045,wt,10)); gun.add(cyl(0.012,0.02,'z',0,0,0.1,wt,10)); [-1,1].forEach(e=>gun.add(cyl(0.02,0.19,'z',e*0.022,0,0.205,std(0xe6e2d8),14)));   // 混合管、管座、雙管藥劑
+      gun.add(box(0.075,0.012,0.22,0,0.028,0.205,gy)); gun.add(box(0.075,0.06,0.012,0,0,0.104,gy)); gun.add(box(0.075,0.06,0.02,0,0,0.315,gy)); gun.add(cyl(0.004,0.12,'z',0,0.015,0.385,gy,6));   // 槍架、前後板、推桿
+      const hd=box(0.028,0.11,0.035,0,-0.075,0.3,dk); hd.rotation.x=0.2; gun.add(hd); const tr=box(0.01,0.07,0.018,0,-0.055,0.262,dk); tr.rotation.x=0.2; gun.add(tr);   // 握把、扳機
+      gun.add(ball(0.042,glove,0,-0.075,0.318,1.1,1.4,1.0)); const sl=cyl(0.038,0.32,'y',0.02,-0.25,0.38,slv,12); sl.rotation.x=-0.45; gun.add(sl);   // 戴手套的手、往畫面外的袖子
+      gun.position.set(0.295,-0.24,0.018); gun.visible=false; gun.traverse(o=>{ o.castShadow=false; }); stat(gun); LV.refs.gun=gun; }
     LV.refs.resin = add('inject', cyl(0.0062,0.05,'z', 0,0,-0.05, mat.resin));
     add('rod', cyl(0.005,0.13,'z', 0,0,-0.005, mat.steel));
     LV.refs.ring = add('rod', at(new THREE.Mesh(new THREE.TorusGeometry(0.009,0.003,8,20), mat.resin), 0,0,0.002));
@@ -1171,7 +1226,8 @@ const LEVELS = [
     {who:'lin', t:'我聽得到。開始吧，點右邊的工具。'} ],
   outroGood:[ {who:'lin', t:'可以。這支我敢讓 SGS 拉。', mood:'smile'}, {who:'lin', t:'但是記住，今天這個是補救。能埋的時候就要埋好，不要留到今天。'}, {who:'you', t:'（被琳姊稱讚了……應該算吧？）'} ],
   outroBad:[ {who:'lin', t:'錨栓是植好了，異常單 {N} 張。明天拉拔，你站最前面看。'}, {who:'lin', t:'還有，這種補救的工作，最好一次都不要有。'} ],
-  onPlace:{ cure(){ LV.refs.resin.material=mat.resinCured; LV.refs.ring.material=mat.resinCured; } },
+  onPlace:{ premix(){ LV.refs.gun.visible=true; }, inject(){ LV.refs.gun.position.set(0,0,0.018); }, rod(){ LV.refs.gun.visible=false; },   // 藥劑槍：試打 → 移到孔口注膠 → 插螺桿時收起來
+    cure(){ LV.refs.resin.material=mat.resinCured; LV.refs.ring.material=mat.resinCured; } },
   steps:[
     { id:'drill', name:'鑽孔', plain:'鑽一個孔，等一下螺桿要插進去。M10 化學錨栓用 12mm 鑽頭，比螺桿大一圈，留位置給膠。', tr:'十二不是十', hint:'在 RC 上鑽孔。孔深要到**原廠最小埋深**以上。',
       q:{ title:'M10 化學錨栓，拿幾 mm 的鑽頭？', body:'DEWALT PURE 500+ 或 Hilti HIT-HY 200-R V3，螺桿 M10。', src:SRC.anchor, opts:[
