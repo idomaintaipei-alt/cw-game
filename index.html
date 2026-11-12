@@ -352,6 +352,14 @@ const GREET_RIDE = {
   ev:{ tie:'特斯拉喔？貸款幾年？算了，不要告訴我，我會難過。', lin:'充電不能接工地的電。', an:'門是往上開的？！太帥了吧！', kun:'……沒聲音。' },
   heli:{ tie:'直升機？！你的薪水是我的幾倍？風很大欸，我的圖都飛了啦！', lin:['……直升機？（推眼鏡）','停機坪不在施工圖上。這筆我先記著。'], an:'{P}你也太誇張了吧！！', kun:['……（按住安全帽）','……保護膜，被你吹掉了。去撿。'] },   /* 阿坤師話少：兩句都很短，在意的是板子 */
 };
+// 衣服的反應：龍袍、披風（大家都講）＞亮片西裝、神明光圈（帶班的人講）
+const GREET_OUTFIT = {
+  robe:{ tie:'你穿龍袍來上工？今天是要遶境，還是要裝帷幕牆？', lin:'這件不防火。我記一筆。', an:'哇！！三太子來了！可以跟你合照嗎？', kun:'……（停下手，看了很久）' },
+  cape:{ tie:'披風？你是要飛上四樓喔？電梯在那邊！', lin:'披風會捲進機具。……拍完照再脫。', an:'超人來工地上班了！！', kun:'……會勾到。' },
+  sequin:{ tie:'亮片西裝？你是來尾牙表演的喔？', lin:'反光背心有規定顏色。你這件……太反光了。', an:'你今天好閃，我眼睛要瞎了！', kun:'……刺眼。' },
+  halo:{ tie:'頭上那圈是什麼？神明也要戴安全帽！', lin:'……那個光圈，有經過檢驗嗎？', an:'哇，神明降臨！拜一下！', kun:'……（雙手合十）' },
+};
+const RIDE_LV = { heli:3, benz:2, bmw:2, ev:1, jet:1, bws:1, cygnus:1, smax:1, gogoro:1 }, OUTFIT_LV = { robe:2, cape:2, sequin:1, halo:1 };   // 驚訝程度
 const RIDEB = { benz:'……大 G？', bmw:'方向燈咧？！', ev:'……怎麼沒聲音？', heli:'風很大欸！！', jet:'嗯，能吃苦。', bws:'工地神車！', cygnus:'能吃苦的年輕人。', smax:'坐很舒服喔？', gogoro:'……沒聲音？' };
 const RIDEB_KUN = { benz:'……（看了一眼）', bmw:'……方向燈。', ev:'……沒聲音。', heli:'……（按住安全帽）', jet:'……嗯。', bws:'……BWS。', cygnus:'……嗯，能吃苦。', smax:'……坐墊，軟。', gogoro:'……沒聲音。' };   // 阿坤師帶班：落地那一下的反應也照他的個性，話少、不大聲
 const FANBOSS = { tie:'才幾天就收小弟了？好啦，職場就是這樣：有人爬，有人扶梯子。', lin:'跟班不算工時。', an:'哇，{P}有粉絲了耶！', kun:'……（看了阿弟一眼）' };
@@ -1386,13 +1394,16 @@ function fan(kind,chance){ const fs=Object.values(LV.actors).filter(a=>a.followe
 // 進場時帶班的人多講幾句：看上一天成績、座駕、穿著
 function greet(){ const b=store.get('cwstory_best',{}), prev = li>0 ? b[LEVELS[li-1].id] : null, who=L.boss, sk=skinState(); let lines=[];
   if(prev){ if(prev.n===0) lines.push({who, t:GREET_GOOD[who], mood:'smile'}); else if(prev.n>=3) lines.push({who, t:GREET_BAD[who].replace('{N}',prev.n), mood: who==='tie'?'mad':undefined}); }
-  if(!L.bench && !L.office && !L.indoor && sk.ride!=='r_walk'){ const gr=GREET_RIDE[sk.ride.slice(2)][who]; (Array.isArray(gr)?gr:[gr]).forEach(t=>lines.push({who, t})); }   // 座駕的反應：可以是好幾句
-  const loud=(sk.helmet!=='h_yellow'?1:0)+(sk.vest!=='v_blue'?1:0)+sk.acc.length;
-  if(loud>=3) lines.push({who, t:GREET_LOUD[who]}); else if(sk.helmet!=='h_yellow') lines.push({who, t:GREET_HAT[who]});
-  if(sk.acc.includes('a_boots')) lines.push({who, t:GREET_BOOT[who]});
-  lines=lines.slice(0,3);
-  if(sk.ride==='r_heli' && !L.bench && !L.office && !L.indoor){ (L.npcs||[]).filter(w=>w!==who).forEach(w=>{ const gr=GREET_RIDE.heli[w]; if(gr) (Array.isArray(gr)?gr:[gr]).forEach(t=>lines.push({who:w, t})); });   // 直升機進場：現場每個人都要有反應（照各自的個性）
-    if(Object.values(LV.actors).some(a=>a.follower)) lines.push({who:'di', t:'學長是坐直升機來上班的！！我要拍照！', mood:'smile'}); }
+  const said=t=>Array.isArray(t)?t:[t], rk = !L.bench && !L.office && !L.indoor && sk.ride!=='r_walk' ? sk.ride.slice(2) : null, rLv = rk ? RIDE_LV[rk]||1 : 0;   // 座駕
+  const outfit = L.office ? [] : [sk.vest==='v_robe'&&'robe', sk.acc.includes('a_cape')&&'cape', sk.vest==='v_sequin'&&'sequin', sk.acc.includes('a_halo')&&'halo'].filter(Boolean), oLv = outfit.reduce((m,k)=>Math.max(m,OUTFIT_LV[k]),0), top = outfit.filter(k=>OUTFIT_LV[k]===oLv);   // 衣服：辦公室不穿造型，不講
+  if(rk) said(GREET_RIDE[rk][who]).forEach(t=>lines.push({who, t}));                                                    // 帶班的人：先講座駕
+  if(top.length) lines.push({who, t:GREET_OUTFIT[top[0]][who]});                                                         // 再講最誇張的那件衣服
+  else { const loud=(sk.helmet!=='h_yellow'?1:0)+(sk.vest!=='v_blue'?1:0)+sk.acc.length;                                // 沒有那四件：照原本的（太花俏、安全帽、發光靴）
+    if(!L.office){ if(loud>=3) lines.push({who, t:GREET_LOUD[who]}); else if(sk.helmet!=='h_yellow') lines.push({who, t:GREET_HAT[who]}); if(sk.acc.includes('a_boots')) lines.push({who, t:GREET_BOOT[who]}); } }
+  (L.npcs||[]).filter(w=>w!==who).forEach((w,i)=>{                                                                       // 現場其他人：夠誇張才講（座駕 2 以上、衣服 2 以上）
+    if(rLv>=2 && GREET_RIDE[rk][w]) said(GREET_RIDE[rk][w]).forEach((t,j)=>{ if(rLv>=3 || j===0) lines.push({who:w, t}); });   // 直升機：講完；大G、X6：講一句
+    if(oLv>=2) lines.push({who:w, t:GREET_OUTFIT[top[(i+1)%top.length]][w]}); });                                          // 龍袍、披風：每個人都講（兩件都穿就輪流講）
+  if(Object.values(LV.actors).some(a=>a.follower)){ if(rLv>=3) lines.push({who:'di', t:'學長是坐直升機來上班的！！我要拍照！', mood:'smile'}); else if(oLv>=2) lines.push({who:'di', t:'學長今天的穿搭，我要抄筆記！', mood:'smile'}); }
   if(Object.values(LV.actors).some(a=>a.follower)){ lines.push({who:'di', t:'學長早！今天也請多多指教！', mood:'smile'}); lines.push({who, t:FANBOSS[who]}); }
   return lines; }
 // 座駕外型（只做外型，不放任何廠牌標誌）。車頭朝 -x。
