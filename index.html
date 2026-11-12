@@ -495,7 +495,7 @@ function bgCrew(list, S){ const ups=[];
     if(w.kind==='write'){ const cb=new THREE.Group(); cb.add(box(0.24,0.32,0.02,0,0,0,mat.dark)); cb.add(box(0.2,0.27,0.006,0,-0.01,0.013,mat.white)); cb.position.set(0.05,-0.28,0.1); cb.rotation.x=-1.25; u.armL.userData.elbow.add(cb); u.armL.rotation.x=-1.15; u.armL.rotation.z=0.3; }
     g.userData.crew=w; S(g); const len = w.b ? Math.hypot(w.b.x-w.a.x, w.b.z-w.a.z) : 0;   // crew＝背景工人（給自動檢查找）
     ups.push(t=>{ const tt=t+ph;
-      if(w.kind==='tie'){ g.rotation.x=0.8; u.armL.rotation.x=-0.7+Math.sin(tt*9)*0.18; u.armR.rotation.x=-0.7+Math.sin(tt*9+1.4)*0.18; u.legL.rotation.x=u.legR.rotation.x=-0.25; }
+      if(w.kind==='tie'){ g.rotation.x=0.3; g.position.y=w.y-0.42; u.legL.rotation.x=u.legR.rotation.x=-1.85; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=2.25; }); u.armL.rotation.x=-0.75+Math.sin(tt*9)*0.18; u.armR.rotation.x=-0.75+Math.sin(tt*9+1.4)*0.18; }   // 蹲下來綁：膝蓋彎、屁股往下、上身稍微前傾，手在鋼筋上動（原本整個人直直往前倒）
       else if(w.kind==='hammer'){ g.rotation.x=0.18; const sw=Math.sin(tt*6); u.armR.rotation.x = sw>0 ? -2.3+sw*1.6 : -2.3; u.armL.rotation.x=-0.9; }
       else if(w.kind==='write'){ u.armR.rotation.x=-1.0+Math.sin(tt*7)*0.1; u.armR.rotation.z=-0.38; }
       else if(w.kind==='haul'){ const N=w.N, WT=w.L0/0.75, BT=0.9, C=2*WT+2*BT, n=Math.floor(tt/C), k=((n%(2*N))+2*N)%(2*N), fw=k<N, j=fw?k:k-N, ph=tt-n*C;   // 一趟：彎腰拿 → 走過去 → 彎腰放 → 空手走回來
