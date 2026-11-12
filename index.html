@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
 <meta property="og:type" content="website">
@@ -11,13 +11,20 @@
 <style>
   :root { --bg:#14181d; --panel:rgba(30,36,43,.94); --line:#3a4350; --txt:#e8ecf1; --dim:#9aa4b1; --ok:#3ddc84; --bad:#ff5c5c; --acc:#4da3ff; }
   * { box-sizing:border-box; }
-  html,body { margin:0; height:100%; overflow:hidden; touch-action:none; -webkit-user-select:none; user-select:none; background:var(--bg); color:var(--txt); font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; }
-  #view { position:fixed; inset:0; } #view canvas { touch-action:none; }   /* 手機：手指拖曳交給遊戲，不讓瀏覽器捲動或放大 */
+  html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }   /* iPhone 橫放會自動把字放大，版面就被撐破：關掉 */
+  html,body { margin:0; position:fixed; inset:0; width:100%; height:100%; overflow:hidden; overscroll-behavior:none; touch-action:pan-x pan-y; -webkit-user-select:none; user-select:none; background:var(--bg); color:var(--txt); font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; }
+  #view { position:fixed; inset:0; overflow:hidden; } #view canvas { display:block; width:100% !important; height:100% !important; touch-action:none; }   /* 畫布永遠填滿外框，不會比螢幕寬 */
+  button { touch-action:manipulation; }   /* 連點按鈕不會放大整頁 */
+  input { -webkit-user-select:text; user-select:text; }   /* 輸入名字的框要能打字 */
+  .overlay .box, #dayEnd .inner, #dlg { touch-action:pan-y; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }   /* 清單、對話框裡面可以上下滑 */   /* 手機：手指拖曳交給遊戲，不讓瀏覽器捲動或放大 */
   button { background:#2a323c; color:var(--txt); border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-size:14px; cursor:pointer; font-family:inherit; }
   button:hover { border-color:var(--acc); }
   #camBtns { position:fixed; right:10px; top:50%; transform:translateY(-50%); z-index:4; display:none; flex-direction:column; gap:10px; }   /* 手機：放大、縮小、鏡頭回正 */
   #camBtns button { width:46px; height:46px; padding:0; border-radius:50%; font-size:22px; font-weight:bold; background:rgba(26,32,40,.82); line-height:1; }
   #camBtns button.small { font-size:13px; }
+  body.incut #side, body.incut #ticker, body.incut #help, body.incut #camBtns, body.incut #testTag { display:none !important; }   /* 過場動畫：資訊框先收起來，不蓋住畫面 */
+  #sub { position:fixed; left:50%; bottom:calc(16px + var(--lift,0px)); transform:translateX(-50%); z-index:5; display:none; max-width:calc(100% - 24px); padding:6px 14px; border-radius:6px; background:rgba(10,12,15,.78); color:#fff; font-size:14px; line-height:1.5; text-align:center; pointer-events:none; }   /* 過場時的字幕 */
+  #sub b { color:#ffd166; margin-right:6px; }
   button.primary { background:#1d4f86; border-color:#4da3ff; }
   button.done { opacity:.35; cursor:default; }
   button.shake { animation:sh .3s; border-color:var(--bad); }
@@ -34,7 +41,7 @@
   #goal small { display:block; color:var(--dim); margin-top:4px; }
   #tray { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
   #dayEnd { position:fixed; inset:0; z-index:9; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(8,10,13,.86); }
-  #dayEnd .inner { width:540px; max-width:100%; max-height:calc(100vh - 32px); overflow:auto; background:#1e242b; border:1px solid var(--line); border-top:4px solid #ffb020; border-radius:8px; padding:20px 22px; }
+  #dayEnd .inner { width:540px; max-width:100%; max-height:calc(100vh - 32px); max-height:calc(100dvh - 32px); overflow:auto; background:#1e242b; border:1px solid var(--line); border-top:4px solid #ffb020; border-radius:8px; padding:20px 22px; }
   #dayEnd .d1 { font-size:30px; font-weight:900; letter-spacing:4px; } #dayEnd .d2 { color:var(--dim); font-size:13px; margin-top:2px; }
   #deStamp { float:right; border:3px solid; border-radius:6px; padding:2px 12px; font-size:24px; font-weight:900; transform:rotate(-8deg); margin-top:4px; }
   #dayEnd .dg { display:flex; gap:8px; margin:14px 0 4px; } #dayEnd .dg div { flex:1; background:#161b21; border:1px solid var(--line); border-radius:6px; padding:8px 10px; }
@@ -45,7 +52,7 @@
   #err { position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:20px; text-align:center; line-height:1.6; z-index:9; }
 
   /* 對話框 */
-  #dlg { position:fixed; left:50%; bottom:14px; transform:translateX(-50%); width:760px; max-width:calc(100vw - 24px); display:none; gap:12px; background:rgba(18,22,27,.96); border:1px solid #55606e; border-radius:10px; padding:12px; z-index:6; box-shadow:0 8px 30px rgba(0,0,0,.5); }
+  #dlg { position:fixed; left:50%; bottom:calc(14px + var(--lift,0px)); transform:translateX(-50%); width:760px; max-width:calc(100vw - 24px); display:none; gap:12px; background:rgba(18,22,27,.96); border:1px solid #55606e; border-radius:10px; padding:12px; z-index:6; box-shadow:0 8px 30px rgba(0,0,0,.5); }
   #dFace { flex:none; width:96px; height:96px; border-radius:8px; border:1px solid var(--line); }
   #dMain { flex:1; min-width:0; }
   #dName { font-size:15px; font-weight:bold; } #dName span { font-weight:normal; font-size:12px; color:var(--dim); margin-left:8px; }
@@ -68,7 +75,7 @@
 
   /* 蓋板 */
   .overlay { position:fixed; inset:0; background:rgba(0,0,0,.66); display:none; align-items:center; justify-content:center; padding:16px; z-index:7; }
-  .overlay .box { background:#1e242b; border:1px solid var(--line); border-radius:8px; padding:18px; width:600px; max-width:100%; max-height:calc(100vh - 32px); overflow:auto; }
+  .overlay .box { background:#1e242b; border:1px solid var(--line); border-radius:8px; padding:18px; width:600px; max-width:100%; max-height:calc(100vh - 32px); max-height:calc(100dvh - 32px); overflow:auto; }
   .overlay h2 { margin:0 0 4px; font-size:19px; } .overlay .sub { color:var(--dim); font-size:13px; margin:0 0 12px; line-height:1.5; }
   .lv { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px; border:1px solid var(--line); border-radius:6px; margin-top:8px; }
   .lv .n { font-size:15px; } .lv .d { font-size:12px; color:var(--dim); margin-top:3px; line-height:1.4; } .lv .best { font-size:12px; color:var(--ok); margin-top:3px; }
@@ -116,11 +123,11 @@
     header { padding:6px 8px; } header h1 { font-size:14px; } #stats { gap:6px; font-size:12px; } #stats button { padding:3px 7px; font-size:12px; }
     #ticker { left:8px; right:8px; top:calc(var(--topH,64px) + 6px); max-width:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; padding:4px 8px; }
     #side { left:8px; right:8px; width:auto; max-width:none; top:calc(var(--topH,64px) + 38px); } #side .card { padding:8px 10px; } #goal { font-size:13px; }
-    #help { left:8px; right:8px; top:auto; bottom:8px; max-width:none; font-size:11px; }
-    #testTag { bottom:44px !important; font-size:11px !important; }
-    #toasts { top:auto; bottom:42%; left:8px; }
+    #help { left:8px; right:8px; top:auto; bottom:calc(8px + var(--lift,0px)); max-width:none; font-size:11px; }
+    #testTag { bottom:calc(44px + var(--lift,0px)) !important; font-size:11px !important; }
+    #toasts { top:auto; bottom:42%; left:8px; right:8px; } .toast { min-width:0; max-width:100%; }   /* 獎盃提示不會比螢幕寬 */
     .bub { font-size:12px; padding:4px 8px; }
-    #trayCard { position:fixed; left:8px; right:8px; bottom:54px; } #trayCard h2 { display:none; } #tray button { padding:6px 4px; font-size:12px; }   /* 工作台：工具盤放到下面，中間留給要看的東西 */
+    #trayCard { position:fixed; left:8px; right:8px; bottom:calc(54px + var(--lift,0px)); } #trayCard h2 { display:none; } #tray button { padding:6px 4px; font-size:12px; }   /* 工作台：工具盤放到下面，中間留給要看的東西 */
   }
   /* 很窄的螢幕（摺疊機折起來的外螢幕、小手機）：再縮一級 */
   @media (max-width:400px){
@@ -137,7 +144,7 @@
     #side { left:auto; right:8px; top:calc(var(--topH,40px) + 4px); width:240px; max-width:40vw; gap:4px; } #side .card { padding:6px 8px; } #goal { font-size:12px; line-height:1.4; } #goal small { display:none; }
     #trayCard { position:fixed; left:auto; right:8px; bottom:8px; width:240px; max-width:40vw; } #trayCard h2 { display:none; } #tray button { padding:4px; font-size:11px; }
     #camBtns { right:auto; left:8px; top:56%; gap:8px; } #camBtns button { width:40px; height:40px; font-size:19px; } #camBtns button.small { font-size:11px; }
-    #dlg { bottom:6px; padding:7px 9px; gap:8px; width:min(760px, calc(100vw - 16px)); max-height:60vh; overflow:auto; }
+    #dlg { bottom:calc(6px + var(--lift,0px)); padding:7px 9px; gap:8px; width:min(760px, calc(100vw - 16px)); max-height:60vh; overflow:auto; }
     #dFace { width:56px; height:56px; } #dName { font-size:13px; } #dText { font-size:13px; line-height:1.45; min-height:0; } #dGloss { font-size:12px; padding:4px 7px; margin-top:4px; } #dSrc { font-size:11px; }
     #dOpts button { margin-top:4px; padding:5px 8px; font-size:13px; } #dBar { margin-top:3px; }
     #toasts { top:auto; bottom:30%; }
@@ -159,6 +166,7 @@
   </div>
 </header>
 <div id="help"></div>
+<div id="sub"></div>
 <div id="camBtns"><button id="zIn" aria-label="放大">＋</button><button id="zOut" aria-label="縮小">－</button><button id="zHome" class="small" aria-label="鏡頭回正">回正</button></div>
 <div id="fade"></div>
 <div id="testTag" style="display:none; position:fixed; left:12px; bottom:12px; z-index:3; font-size:12px; background:#7a3340; color:#fff; padding:5px 10px; border-radius:6px">測試版：造型和座駕全部解鎖</div>
@@ -348,7 +356,7 @@ const plain = t => t.replace(/\*\*/g,'');
 // ===================== 3D 基本 =====================
 const view = document.getElementById('view');
 const renderer = new THREE.WebGLRenderer({ antialias:true });
-renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(innerWidth, innerHeight); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(innerWidth, innerHeight, false); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 view.appendChild(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x9aa5b0);
 const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.05, 160);
@@ -1254,7 +1262,7 @@ function stepPour(c,dt){ c.t+=dt; const t=c.t, A1=1.5, A2=1.0, P=5.5, E1=0.8, E2
     if(i){ g.position.set(Math.min(12.5, xf+0.9+i*0.6), 0, [-2.4,-5.4,-8.6][i-1]+Math.sin(t*1.3+i)*0.5); wk.rake.position.z=0.35+Math.sin(t*5+i*2)*0.22; } else g.position.set(Math.min(12.7,nx+0.6), 0, nz);
     ud.legL.rotation.x=sw; ud.legR.rotation.x=-sw; });
   if(fold>0) c.wet.color.copy(c.c0).lerp(c.dry.color, Math.min(1,(fold+leave)/2));
-  if(!c.said && t>A1){ c.said=true; bubble(L.boss,'灌漿廠的車到樓下了。臂架伸上來，退後！',true); }
+  if(!c.said && t>A1){ c.said=true; subtitle(L.boss,'灌漿廠的車到樓下了。臂架伸上來，退後！'); }
   if(t>=A1+A2+P+E1+E2){ slab.material=c.dry; slab.scale.set(1,1,1); slab.position.copy(slab.userData.home); LV.refs.rebar.visible=false; LV.group.remove(c.g); cut=null; const kc=c.keep; camCut(()=>{ camGoal=null; theta=kc.theta; phi=kc.phi; dist=kc.dist; target.set(...kc.t); });
     bubble(L.boss,'好，收。灌漿廠的人，下班比我們早。'); } }
 function stepCut(dt){ if(cut.kind==='pour'){ stepPour(cut,dt); return; }
@@ -1495,23 +1503,31 @@ cvs.addEventListener('pointerdown',e=>{ if(e.pointerType!=='touch') return; touc
   if(touches.size===2){ const [a,b]=[...touches.values()]; pinch={d:Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)), dist, mx:(a.x+b.x)/2, my:(a.y+b.y)/2, mx0:(a.x+b.x)/2, my0:(a.y+b.y)/2, mode:null}; pd=null; dragged=true; } });   /* mode：先不決定，等手指動一段再看是捏合還是一起移動 */
 cvs.addEventListener('pointermove',e=>{ if(!touches.has(e.pointerId)) return; touches.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(!pinch || touches.size<2) return;
   const [a,b]=[...touches.values()], d=Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)), mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
-  if(!pinch.mode){ const dd=Math.abs(d-pinch.d), dm=Math.hypot(mx-pinch.mx0,my-pinch.my0); if(dd>16 && dd>dm*0.6) pinch.mode='zoom'; else if(dm>22) pinch.mode='pan'; else return; pinch.d=d; pinch.dist=dist; pinch.mx=mx; pinch.my=my; }   // 兩指距離變了＝縮放；兩指一起移動＝平移。決定後不混在一起
+  userCamT=performance.now(); if(!pinch.mode){ const dd=Math.abs(d-pinch.d), dm=Math.hypot(mx-pinch.mx0,my-pinch.my0); if(dd>16 && dd>dm*0.6) pinch.mode='zoom'; else if(dm>22) pinch.mode='pan'; else return; pinch.d=d; pinch.dist=dist; pinch.mx=mx; pinch.my=my; }   // 兩指距離變了＝縮放；兩指一起移動＝平移。決定後不混在一起
   camGoal=null; if(talkCam) talkCam.free=true;
-  if(pinch.mode==='zoom') dist=Math.min(maxD,Math.max(minD,pinch.dist*pinch.d/d)); else panBy(mx-pinch.mx, my-pinch.my); pinch.mx=mx; pinch.my=my; });
+  if(pinch.mode==='zoom'){ dist=Math.min(maxD,Math.max(minD,pinch.dist*pinch.d/d)); if(talkCam) talkCam.zoomed=true; } else panBy(mx-pinch.mx, my-pinch.my); pinch.mx=mx; pinch.my=my; });
 ['pointerup','pointercancel'].forEach(ev=>cvs.addEventListener(ev,e=>{ touches.delete(e.pointerId); if(touches.size<2) pinch=null; }));
 let camHome=null; function camReset(){ if(!camHome) return; target.set(...camHome.t); camGoal={theta:camHome.theta, phi:camHome.phi, dist:camHome.dist}; }   // 鏡頭回正
-cvs.addEventListener('pointermove',e=>{ if(!pd) return; let dx=e.clientX-pd.x, dy=e.clientY-pd.y; if(!dragged && Math.hypot(dx,dy)<(pd.touch?12:5)) return; dragged=true; camGoal=null; if(talkCam) talkCam.free=true;
+cvs.addEventListener('pointermove',e=>{ if(!pd) return; let dx=e.clientX-pd.x, dy=e.clientY-pd.y; if(!dragged && Math.hypot(dx,dy)<(pd.touch?12:5)) return; dragged=true; camGoal=null; userCamT=performance.now(); if(talkCam) talkCam.free=true;
   if(pd.touch){ if(!pd.axis) pd.axis = Math.abs(dx)>=Math.abs(dy) ? 'h' : 'v'; if(pd.axis==='h') dy=0; else dx=0; dx*=0.8; dy*=0.8; }   /* 手機：一次只轉左右或上下，轉慢一點 */
   if(pd.pan && camHome){ const k=dist*0.0016, sn=Math.sin(theta), cs=Math.cos(theta), lim=(v,c)=>Math.min(c+18,Math.max(c-18,v));                   // 平移：畫面跟著滑鼠走，離原位最多 18 公尺
     target.x=lim(target.x-(cs*dx+sn*dy)*k, camHome.t[0]); target.z=lim(target.z+(sn*dx-cs*dy)*k, camHome.t[2]);
     if(LV.room){ const R=LV.room; target.x=Math.min(R.x1-1.3,Math.max(R.x0+1.3,target.x)); target.z=Math.min(R.z1-1.3,Math.max(R.z0+1.3,target.z)); } }   // 室內：平移不出房間
   else { theta-=dx*0.006; if(LV.orbit) theta=Math.min(LV.orbit[1],Math.max(LV.orbit[0],theta)); phi=Math.min(1.5,Math.max(0.3,phi-dy*0.006)); } pd={x:e.clientX,y:e.clientY,pan:pd.pan,touch:pd.touch,axis:pd.axis}; });
 cvs.addEventListener('pointerup',e=>{ const was=pd; pd=null; if(was && !dragged && !was.pan) onClick(e); });
-cvs.addEventListener('wheel',e=>{ e.preventDefault(); dist=Math.min(maxD,Math.max(minD,dist*(e.deltaY>0?1.1:0.9))); },{passive:false});
-function fitView(){ const a=innerWidth/innerHeight; camera.aspect=a; camera.fov = a<0.75 ? Math.min(70, 2*Math.atan(Math.tan(22.5*Math.PI/180)*0.75/a)*180/Math.PI) : 45;   /* 畫面很窄（手機直拿、摺疊機折起來）：視野自動放寬，左右看得到的範圍不會被切掉；摺疊、打開、轉向時跟著變 */
-  camera.setViewOffset(innerWidth,innerHeight,0,Math.round(innerHeight*0.1),innerWidth,innerHeight); // 畫面往上讓，下面留給對話框
-  camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); }
-addEventListener('resize',fitView); fitView();
+cvs.addEventListener('wheel',e=>{ e.preventDefault(); userCamT=performance.now(); if(talkCam) talkCam.zoomed=true; dist=Math.min(maxD,Math.max(minD,dist*(e.deltaY>0?1.1:0.9))); },{passive:false});
+const VIEW=document.getElementById('view'), vw=()=>VIEW.clientWidth||innerWidth, vh=()=>VIEW.clientHeight||innerHeight;   // 畫面的大小：看外框，不看 innerWidth（iPhone 整頁被放大時 innerWidth 會變小）
+function fitView(){ const w=vw(), h=vh(), a=w/h; camera.aspect=a; camera.fov = a<0.75 ? Math.min(70, 2*Math.atan(Math.tan(22.5*Math.PI/180)*0.75/a)*180/Math.PI) : 45;   /* 畫面很窄（手機直拿、摺疊機折起來）：視野自動放寬，左右看得到的範圍不會被切掉；摺疊、打開、轉向時跟著變 */
+  camera.setViewOffset(w,h,0,Math.round(h*0.1),w,h); // 畫面往上讓，下面留給對話框
+  camera.updateProjectionMatrix(); renderer.setSize(w,h,false);   /* false＝只改解析度，顯示大小交給 CSS（永遠填滿外框） */
+  const vv=window.visualViewport, de=document.documentElement, hid = vv ? Math.max(0, de.clientHeight-(vv.offsetTop+vv.height)) : 0, ios=/iP(hone|od|ad)/.test(navigator.userAgent);
+  de.style.setProperty('--lift', Math.round(Math.max(hid, ios && h>w ? 72 : 0))+'px'); }   // 下面被瀏覽器工具列蓋住多少，對話框就往上讓多少；iPhone 直拿時 Safari 的工具列浮在畫面上，固定讓 72
+function refit(){ if(scrollX||scrollY) scrollTo(0,0); fitView();
+  const vv=window.visualViewport; if(vv && vv.scale>1.02){ const m=document.querySelector('meta[name=viewport]'), c=m.getAttribute('content'); m.setAttribute('content', c+', initial-scale=1.0001'); setTimeout(()=>m.setAttribute('content',c),60); } }   // 整頁被放大了：把縮放設定重寫一次，逼它回到原本大小
+addEventListener('resize',refit); addEventListener('orientationchange',()=>[0,120,400,900].forEach(d=>setTimeout(refit,d)));   // 轉向後瀏覽器要過一下才給對的大小：多算幾次
+if(window.visualViewport){ visualViewport.addEventListener('resize',refit); visualViewport.addEventListener('scroll',()=>{ if(scrollX||scrollY) scrollTo(0,0); }); }
+if(window.ResizeObserver) new ResizeObserver(fitView).observe(VIEW);
+fitView();
 
 // ===================== 對話 =====================
 let dlgOpen=false, optsOpen=false, dlgQ=[], dlgDone=null, typer=null, typing=false, fullText='', dSegs=[];
@@ -1528,6 +1544,7 @@ function say(lines, done){ dlgQ=lines.slice(); dlgDone=done||null; dlgOpen=true;
 function endDlg(){ clearInterval(typer); typing=false; dlgOpen=false; $('#dlg').style.display='none'; const d=dlgDone; dlgDone=null; if(d) d(); }
 function advance(){ if(!dlgOpen||optsOpen) return; if(typing){ clearInterval(typer); typing=false; richText($('#dText'),dSegs); showGloss(); return; }
   if(dlgQ.length){ $('#dSkip').style.display = dlgQ.length>1 ? 'block':'none'; showLine(dlgQ.shift()); } else endDlg(); }
+$('#dlg').addEventListener('click',e=>{ if(!e.target.closest('button')) advance(); });   /* 點對話框任何地方＝下一句（按鈕被瀏覽器工具列蓋住也沒關係） */
 $('#dNext').onclick=advance; $('#dSkip').onclick=()=>{ if(optsOpen) return; dlgQ=[]; endDlg(); };
 function ask(st, cb){ const by=st.q.by||L.boss; dlgOpen=true; optsOpen=true; dlgQ=[]; dlgDone=null; $('#dlg').style.display='flex'; $('#dBar').style.display='none';
   showLine({who:by, t:st.q.title+'\n'+st.q.body});
@@ -1660,6 +1677,25 @@ function togglePrank(id){ if(done||dlgOpen) return; const me=LV.actors.you, hold
   me.g.userData.armR.userData.elbow.add(it); me.prankMesh=it; me.carry='club'; award('misc.prank'); bubble(L.boss, PRANK[id].say[L.boss], true); }
 function prankHit(a){ const me=LV.actors.you, id=prank; if(me.swing) return; me.dest=null; me.onArrive=null; me.face=Math.atan2(a.x-me.x,a.z-me.z);
   me.swing={t:0, id, target:a, done:()=>{ prank=null; WHY.prank=PRANK[id].why; award('misc.'+id); failMission(a,'prank'); }}; }
+// 藍圈看不看得到：從鏡頭往藍圈拉三條線（中間、左、右），兩條以上被不透明的東西擋住＝被擋；或是藍圈跑到畫面外、壓在上面的資訊框底下
+const spotRay=new THREE.Raycaster(); let inCut=false, subT=null, spotOcc=[], userCamT=0, spotChk=0;
+function subtitle(who,text){ const el=$('#sub'); el.textContent=''; const b=document.createElement('b'); b.textContent=cname(who); el.append(b, text); el.style.display='block'; clearTimeout(subT); subT=setTimeout(()=>{ el.style.display='none'; }, 4200); }   // 過場時的台詞：放在畫面下面當字幕，不蓋住動畫
+function buildSpotOcc(){ const skip=new Set(); Object.values(LV.actors).forEach(a=>a.g.traverse(o=>skip.add(o))); spotOcc=[];
+  LV.group.traverse(o=>{ if(!o.isMesh || skip.has(o) || o.userData.blob) return; const m0=Array.isArray(o.material)?o.material[0]:o.material; if(m0.transparent || m0===mat.ghost) return; let q=o, v=true; while(q){ if(!q.visible) v=false; q=q.parent; } if(v) spotOcc.push(o); }); LV.group.updateMatrixWorld(true); }
+function spotBlocked(th,ph,d){ const cp=new THREE.Vector3(target.x+d*Math.sin(ph)*Math.sin(th), target.y+d*Math.cos(ph), target.z+d*Math.sin(ph)*Math.cos(th)); let n=0;
+  for(const ox of [0,-0.32,0.32]){ const dir=new THREE.Vector3(spot.position.x+ox, spot.position.y+0.3, spot.position.z).sub(cp), len=dir.length(); spotRay.set(cp, dir.normalize()); spotRay.near=0.3; spotRay.far=Math.max(0.4,len-0.5); if(spotRay.intersectObjects(spotOcc,false).length) n++; }
+  return n>=2; }
+let spotCam=null;
+function spotOff(th,ph,d){ const c=spotCam||(spotCam=camera.clone()); c.copy(camera); c.position.set(target.x+d*Math.sin(ph)*Math.sin(th), target.y+d*Math.cos(ph), target.z+d*Math.sin(ph)*Math.cos(th)); c.lookAt(target); c.updateMatrixWorld(true);   // 用這個角度看，藍圈在不在畫面裡（不能壓在上面的資訊框、右邊的按鈕、下面的對話框底下）
+  const v=new THREE.Vector3(spot.position.x,spot.position.y+0.1,spot.position.z).project(c), px=(v.x+1)/2*vw(), py=(1-v.y)/2*vh(), top=(vw()<=700 ? $('#side').getBoundingClientRect().bottom : $('header').offsetHeight)+12;
+  return v.z>1 || px<24 || px>vw()-(TOUCH?66:24) || py<top || py>vh()-70; }
+function ensureSpotVisible(){ if(!spot.visible || !L || L.bench || L.office) return; const cur=camGoal||{theta,phi,dist}, off = !camGoal && spotOff(theta,phi,dist);
+  const st=need(), base = st && st.in ? {theta:2.7, phi:0.95, dist:9.5} : camHome ? {theta:camHome.theta, phi:camHome.phi, dist:camHome.dist} : cur, lo=LV.orbit?LV.orbit[0]:-1e9, hi=LV.orbit?LV.orbit[1]:1e9; let tries;
+  if(off){ const moved = camHome && Math.hypot(target.x-camHome.t[0], target.z-camHome.t[2])>0.3; if(camHome) target.set(...camHome.t);                         // 藍圈不在畫面裡：畫面被平移過就先移回來、角度不動；沒平移過就換回這一步原本的角度
+    tries = moved ? [{theta:cur.theta, phi:cur.phi, dist:Math.min(cur.dist, base.dist*1.3)}, base] : [base]; }
+  else { if(!spotBlocked(cur.theta,cur.phi,cur.dist)) return; tries=[cur, base]; }
+  for(const b of tries) for(const kz of [1,1.25,1.5]) for(const dp of [0,-0.22]) for(const dt of [0,0.35,-0.35,0.7,-0.7,1.05,-1.05,1.4,-1.4,1.9,-1.9]){ const th=b.theta+dt, ph=Math.max(0.45,b.phi+dp), d=Math.min(maxD,b.dist*kz); if(th<lo || th>hi) continue;
+    if(!spotOff(th,ph,d) && !spotBlocked(th,ph,d)){ camGoal={theta:th, phi:ph, dist:d}; return; } } }   // 先試左右轉，再試從高一點往下看，再試拉遠一點，最後試這一步原本的角度
 function goPallet(id){ const q=LV.pallets[id]; if(!q||placed.has(id)) return; const s=standNear(q.x,q.z,0.9,q.obs); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(rectDist(q.obs,p.x,p.z).d<0.9) tryPick(id); }); }   // 真的走到旁邊才拿
 function goSpot(){ spotArmed=true; moveTo(spot.position.x, spot.position.z, ()=>{ const p=LV.actors.you; if(Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1) tryInstall(); }); }
 function goNpc(who){ const a=LV.actors[who]; const s=standNear(a.x,a.z,1.0); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(dlgOpen||failed||Math.hypot(p.x-a.x,p.z-a.z)>1.9) return; a.chats=(a.chats||0)+1;
@@ -1679,10 +1715,10 @@ function tryPick(id){ if(done||dlgOpen||placed.has(id)) return; if(prank){ say([
   if(spec){ const it=makeItem(spec); me.grip=new THREE.Box3().setFromObject(it.g).max.x; hold.add(it.g); hold.position.set(...POSE[it.pose]); me.carry=it.pose; LV.pallets[id].item.visible=false; } else me.carry=null;
   fan('offer',0.4);
   const st=need(); spot.position.set(st.spot[0], gyAt(st.spot[0],st.spot[1]), st.spot[1]); spot.visible=true; spotArmed=true; showGhost(id); setGoal();
-  if(st.in) camGoal={theta:2.7, phi:0.95, dist:9.5}; }                                 // 室內側的工作：鏡頭轉到室內看
+  if(st.in) camGoal={theta:2.7, phi:0.95, dist:9.5}; buildSpotOcc(); ensureSpotVisible(); }                                 // 室內側的工作：鏡頭轉到室內看
 let multiN=0;                                                                         // 要放好幾個位置的步驟（預埋件）：現在放到第幾個
 function tryInstall(){ if(done||dlgOpen||!carry) return; const st=need(), M=st.multi;
-  const go=()=>{ if(M){ dropIn(st.id, false, multiN*3, multiN*3+3); multiN++; if(multiN<M.length){ const q=M[multiN]; spot.position.set(q[0], gyAt(q[0],q[1]), q[1]); spotArmed=true; setGoal(); return; } } doPlace(); };   // 一個一個放：放好一個，藍圈移到下一個
+  const go=()=>{ if(M){ dropIn(st.id, false, multiN*3, multiN*3+3); multiN++; if(multiN<M.length){ const q=M[multiN]; spot.position.set(q[0], gyAt(q[0],q[1]), q[1]); spotArmed=true; setGoal(); ensureSpotVisible(); return; } } doPlace(); };   // 一個一個放：放好一個，藍圈移到下一個
   if(st.q && !(M && multiN>0)) ask(st, ok=>{ if(ok) go(); else spotArmed=false; }); else go(); }
 function benchPick(id,btn){ if(done||dlgOpen||placed.has(id)) return;
   if(id!==need().id){ btn.classList.add('shake'); setTimeout(()=>btn.classList.remove('shake'),350); wrongOrder(id); return; }
@@ -1767,7 +1803,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
     minD=4; maxD=24;
     $('#help').textContent = TOUCH ? '點地板＝走路　點棧板＝拿材料　點藍圈＝安裝　點同事＝聊天　一指拖曳＝轉視角　兩指捏合＝縮放　兩指一起移＝平移　右邊按鈕＝放大、縮小、回正' : '點地板＝走路（WASD 也行）　點棧板＝拿材料　點藍色圈圈＝安裝　點同事＝聊天　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   if(LV.room) maxD=Math.min(maxD,15);
-  if(innerWidth<innerHeight && LV.room) phi=Math.min(phi,0.78);   // 手機直著拿：畫面窄，鏡頭拉遠一點；室內被牆擋住拉不遠，就改成從高一點往下看
+  if(vw()<vh() && LV.room) phi=Math.min(phi,0.78);   // 手機直著拿：畫面窄，鏡頭拉遠一點；室內被牆擋住拉不遠，就改成從高一點往下看
   camHome={t:[target.x,target.y,target.z], theta, phi, dist};
   $('#lvTitle').textContent=L.name; $('#stepN').textContent=L.steps.length; hideDayEnd(); $('#menu').style.display='none';
   clearBubbles(); nextIdle=performance.now()+9000; lastAct=performance.now();
@@ -1807,7 +1843,7 @@ addEventListener('keydown',e=>{ if(e.target.tagName!=='INPUT' && e.key.toLowerCa
 document.addEventListener('touchmove',e=>{ if(e.touches.length>1 || e.target===renderer.domElement) e.preventDefault(); },{passive:false});
 let lastTap=0; document.addEventListener('touchend',e=>{ const n=Date.now(); if(n-lastTap<300 && e.target===renderer.domElement) e.preventDefault(); lastTap=n; },{passive:false});   /* 連點兩下不要放大整頁 */
 if(TOUCH) $('#camBtns').style.display='flex';                                                                  // 手機：放大、縮小、回正三顆按鈕
-const zoomBy=f=>{ if(cut && cut.stage<2) return; camGoal=null; if(talkCam) talkCam.free=true; dist=Math.min(maxD,Math.max(minD,dist*f)); };
+const zoomBy=f=>{ if(cut && cut.stage<2) return; camGoal=null; userCamT=performance.now(); if(talkCam){ talkCam.free=true; talkCam.zoomed=true; } dist=Math.min(maxD,Math.max(minD,dist*f)); };
 $('#zIn').onclick=()=>zoomBy(0.8); $('#zOut').onclick=()=>zoomBy(1.25); $('#zHome').onclick=()=>{ if(!(cut && cut.stage<2)) camReset(); };
 
 // ===================== 撞人、對話泡泡、碎念 =====================
@@ -1818,7 +1854,7 @@ function bubble(who,text,mad,pen){ const a=LV.actors[who]; if(!a) return; let b=
   b.el.style.display='block'; b.until=performance.now()+Math.max(4500, 2200+b.el.textContent.length*260); a.lookT=b.until; /* 照字數算：至少 4.5 秒，每多一個字多 0.26 秒 */ b.el.style.animation='none'; void b.el.offsetWidth; b.el.style.animation=''; }
 function clearBubbles(){ Object.keys(bubs).forEach(k=>{ bubs[k].el.remove(); delete bubs[k]; }); }
 function placeBubbles(now){ for(const k in bubs){ const b=bubs[k], a=LV.actors[k]; if(!a||now>b.until){ b.el.style.display='none'; continue; }
-  _v.set(a.x, gyAt(a.x,a.z)+2.32, a.z).project(camera); b.el.style.left=((_v.x+1)/2*innerWidth)+'px'; b.el.style.top=((1-_v.y)/2*innerHeight)+'px'; } }
+  _v.set(a.x, gyAt(a.x,a.z)+2.32, a.z).project(camera); b.el.style.left=((_v.x+1)/2*vw())+'px'; b.el.style.top=((1-_v.y)/2*vh())+'px'; } }
 let patience=100, failed=false, warned=false, patShown=100;
 function patUI(){ patShown=patience; const f=$('#patFill'); f.style.width=Math.round(patience)+'%'; f.style.background = patience>55 ? 'var(--ok)' : patience>28 ? '#ffd166' : 'var(--bad)'; }
 function thud(){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); const t0=actx.currentTime;   // 揮棒打到的聲音：一聲悶響加一聲金屬響
@@ -1860,7 +1896,9 @@ function crowd(dt,now){ const p=LV.actors.you; if(!p) return;
 
 // ===================== 主迴圈 =====================
 let lastT=performance.now();
-function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/1000; lastT=now;   // 時間不會倒著走
+function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/1000; lastT=now; { const ic=!!(cut && (cut.kind==='pour' || cut.stage<2)); if(ic!==inCut){ inCut=ic; document.body.classList.toggle('incut',ic); } }
+  spotChk+=dt; if(spotChk>0.5){ spotChk=0; if(carry && spot.visible && !pd && !touches.size && !camGoal && !cut && !dlgOpen && !talkCam && performance.now()-userCamT>1200) ensureSpotVisible(); }   /* 拿著料：藍圈看不到就自動調鏡頭（你剛動過鏡頭的話先不搶） */   /* 過場動畫中：收起資訊框 */
+    // 時間不會倒著走
   for(let i=anims.length-1;i>=0;i--){ const a=anims[i]; a.m.visible=performance.now()>=a.t0; if(!a.m.visible) continue; const k=Math.min(1,Math.max(0,(performance.now()-a.t0)/450)); const e=1-Math.pow(1-k,3); a.m.position.y=a.from+(a.to-a.from)*e; if(k>=1) anims.splice(i,1); }
   if(camGoal){ theta=camGoal.theta+Math.atan2(Math.sin(theta-camGoal.theta),Math.cos(theta-camGoal.theta)); theta+=(camGoal.theta-theta)*0.08; phi+=(camGoal.phi-phi)*0.08; dist+=(camGoal.dist-dist)*0.08; if(Math.abs(camGoal.theta-theta)<1e-3&&Math.abs(camGoal.phi-phi)<1e-3) camGoal=null; }
   mat.ghost.opacity=0.45+0.4*Math.sin(now/250); camShake=Math.max(0,camShake-dt*1.3);
@@ -1868,8 +1906,8 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
   if(L && !L.bench && LV.actors.you && !(cut && cut.stage<2)){ const q=Math.min(1,dt*2.5), me=LV.actors.you;
     if(dlgOpen && talkWho){ const a=LV.actors[talkWho]||me; if(!talkCam) talkCam={t:[target.x,target.y,target.z], dist, free:false};          // 講話：鏡頭移到說話的人（偏向他，你也在畫面裡），拉近一點
       if(!talkCam.free){ const fx = a===me ? me.x : a.x*0.7+me.x*0.3, fz = a===me ? me.z : a.z*0.7+me.z*0.3; target.x+=(fx-target.x)*q; target.z+=(fz-target.z)*q; target.y+=(gyAt(a.x,a.z)+1.2-target.y)*q; dist+=(Math.min(talkCam.dist,7)-dist)*q; } }
-    else if(talkCam && !dlgOpen){ const k=talkCam; if(k.free) talkCam=null; else { target.x+=(k.t[0]-target.x)*q; target.y+=(k.t[1]-target.y)*q; target.z+=(k.t[2]-target.z)*q; dist+=(k.dist-dist)*q;   // 講完：回到原本的視角
-      if(Math.hypot(target.x-k.t[0],target.z-k.t[2])<0.03 && Math.abs(dist-k.dist)<0.03) talkCam=null; } } }
+    else if(talkCam && !dlgOpen){ const k=talkCam, keepD = k.zoomed || !!camGoal; target.x+=(k.t[0]-target.x)*q; target.y+=(k.t[1]-target.y)*q; target.z+=(k.t[2]-target.z)*q; if(!keepD) dist+=(k.dist-dist)*q;   // 講完：畫面一定移回原本看的地方（講話時你動過鏡頭也一樣，不然畫面會停在說話的人那邊回不來）；遠近也還原，除非你自己縮放過，或有別的鏡頭指令
+      if(Math.hypot(target.x-k.t[0],target.z-k.t[2])<0.03 && (keepD || Math.abs(dist-k.dist)<0.03)) talkCam=null; } }
   if(L && !L.bench){ const p=LV.actors.you;
     const kw=keys.w||keys.arrowup, ks=keys.s||keys.arrowdown, kd=keys.d||keys.arrowright, ka=keys.a||keys.arrowleft;
     if(!(kw||ks||kd||ka)) keyTheta=theta;                                         // 放開按鍵才跟上鏡頭的新角度：鏡頭自己轉的時候，按住的方向不會跟著歪掉
@@ -1886,7 +1924,7 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
 setInterval(()=>{ if(done||!L) return; const s=Math.round((Date.now()-t0)/1000); $('#timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },500);
 
 // ===================== 選關、人物、獎盃、名字 =====================
-function openMenu(){ $('#rotHint').style.display = TOUCH && innerWidth<innerHeight ? 'block' : 'none';   /* 手機直著拿：提醒可以橫過來 */
+function openMenu(){ $('#rotHint').style.display = TOUCH && vw()<vh() ? 'block' : 'none';   /* 手機直著拿：提醒可以橫過來 */
   const best=store.get('cwstory_best',{}), list=$('#lvList'); list.innerHTML='';
   $('#menuSub').textContent=`你是${cname('you')}，設計部新人。週一在辦公室跟著跑施工圖檢討，接下來四天跟著去工地，對著圖，親手裝一次。薪水面議，責任制。`;
   LEVELS.forEach((lv,i)=>{ const d=document.createElement('div'); d.className='lv'; const info=document.createElement('div');
