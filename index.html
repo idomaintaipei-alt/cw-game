@@ -1829,9 +1829,9 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
   // 頭：白眼球、往下看的瞳孔、半垂的眼皮、眼袋、一條線的嘴
   g.add(ball(0.2,skin,0,1.57,0.01,1,0.96,0.96));
   if(c.hero){ const iris=new THREE.MeshBasicMaterial({color:0x3b2a20}), wh=new THREE.MeshBasicMaterial({color:0xffffff}),   /* 眼睛不吃光：眼白下半不會變灰，像黑眼圈 */
-    brow=std(c.hair||0x3a2a20), blush=std(0xf4a6a6), lf=!!f.lashes;   // 主角：大眼睛＋亮點、細眉毛、微笑、腮紅（其他人維持眼神死的上班族）
-    [-1,1].forEach(sd=>{ const x=sd*0.078; g.add(ball(0.05,wh,x,1.585,0.166,1,1.18,0.5)); g.add(ball(0.031,iris,x,1.582,0.19,1,1.22,0.55)); g.add(ball(0.009,wh,x+0.012,1.6,0.207));   // 眼白、眼珠、亮點
-      const ln=box(0.09,lf?0.012:0.008,0.012, x,1.642,0.19, mat.dark); ln.rotation.z=-sd*0.08; g.add(ln); if(lf){ const fl=box(0.026,0.009,0.01, x+sd*0.05,1.648,0.186, mat.dark); fl.rotation.z=-sd*0.6; g.add(fl); }   // 上眼線；女生多一撇睫毛
+    brow=std(c.hair||0x3a2a20), blush=std(0xf4a6a6), lf=!!f.lashes;   // 主角：小黑點眼睛、細眉毛、腮紅（其他人維持眼神死的上班族）
+    [-1,1].forEach(sd=>{ const x=sd*0.072; g.add(ball(0.022,iris,x,1.585,0.188,1,1.25,0.6));   // 小黑點眼睛
+      if(lf) [0,1].forEach(k=>{ const fl=box(0.02,0.007,0.008, x+sd*(0.014+k*0.012),1.616-k*0.008,0.195, mat.dark); fl.rotation.z=sd*(0.5+k*0.4); g.add(fl); });   // 女生：眼睛外上角兩撇睫毛
       if(off){ const br=box(0.06,0.012,0.01, x,1.69,0.18, brow); br.rotation.z=-sd*0.12; g.add(br); } g.add(ball(0.03,blush,sd*0.118,1.53,0.165,1,0.55,0.3)); });   // 細眉毛、腮紅
     g.add(box(0.036,0.008,0.01, 0,1.49,0.196, lf ? std(0xb35a5a) : mat.dark)); }   // 小小一字嘴（不笑，笑起來看起來憨憨的）
   else {
