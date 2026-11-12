@@ -29,7 +29,11 @@
   #joy::before { content:''; position:absolute; inset:30px; border-radius:50%; border:1px dashed rgba(255,255,255,.25); }
   #joyKnob { position:absolute; left:50%; top:50%; width:54px; height:54px; margin:-27px 0 0 -27px; border-radius:50%; background:rgba(255,255,255,.42); border:2px solid rgba(255,255,255,.7); box-shadow:0 2px 10px rgba(0,0,0,.35); pointer-events:none; }
   body.incut #joy { display:none !important; }
-  body.joyon #testTag { left:auto !important; right:12px !important; }   /* 測試版標籤讓給搖桿 */
+  #actBtn { position:fixed; right:16px; bottom:calc(34px + var(--lift,0px)); z-index:4; display:none; min-width:96px; min-height:56px; padding:8px 16px; border-radius:14px; background:#1d4f86; border:2px solid #7cc0ff; color:#fff; font-size:16px; font-weight:bold; box-shadow:0 4px 14px rgba(0,0,0,.4); }   /* 手機：右下角的動作鍵 */
+  #ptr { position:fixed; left:0; top:0; z-index:4; width:40px; height:40px; display:none; place-items:center; border-radius:50%; background:#4da3ff; border:2px solid #fff; color:#fff; font-size:20px; font-weight:900; pointer-events:none; box-shadow:0 2px 10px rgba(0,0,0,.4); }   /* 藍圈不在畫面裡：邊緣的箭頭 */
+  #goal .goBtn { display:inline-block; margin-top:6px; padding:5px 12px; font-size:13px; background:#1d4f86; border-color:#7cc0ff; }
+  body.dlgopen #joy, body.dlgopen #actBtn, body.incut #actBtn, body.dlgopen #ptr, body.incut #ptr { display:none !important; }   /* 對話、過場的時候收起來 */
+  body.joyon #testTag { left:50% !important; right:auto !important; transform:translateX(-50%); bottom:calc(4px + var(--lift,0px)) !important; font-size:10px !important; padding:3px 8px !important; white-space:nowrap; }   /* 測試版標籤：放在搖桿和動作鍵中間 */
   @media (max-height:500px) and (orientation:landscape){ body.joyon #camBtns { left:auto; right:8px; top:58%; } #joy { width:108px; height:108px; bottom:calc(12px + var(--lift,0px)); } #joy::before { inset:26px; } }   /* 打橫：三顆鏡頭按鈕回到右邊，左下給搖桿 */
   #help.fadeout { opacity:0; transition:opacity .8s; pointer-events:none; }
   body.incut #side, body.incut #ticker, body.incut #help, body.incut #camBtns, body.incut #testTag { display:none !important; }   /* 過場動畫：資訊框先收起來，不蓋住畫面 */
@@ -44,6 +48,9 @@
   #stats { display:flex; gap:10px; font-size:14px; align-items:center; flex-wrap:wrap; }
   #stats b { color:var(--acc); } #stats .bad { color:var(--bad); }
   #stats button { padding:4px 9px; font-size:13px; }
+  #hBtns { display:inline-flex; gap:6px; flex-wrap:nowrap; }
+  #stats #btnLocker { background:linear-gradient(180deg,#5b3a12,#3a260c); border-color:#e8b923; color:#ffe7a3; font-weight:bold; }   /* 置物櫃＝換造型的地方：金色框，跟其他按鈕不一樣 */
+  .lkIcon { margin-right:3px; }
   #side { position:fixed; right:12px; top:58px; width:270px; max-width:calc(100vw - 24px); display:flex; flex-direction:column; gap:8px; z-index:2; }
   .card { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:10px; }
   .card h2 { margin:0 0 6px; font-size:13px; color:var(--dim); }
@@ -131,6 +138,7 @@
   /* 手機（窄螢幕）：上面一條工具列、一條公司廣播、目標框，操作說明放到最下面 */
   @media (max-width:700px){
     header { padding:6px 8px; } header h1 { font-size:14px; } #stats { gap:6px; font-size:12px; } #stats button { padding:3px 7px; font-size:12px; }
+    #hBtns { display:flex; width:100%; gap:6px; } #hBtns button { flex:1 1 auto; white-space:nowrap; } #stats #btnLocker { flex:1.6 1 auto; }   /* 手機：四個按鈕自己一排，置物櫃寬一點 */
     #ticker { left:8px; right:8px; top:calc(var(--topH,64px) + 6px); max-width:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; padding:4px 8px; }
     #side { left:8px; right:8px; width:auto; max-width:none; top:calc(var(--topH,64px) + 38px); } #side .card { padding:8px 10px; } #goal { font-size:13px; }
     #help { left:8px; right:8px; top:auto; bottom:calc(8px + var(--lift,0px)); max-width:none; font-size:12px; }
@@ -174,14 +182,16 @@
     <span>異常單 <b id="ncr" class="bad">0</b></span>
     <span id="patWrap">同事耐心 <span id="patBar"><i id="patFill"></i></span></span>
     <span id="timer">00:00</span>
-    <button id="btnLocker">置物櫃</button><button id="btnCast">人物</button><button id="btnTroph">獎盃 <span id="trCount"></span></button><button id="btnMenu">選關</button>
+    <span id="hBtns"><button id="btnLocker"><span class="lkIcon">👕</span>置物櫃・換裝</button><button id="btnCast">人物</button><button id="btnTroph">獎盃 <span id="trCount"></span></button><button id="btnMenu">選關</button></span>
   </div>
 </header>
 <div id="help"></div>
 <div id="sub"></div>
 <div id="zoomHint">畫面被放大了：點這一行縮回原本大小（或兩指往內捏）</div>
 <div id="joy"><div id="joyKnob"></div></div>
-<div id="camBtns"><button id="zIn" aria-label="放大">＋</button><button id="zOut" aria-label="縮小">－</button><button id="zHome" class="small" aria-label="鏡頭回正">回正</button></div>
+<button id="actBtn"></button>
+<div id="ptr">➜</div>
+<div id="camBtns"><button id="zIn" aria-label="放大">＋</button><button id="zOut" aria-label="縮小">－</button></div>
 <div id="fade"></div>
 <div id="testTag" style="display:none; position:fixed; left:12px; bottom:12px; z-index:3; font-size:12px; background:#7a3340; color:#fff; padding:5px 10px; border-radius:6px">測試版：造型和座駕全部解鎖</div>
 <div id="ticker"><b>公司廣播</b><span id="tickTxt"></span></div>
@@ -1517,7 +1527,7 @@ cvs.addEventListener('pointerdown',e=>{ if(e.pointerType!=='touch') return; touc
   if(touches.size===2){ const [a,b]=[...touches.values()]; pinch={d:Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)), dist, mx:(a.x+b.x)/2, my:(a.y+b.y)/2, mx0:(a.x+b.x)/2, my0:(a.y+b.y)/2, mode:null}; pd=null; dragged=true; } });   /* mode：先不決定，等手指動一段再看是捏合還是一起移動 */
 cvs.addEventListener('pointermove',e=>{ if(!touches.has(e.pointerId)) return; touches.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(!pinch || touches.size<2) return;
   const [a,b]=[...touches.values()], d=Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)), mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
-  userCamT=performance.now(); if(!pinch.mode){ const dd=Math.abs(d-pinch.d), dm=Math.hypot(mx-pinch.mx0,my-pinch.my0); if(dd>16 && dd>dm*0.6) pinch.mode='zoom'; else if(dm>22) pinch.mode='pan'; else return; pinch.d=d; pinch.dist=dist; pinch.mx=mx; pinch.my=my; }   // 兩指距離變了＝縮放；兩指一起移動＝平移。決定後不混在一起
+  userCamT=performance.now(); if(!pinch.mode){ const dd=Math.abs(d-pinch.d), dm=Math.hypot(mx-pinch.mx0,my-pinch.my0); if(dd>16 && dd>dm*0.6) pinch.mode='zoom'; else if(dm>22) pinch.mode = TOUCH ? 'zoom' : 'pan'; else return;   /* 手機：兩指只縮放（鏡頭跟著角色，不用平移） */ pinch.d=d; pinch.dist=dist; pinch.mx=mx; pinch.my=my; }   // 兩指距離變了＝縮放；兩指一起移動＝平移。決定後不混在一起
   camGoal=null; if(talkCam) talkCam.free=true;
   if(pinch.mode==='zoom'){ dist=Math.min(maxD,Math.max(minD,pinch.dist*pinch.d/d)); if(talkCam) talkCam.zoomed=true; } else panBy(mx-pinch.mx, my-pinch.my); pinch.mx=mx; pinch.my=my; });
 ['pointerup','pointercancel'].forEach(ev=>cvs.addEventListener(ev,e=>{ touches.delete(e.pointerId); if(touches.size<2) pinch=null; }));
@@ -1541,7 +1551,7 @@ const VP_A='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-sc
 function unzoom(){ const m=document.querySelector('meta[name=viewport]'); m.setAttribute('content',VP_B); setTimeout(()=>{ m.setAttribute('content',VP_A); setTimeout(()=>{ scrollTo(0,0); refit(); },120); },80); }   // 把縮放設定換一下再換回來：iPhone 會重新照設定排版，回到 1 倍
 const zoomed = () => !!(window.visualViewport && visualViewport.scale>1.05);
 const UI=document.getElementById('ui');
-['header','#help','#sub','#zoomHint','#joy','#camBtns','#testTag','#ticker','#side','#toasts','#err','#dlg','#menu','#cast','#troph','#locker','#card','#fail','#dayEnd','#nameDlg'].forEach(q=>{ const e=document.querySelector(q); if(e) UI.append(e); });   // 資訊框都搬進 #ui（畫布、淡出黑幕、頭上的泡泡留在外面：它們跟著 3D 畫面走）
+['header','#help','#sub','#zoomHint','#joy','#actBtn','#ptr','#camBtns','#testTag','#ticker','#side','#toasts','#err','#dlg','#menu','#cast','#troph','#locker','#card','#fail','#dayEnd','#nameDlg'].forEach(q=>{ const e=document.querySelector(q); if(e) UI.append(e); });   // 資訊框都搬進 #ui（畫布、淡出黑幕、頭上的泡泡留在外面：它們跟著 3D 畫面走）
 function syncUI(){ const vv=window.visualViewport; if(!vv) return; const k=vv.scale;
   if(k<1.01 && Math.abs(vv.offsetLeft)<1 && Math.abs(vv.offsetTop)<1){ if(UI.style.transform){ UI.style.transform=''; UI.style.width=''; UI.style.height=''; } return; }
   UI.style.width=(vv.width*k)+'px'; UI.style.height=(vv.height*k)+'px'; UI.style.transform=`translate(${vv.offsetLeft}px,${vv.offsetTop}px) scale(${1/k})`; }   // 整頁被放大 k 倍：這一層反過來縮 1/k，移到看得到的那一塊
@@ -1584,7 +1594,8 @@ let L=null, li=0, cur=0, score=100, ncr=0, placed=new Set(), t0=Date.now(), done
 const stepOf = id => L.steps.find(x=>x.id===id);
 const need = () => L.steps[cur];
 function stats(){ $('#step').textContent=Math.min(cur+1,L.steps.length); $('#score').textContent=score; $('#ncr').textContent=ncr; }
-function setGoal(){ const g=$('#goal'); g.textContent=''; if(done) return; const st=need(); const h=document.createElement('span'); richText(h, segsOf(st.hint)); g.append(h); const s=document.createElement('small');
+function setGoal(){ const g=$('#goal'); g.textContent=''; if(done) return; const st=need(); const h=document.createElement('span'); richText(h, segsOf(st.hint)); g.append(h);
+  if(carry && L && !L.bench){ const gb=document.createElement('button'); gb.className='goBtn'; gb.textContent='帶我去藍圈 ▶'; gb.onclick=e=>{ e.stopPropagation(); if(!dlgOpen) goSpot(); }; g.append(document.createElement('br'), gb); }   /* 手上拿著料：可以自己走過去（選哪個料要自己想，所以拿料不帶路） */ const s=document.createElement('small');
   s.textContent = L.bench ? '點下面工具盤裡正確的下一步。' : !carry ? '去後面，拿對的材料，或接對的工作。' : ITEM[L.id+'.'+st.id] ? `手上拿著「${st.pal||st.name}」，扛到藍色圈圈。` : `走到藍色圈圈，做「${st.name}」。`; g.append(s); }
 function showGhost(id){ Object.keys(LV.parts).forEach(k=>LV.parts[k].ghosts.forEach(g=>g.visible=(k===id))); }
 function dropIn(id,temp,from=0,to=1e9){ const p=LV.parts[id]; if(!p) return; const h=0.3;        // 放下去：從上面 30 公分輕輕放，一個接一個；不是從天上掉下來
@@ -1714,8 +1725,8 @@ function spotOff(th,ph,d){ const c=spotCam||(spotCam=camera.clone()); c.copy(cam
   return v.z>1 || px<24 || px>vw()-(TOUCH?66:24) || py<top || py>vh()-70; }
 function ensureSpotVisible(){ if(!spot.visible || !L || L.bench || L.office) return; const cur=camGoal||{theta,phi,dist}, off = !camGoal && spotOff(theta,phi,dist);
   const st=need(), base = st && st.in ? {theta:2.7, phi:0.95, dist:9.5} : camHome ? {theta:camHome.theta, phi:camHome.phi, dist:camHome.dist} : cur, lo=LV.orbit?LV.orbit[0]:-1e9, hi=LV.orbit?LV.orbit[1]:1e9; let tries;
-  if(off){ const moved = camHome && Math.hypot(target.x-camHome.t[0], target.z-camHome.t[2])>0.3; if(camHome) target.set(...camHome.t);                         // 藍圈不在畫面裡：畫面被平移過就先移回來、角度不動；沒平移過就換回這一步原本的角度
-    tries = moved ? [{theta:cur.theta, phi:cur.phi, dist:Math.min(cur.dist, base.dist*1.3)}, base] : [base]; }
+  if(off){ const me=LV.actors.you; if(me) target.set((me.x+spot.position.x)/2, target.y, (me.z+spot.position.z)/2);   // 藍圈不在畫面裡：畫面移到角色和藍圈的中間，兩個都看得到
+    tries = [{theta:cur.theta, phi:cur.phi, dist:Math.min(cur.dist, base.dist*1.3)}, base]; }
   else { if(!spotBlocked(cur.theta,cur.phi,cur.dist)) return; tries=[cur, base]; }
   for(const b of tries) for(const kz of [1,1.25,1.5]) for(const dp of [0,-0.22]) for(const dt of [0,0.35,-0.35,0.7,-0.7,1.05,-1.05,1.4,-1.4,1.9,-1.9]){ const th=b.theta+dt, ph=Math.max(0.45,b.phi+dp), d=Math.min(maxD,b.dist*kz); if(th<lo || th>hi) continue;
     if(!spotOff(th,ph,d) && !spotBlocked(th,ph,d)){ camGoal={theta:th, phi:ph, dist:d}; return; } } }   // 先試左右轉，再試從高一點往下看，再試拉遠一點，最後試這一步原本的角度
@@ -1810,7 +1821,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
   resetGroup(); L.build(); sun.castShadow=!L.noShadow; scene.background.set(L.office||L.indoor?0x262b32:0x9aa5b0); CLOUDS.forEach(c=>c.visible=!L.office&&!L.indoor);
   $('#card').style.display='none'; $('#card').classList.remove('on'); cardNext=null;
   if(L.bench){ const c=L.cam; target.set(...c.t); theta=c.theta; phi=c.phi; dist=c.dist; minD=dist*0.35; maxD=dist*2.5;
-    $('#help').textContent = TOUCH ? '點工具盤＝做那一步　一指拖曳＝轉視角　兩指捏合＝縮放　兩指一起移＝平移　右邊按鈕＝放大、縮小、回正' : '點右邊工具盤＝做那一步　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
+    $('#help').textContent = TOUCH ? '點工具盤＝做那一步　一指拖曳＝轉視角　兩指捏合＝縮放　兩指一起移＝平移　右邊＋－＝放大、縮小' : '點右邊工具盤＝做那一步　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   else { const n=L.tray.length, per=Math.ceil(n/2);
     if(L.office) L.tray.forEach((id,k)=>makePallet(stepOf(id), L.cx+(k-(n-1)/2)*0.95, 1.6));                                 // 辦公室：立牌在你面前排成一排，跟螢幕在同一個畫面
     else if(per<=6) L.tray.forEach((id,k)=>{ const row=k<per?0:1, j=row?k-per:k, cnt=row?n-per:per; makePallet(stepOf(id), L.cx+(j-(cnt-1)/2)*1.5+(row && cnt===per ? 0.75 : 0), 3.4+row*1.9); });   // 兩排拉開、錯開半格，長料才不會頭尾相接
@@ -1824,7 +1835,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
     LV.pick.push(spot.userData.disc);
     if(L.view){ target.set(...L.view.t); theta=L.view.theta; phi=L.view.phi; dist=L.view.dist; } else { target.set(L.cx, L.gy+1.3, 2.5); theta=0.5; phi=1.08; dist=12; }
     minD=4; maxD=24;
-    $('#help').textContent = TOUCH ? '左下搖桿＝走路（也可以點地板）　點棧板＝拿材料　點藍圈＝安裝　點同事＝聊天　一指拖曳＝轉視角　兩指＝縮放、平移' : '點地板＝走路（WASD 也行）　點棧板＝拿材料　點藍色圈圈＝安裝　點同事＝聊天　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
+    $('#help').textContent = TOUCH ? '左下搖桿＝走路（也可以點地板）　點棧板＝拿材料　點藍圈＝安裝　點同事＝聊天　一指拖曳＝轉視角　兩指或右邊＋－＝縮放' : '點地板＝走路（WASD 也行）　點棧板＝拿材料　點藍色圈圈＝安裝　點同事＝聊天　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   if(LV.room) maxD=Math.min(maxD,15);
   if(vw()<vh() && LV.room) phi=Math.min(phi,0.78);   // 手機直著拿：畫面窄，鏡頭拉遠一點；室內被牆擋住拉不遠，就改成從高一點往下看
   camHome={t:[target.x,target.y,target.z], theta, phi, dist};
@@ -1875,10 +1886,30 @@ const scrollable = el => el && el.closest && el.closest('.overlay .box, #dayEnd 
 document.addEventListener('touchmove',e=>{ if(zoomed() && e.touches.length>1) return; if(e.touches.length>1 || !scrollable(e.target)) e.preventDefault(); },{passive:false});   /* 兩指一律不准放大整頁；一指只有在清單、對話框裡面可以滑 */
 let lastTap=0; document.addEventListener('touchend',e=>{ const n=Date.now(); if(n-lastTap<300 && !(e.target.closest && e.target.closest('button,input'))) e.preventDefault(); lastTap=n; },{passive:false});   /* 連點兩下不要放大整頁 */
 if(TOUCH) $('#camBtns').style.display='flex';
+// 動作鍵：跟電腦的 E 鍵一樣（走到棧板旁＝拿料、拿著料在藍圈＝安裝、來亂的東西＝拿起來／放回去）
+function actInfo(){ if(!L || L.bench || done || dlgOpen || failed || (cut && cut.stage<2)) return null; const p=LV.actors.you; if(!p) return null;
+  if(carry && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1) return '安裝';
+  if(prank && Object.values(LV.actors).some(o=>o!==p && Math.hypot(o.x-p.x,o.z-p.z)<0.95)) return prank==='bat' ? '揮棒' : '動手';   // 跟 E 鍵一樣：拿著來亂的東西站在同事旁邊＝動手（後果自負）
+  const pk=Object.keys(LV.pranks).find(id=>rectDist(LV.pranks[id].obs,p.x,p.z).d<0.7); if(pk) return prank===pk ? '放回去' : '拿起來';
+  if(carry || prank) return null;
+  let best=null, bd=1.0; Object.entries(LV.pallets).forEach(([id,q])=>{ const d=rectDist(q.obs,p.x,p.z).d; if(d<bd && !placed.has(id)){ bd=d; best=id; } }); return best ? '拿「'+plain(stepOf(best).pal||stepOf(best).name)+'」' : null; }
+const pressE=()=>{ dispatchEvent(new KeyboardEvent('keydown',{key:'e'})); dispatchEvent(new KeyboardEvent('keyup',{key:'e'})); };
+document.getElementById('actBtn').addEventListener('click',e=>{ e.stopPropagation(); pressE(); });
+const _pv=new THREE.Vector3();
+function hudTick(){ document.body.classList.toggle('dlgopen', !!dlgOpen); if(!TOUCH) return;
+  const a=actInfo(), b=$('#actBtn'); if(a){ if(b.textContent!==a) b.textContent=a; b.style.display='block'; } else b.style.display='none';
+  const P=$('#ptr'); let on=false;                                                                                     // 藍圈不在畫面裡：從角色往藍圈的方向，在畫面邊緣放一個箭頭
+  if(carry && spot.visible && L && !L.bench){ _pv.set(spot.position.x,spot.position.y+0.3,spot.position.z).project(camera); const w=vw(), h=vh(), m=30, top=($('#side').getBoundingClientRect().bottom||80)+10, bot=h-120;
+    let px=(_pv.x+1)/2*w, py=(1-_pv.y)/2*h; if(_pv.z>1){ px=w-px; py=h-py; }
+    if(_pv.z>1 || px<m || px>w-m || py<top || py>bot){ const me=LV.actors.you; _pv.set(me.x,me.g.position.y+1,me.z).project(camera); const ax=(_pv.x+1)/2*w, ay=(1-_pv.y)/2*h; let vx=px-ax, vy=py-ay; const U=Math.hypot(vx,vy)||1; vx/=U; vy/=U;
+      let k=1e9; if(vx>0) k=Math.min(k,(w-m-ax)/vx); else if(vx<0) k=Math.min(k,(m-ax)/vx); if(vy>0) k=Math.min(k,(bot-ay)/vy); else if(vy<0) k=Math.min(k,(top-ay)/vy); k=Math.max(60,k);
+      P.style.transform=`translate(${Math.round(ax+vx*k-20)}px,${Math.round(ay+vy*k-20)}px) rotate(${Math.atan2(vy,vx).toFixed(3)}rad)`; on=true; } }
+  P.style.display = on ? 'grid' : 'none'; }
+setInterval(hudTick,120);
 var helpT=null; function touchHud(){ if(!TOUCH) return; const on = !!(L && !L.bench); $('#joy').style.display = on ? 'block' : 'none'; document.body.classList.toggle('joyon', on);   // 手機：要走路的關卡才有搖桿
   const h=$('#help'); h.classList.remove('fadeout'); clearTimeout(helpT); helpT=setTimeout(()=>h.classList.add('fadeout'), 10000); }   // 說明開場顯示 10 秒，之後收起來，不擋畫面                                                                  // 手機：放大、縮小、回正三顆按鈕
 const zoomBy=f=>{ if(cut && cut.stage<2) return; camGoal=null; userCamT=performance.now(); if(talkCam){ talkCam.free=true; talkCam.zoomed=true; } dist=Math.min(maxD,Math.max(minD,dist*f)); };
-$('#zIn').onclick=()=>zoomBy(0.8); $('#zOut').onclick=()=>zoomBy(1.25); $('#zHome').onclick=()=>{ if(!(cut && cut.stage<2)) camReset(); };
+$('#zIn').onclick=()=>zoomBy(0.8); $('#zOut').onclick=()=>zoomBy(1.25);
 
 // ===================== 撞人、對話泡泡、碎念 =====================
 let bumpTotal=0, lastAct=performance.now(), nextIdle=performance.now()+9000;
@@ -1950,6 +1981,9 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
       if(jOn){ fx+=cs*joy.x+sn*joy.y; fz+=-sn*joy.x+cs*joy.y; }   /* 搖桿：往上推＝往前（離開鏡頭），往右推＝往右 */
       const m=Math.hypot(fx,fz); if(m>0){ p.dest=clampXZ(p.x+fx/m*0.5, p.z+fz/m*0.5, p); p.onArrive=null; lastAct=now; } }
     Object.values(LV.actors).forEach(a=>{ if(a.who==='you' && dlgOpen) { const d=a.dest; a.dest=null; stepActor(a,dt,t); a.dest=d; } else stepActor(a,dt,t); });
+    const idleFollow = TOUCH && performance.now()-userCamT>1500;   /* 手機：停下來 1.5 秒後，鏡頭也慢慢回到角色身上（像手遊） */
+    if(p && (p.dest || idleFollow) && p.g.visible && !dlgOpen && !talkCam && !cut && !LV.hoisting && performance.now()-userCamT>350){ const q=Math.min(1,dt*(p.dest?2.4:1.2)); target.x+=(p.x-target.x)*q; target.z+=(p.z-target.z)*q;   /* 鏡頭跟著角色走（你正在拖鏡頭的時候不跟） */
+      if(LV.room){ const R=LV.room; target.x=Math.min(R.x1-1.3,Math.max(R.x0+1.3,target.x)); target.z=Math.min(R.z1-1.3,Math.max(R.z0+1.3,target.z)); } }
     if(cut) stepCut(dt);
     if(cut && cut.stage<2) placeBubbles(now); else crowd(dt,now);
     if(spot.visible){ const s=1+0.08*Math.sin(now/200); spot.scale.set(s,1,s); spot.userData.arrow.position.y=1.0+0.12*Math.sin(now/220);
