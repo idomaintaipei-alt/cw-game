@@ -845,7 +845,7 @@ function officeWindows(x1){ const y0=L.gy, c=document.createElement('canvas'); c
 function plantWorld(){ const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShadow=false; }); return stat(m); }, wh=std(0xe9edf0), rf=std(0x5f7f9c), dk=std(0x3a4350);
   [cx-9.1,cx-4.9].forEach(x=>S(box(0.12,0.012,36, x,y0+0.016,-2, mat.mark)));                                                                  // 車道線
   const shed=(x,z,w,d,h,ry)=>{ const g=new THREE.Group(); g.position.set(x,y0,z); g.rotation.y=ry; g.add(box(w,h,d, 0,h/2,0, wh)); [-1,1].forEach(e=>{ const r=box(w/2+0.5,0.16,d+0.6, e*w/4,h+w*0.085,0, rf); r.rotation.z=-e*0.34; g.add(r); });
-    g.add(box(3.2,3.4,0.06, -w/4,1.7,d/2+0.02, dk)); g.add(box(3.2,3.4,0.06, w/4,1.7,d/2+0.02, dk)); g.add(box(w,0.5,0.05, 0,h-0.6,d/2+0.02, rf)); S(g); };   // 蓋好的廠房：牆、斜屋頂、兩個捲門
+    g.add(box(3.2,3.4,0.06, -w/4,1.7,d/2+0.02, dk)); g.add(box(3.2,3.4,0.06, w/4,1.7,d/2+0.02, dk)); g.add(box(w,0.5,0.05, 0,h-0.6,d/2+0.02, rf)); g.traverse(o=>{ o.userData.noFade=true; }); S(g); };   // 蓋好的廠房：牆、斜屋頂、兩個捲門（擋到主角也不變透明）
   shed(cx-17,-10,11,18,5.5,0); shed(cx+20,-9,12,20,6,0); S(board(['二廠','（一廠在加班）'], cx-17,y0+4.6,-0.95,0,3.2,'#12161b','#ffffff'));
   [[cx-18.4,6.5,'co',1.5,1.0],[cx-16.6,7.0,'roc',1.5,1.0],[cx-14.8,6.5,undefined,1.5,0.9]].forEach(([x,h,k,w,hh])=>safetyFlag(x,y0,18.4,0,h,k,w,hh));   // 北門外三支旗：公司旗、國旗（中間最高）、工安旗（跟週二一樣）
   noticeBoard(cx-1.6, 17.6, y0, [['工程名稱','爆肝科技二廠擴建工程（外牆三明治板）'],['建造執照','（115）建字第 9528 號（隔壁那棟是 9527）'],['起造人','爆肝科技股份有限公司'],['設計人','某建築師事務所（說今天會出圖）'],['監造人','同上（還是自己監自己）'],['承造人','爆肝營造股份有限公司'],
@@ -860,6 +860,14 @@ function plantWorld(){ const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShad
   for(let k=0;k<4;k++) tk.add(box(1.0,0.12,3.2, 0,1.22+k*0.13,-1.0, k%2?mat.face:wh)); S(tk);                                                                     // 載板的貨車
   const wl=std(0xb9bdc2), wall=(x0,z0,x1,z1)=>{ const len=Math.hypot(x1-x0,z1-z0), b=box(len,2.2,0.2, (x0+x1)/2,y0+1.1,(z0+z1)/2, wl); b.rotation.y=Math.atan2(z0-z1,x1-x0); S(b); };
   wall(cx-24,-22, cx-9.3,-22); wall(cx-4.7,-22, cx+27,-22); wall(cx-24,-22, cx-24,17); wall(cx+27,-22, cx+27,17); wall(cx-24,17, cx-9.3,17); wall(cx-4.7,17, cx+27,17);                // 圍牆；車道頭尾留門
+  { const gp=std(0x6b6f75), al=std(0xc9ced4,{metalness:.4, roughness:.4}), Z=17;                                                       // 南邊大門：門柱、伸縮門、警衛室、公司招牌
+    S(box(0.6,2.8,0.7, cx-9.58,y0+1.4,Z, gp)); S(box(1.4,3.0,0.7, cx-4.02,y0+1.5,Z, gp));                                             // 石材門柱（包住圍牆的端頭，開口 4.56 公尺）
+    S(board(['爆肝科技股份有限公司','第二工廠'], cx-4.02,y0+2.0,Z+0.36,0,1.3,'#2b2f36','#e2c48f'));                                     // 公司招牌（門柱外側）
+    S(box(0.7,1.5,0.4, cx-8.92,y0+0.85,Z, al)); for(let k=0;k<6;k++) S(box(0.03,1.45,0.42, cx-9.2+k*0.11,y0+0.85,Z, mat.steelDark));   // 電動伸縮門：收在左邊門柱旁
+    S(box(0.5,0.35,0.45, cx-8.92,y0+1.78,Z, std(0xf2b01e))); S(box(4.56,0.02,0.08, cx-7.0,y0+0.01,Z, mat.steelDark));                 // 馬達頭（黃色）、地上的軌道
+    const bx=cx-11.3, bz=15.95; S(box(1.6,2.4,1.4, bx,y0+1.2,bz, std(0xe9edf0))); S(box(1.9,0.12,1.7, bx,y0+2.46,bz, std(0x5f7f9c)));  // 警衛室：牆、屋頂
+    S(box(0.03,0.8,1.0, bx+0.815,y0+1.45,bz, std(0x9fd0f0,{emissive:0x24465a}))); S(box(0.03,0.08,1.1, bx+0.83,y0+1.02,bz, std(0x3a4350)));   // 朝大門的窗、窗台
+    const sg=board(['警衛室','訪客請換證・加班免登記'], bx+0.82,y0+2.08,bz,Math.PI/2,1.2,'#f6efe0','#1b1e24'); S(sg); }
   standBoard(['廠區限速 10 公里','（堆高機例外）'], cx+6.2,3.4,-0.7,2.3,'#f2cf1d','#1b1e24');
   bgCrew([ {kind:'haul', a:{x:cx+10.6,z:6.4}, b:{x:cx+14.0,z:6.4}, y:y0, vest:0xff7a1a},   // 廠區的工人：一箱一箱搬貨、在板夾上點數、進出廠房
     {kind:'write', x:cx+12.6, y:y0, z:-2.5, ry:Math.PI/2, vest:0x7b8794},   /* 站在廠房外面那捆板旁邊點數（原本站進廠房裡面） */ {kind:'walk', a:{x:cx-20.5,z:0.4}, b:{x:cx-13.5,z:0.4}, y:y0, vest:0xd9e021} ], S);
