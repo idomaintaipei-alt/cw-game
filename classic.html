@@ -525,7 +525,7 @@ function bgCrew(list, S){ const ups=[];
       w.stA=mk(w.a.x-ux*1.05, w.a.z-uz*1.05); w.stB=mk(w.b.x+ux*1.05, w.b.z+uz*1.05);   /* 箱子離腳 95 公分：蹲下時膝蓋、頭碰不到，手伸出去剛好拿到 */ w.held=box(0.36,0.26,0.3, 0,1.15,0.32, mat.crate); g.add(w.held); w.N=N; w.L0=L0; }
     if(w.kind==='write'){ const cb=new THREE.Group(); cb.add(box(0.24,0.32,0.02,0,0,0,mat.dark)); cb.add(box(0.2,0.27,0.006,0,-0.01,0.013,mat.white)); cb.position.set(0.05,-0.28,0.1); cb.rotation.x=-1.25; u.armL.userData.elbow.add(cb); u.armL.rotation.x=-1.15; u.armL.rotation.z=0.3; }
     g.userData.crew=w; S(g); const len = w.b ? Math.hypot(w.b.x-w.a.x, w.b.z-w.a.z) : 0;   // crew＝背景工人（給自動檢查找）
-    ups.push(t=>{ const tt=t+ph;
+    ups.push(t=>{ if(g.userData.down) return; const tt=t+ph;   /* 被敲倒了：不再做原本的動作 */
       if(w.kind==='tie'){ g.rotation.x=0.3; u.legL.rotation.x=u.legR.rotation.x=-1.85; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=2.25; if(l.userData.ankle) l.userData.ankle.rotation.x=-0.7; });   /* 鞋子轉回平的 */ if(w.dy===undefined){ g.position.y=w.y; w.dy=w.y-footLow(g); } g.position.y=w.y+w.dy; u.armL.rotation.x=-0.75+Math.sin(tt*9)*0.18; u.armR.rotation.x=-0.75+Math.sin(tt*9+1.4)*0.18; }   // 蹲下來綁：膝蓋彎、屁股往下、上身稍微前傾，手在鋼筋上動（原本整個人直直往前倒）
       else if(w.kind==='hammer'){ g.rotation.x=0.18; if(w.dy===undefined){ g.position.y=w.y; w.dy=w.y-footLow(g); } g.position.y=w.y+w.dy; const sw=Math.sin(tt*6); u.armR.rotation.x = sw>0 ? -2.3+sw*1.6 : -2.3; u.armL.rotation.x=-0.9; }
       else if(w.kind==='write'){ u.armR.rotation.x=-1.0+Math.sin(tt*7)*0.1; u.armR.rotation.z=-0.38; }
@@ -1978,18 +1978,17 @@ function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
     u.legL.rotation.x=u.legR.rotation.x=-1.2*k; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=1.75*k; }); a.g.position.y-=0.3*k; a.g.rotation.x=0.3*k; u.armL.rotation.x=u.armR.rotation.x=-0.95*k; a.picking=true; }
   else if(a.picking){ a.picking=false; a.g.rotation.x=0; }
   if(u.fx) for(const f of u.fx) f(t); }
-// 被球棒打到：安全帽（連皇冠、燈圈）、眼鏡、墨鏡、光圈、板夾從身上拆下來各自噴飛；額頭流血、噴血滴；坐著的人椅子留下來滑開轉圈，人從座位上飛出去
+// 被球棒打到：安全帽（連皇冠、燈圈）、眼鏡、墨鏡、光圈、板夾從身上拆下來各自噴飛；卡通昏迷（頭上星星繞、蚊香眼，不流血）；坐著的人椅子留下來滑開轉圈，人從座位上飛出去
 function knockFly(t,ux,uz){ const g=t.g, u=g.userData, k=t.knock, sets={}; g.updateMatrixWorld(true);
   g.traverse(o=>{ if(o.userData.fly) (sets[o.userData.fly]=sets[o.userData.fly]||[]).push(o); }); if(u.clip) sets.clip=[u.clip];
   k.parts=[]; Object.entries(sets).forEach(([key,list])=>{ const pv=new THREE.Group(), c=new THREE.Vector3(); list.forEach(o=>c.add(o.getWorldPosition(new THREE.Vector3()))); c.divideScalar(list.length);
     pv.position.copy(c); LV.group.add(pv); pv.updateMatrixWorld(true); list.forEach(o=>pv.attach(o));   // 同一樣東西的零件包成一組一起飛（安全帽有帽殼、肋、帽簷、貼紙）
     const sp=key==='helmet'?2.0:1.2+Math.random()*0.8, lat=(Math.random()-0.5)*1.6;
     k.parts.push({o:pv, key, v:new THREE.Vector3(ux*sp-uz*lat, key==='helmet'?3.4:2.4+Math.random()*0.8, uz*sp+ux*lat), w:new THREE.Vector3(5+Math.random()*6, Math.random()*5-2.5, 4+Math.random()*5)}); });
-  const H=u.head||g, oy=u.head?-1.37:0, red=std(0xc0121e,{roughness:0.35});   // 美術版的頭在 u.head 群組裡（以脖子 1.37 為原點）
-  H.add(ball(0.055,red,0.06,1.75+oy,0.11,1,0.45,0.8)); H.add(ball(0.026,red,0.09,1.68+oy,0.168,0.7,1.7,0.5));   // 額頭一塊血、往下流一道
-  const hp=g.localToWorld(new THREE.Vector3(0,1.7,0)); for(let i=0;i<7;i++){ const d=ball(0.024,red,0,0,0); d.position.copy(hp); LV.group.add(d);
-    k.parts.push({o:d, drop:true, v:new THREE.Vector3(ux*(1+Math.random()*2)+(Math.random()-0.5)*1.6, 1.4+Math.random()*2, uz*(1+Math.random()*2)+(Math.random()-0.5)*1.6), w:new THREE.Vector3()}); }   // 噴出去的血滴
-  k.red=red; const ch=g.children.find(o=>o.userData.chair);
+  const H=u.head||g, oy=u.head?-1.37:0;   // 美術版的頭在 u.head 群組裡（以脖子 1.37 為原點）
+  [-1,1].forEach(sd=>{ const sp=new THREE.Mesh(new THREE.CircleGeometry(0.05,24), spiralMat()); sp.position.set(sd*0.075,1.588+oy,0.222); sp.rotation.z=sd*0.6; H.add(sp); k.spin=(k.spin||[]).concat(sp); });   // 眼睛變蚊香（戴眼鏡的：蚊香在鏡片前面）
+  const st=new THREE.Group(); for(let i=0;i<5;i++){ const m=new THREE.Mesh(starGeo(), new THREE.MeshBasicMaterial({color:i%2?0xffe14a:0xfff3a0, side:THREE.DoubleSide})); const a=i/5*Math.PI*2; m.position.set(Math.cos(a)*0.26,Math.sin(i*1.7)*0.04,Math.sin(a)*0.26); m.rotation.y=-a; st.add(m); } LV.group.add(st); k.stars=st;   // 頭上一圈星星
+  const ch=g.children.find(o=>o.userData.chair);
   if(ch){ LV.group.attach(ch); k.chair={o:ch, t:0, vx:ux*1.3, vz:uz*1.3, w:(Math.random()<0.5?-1:1)*8}; t.seated=false; g.traverse(o=>{ if(o.userData.blob) o.position.y=0.014; }); } }   // 椅子留在原地、被撞得滑開轉圈
 function knockParts(a,k,dt){ if(k.parts) k.parts.forEach(p=>{ if(p.rest) return; const o=p.o, px=o.position.x, pz=o.position.z; p.v.y-=9.8*dt; o.position.addScaledVector(p.v,dt);
     o.rotation.x+=p.w.x*dt; o.rotation.y+=p.w.y*dt; o.rotation.z+=p.w.z*dt;
@@ -2000,9 +1999,14 @@ function knockParts(a,k,dt){ if(k.parts) k.parts.forEach(p=>{ if(p.rest) return;
     if(p.v.length()<0.7){ p.rest=true; o.rotation.set(p.key==='helmet'?0:-Math.PI/2, o.rotation.y, 0); o.updateMatrixWorld(true); o.position.y+=gy-new THREE.Box3().setFromObject(o).min.y+0.002; } });   /* 落地彈一下，慢下來就停：安全帽正正地躺在地上，其他的平放 */
   if(k.chair){ const c=k.chair, e=Math.max(0,1-c.t/1.1); c.t+=dt; const px=c.o.position.x, pz=c.o.position.z; c.o.position.x+=c.vx*e*dt; c.o.position.z+=c.vz*e*dt; c.o.rotation.y+=c.w*e*dt;
     const q=clampXZ(c.o.position.x,c.o.position.z,{x:px,z:pz}); c.o.position.x=q.x; c.o.position.z=q.z; }   // 辦公椅：有輪子，滑開、轉圈，慢慢停
-  if(k.t>0.85 && !k.pool){ const hp=a.g.localToWorld(new THREE.Vector3(0,a.g.userData.head?1.68:1.6,0)), pl=new THREE.Mesh(new THREE.CircleGeometry(a.g.userData.head?0.5:0.34,22), std(0x8e0d16,{roughness:0.3, polygonOffset:true, polygonOffsetFactor:-2}));
-    pl.rotation.x=-Math.PI/2; pl.position.set(hp.x, gyAt(hp.x,hp.z)+0.012, hp.z); pl.raycast=()=>{}; pl.scale.setScalar(0.05); LV.group.add(pl); k.pool=pl; }   // 頭下面一灘血，慢慢變大
-  if(k.pool && k.pool.scale.x<1) k.pool.scale.setScalar(Math.min(1,k.pool.scale.x+dt*0.4)); }
+  if(k.stars){ const hp=a.g.localToWorld(new THREE.Vector3(0,a.g.userData.head?1.68:1.6,0)); k.stars.position.set(hp.x,hp.y+(a.g.userData.head?0.45:0.32),hp.z); k.stars.rotation.y+=dt*3.2; }   // 星星跟著頭、一直繞
+  if(k.spin) k.spin.forEach((m,i)=>{ m.rotation.z+=dt*(i?-6:6); }); }   // 蚊香眼一直轉
+// 卡通昏迷：蚊香眼的圖、星星的形狀（只做一次，大家共用）
+let _spiral=null, _star=null;
+function spiralMat(){ if(_spiral) return _spiral; const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'); g.fillStyle='#ffffff'; g.beginPath(); g.arc(32,32,31,0,Math.PI*2); g.fill();
+  g.strokeStyle='#1b1e24'; g.lineWidth=4; g.beginPath(); for(let t=0;t<=Math.PI*6;t+=0.1){ const r=2+t*1.55, x=32+Math.cos(t)*r, y=32+Math.sin(t)*r; if(t===0) g.moveTo(x,y); else g.lineTo(x,y); } g.stroke();
+  g.lineWidth=2.5; g.beginPath(); g.arc(32,32,30,0,Math.PI*2); g.stroke(); return _spiral=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c), side:THREE.DoubleSide}); }
+function starGeo(){ if(_star) return _star; const sh=new THREE.Shape(); for(let i=0;i<10;i++){ const a=i/10*Math.PI*2-Math.PI/2, r=i%2?0.026:0.062; const x=Math.cos(a)*r, y=-Math.sin(a)*r; if(i) sh.lineTo(x,y); else sh.moveTo(x,y); } sh.closePath(); return _star=new THREE.ShapeGeometry(sh); }
 function knockDown(t,dx,dz){ t.dest=null; t.onArrive=null; t.wob=0; const gy=gyAt(t.x,t.z), skip=new Set(), solid=[]; Object.values(LV.actors).forEach(a=>a.g.traverse(o=>skip.add(o))); LV.group.updateMatrixWorld(true);
   LV.group.traverse(o=>{ if(!o.isMesh || skip.has(o) || o.userData.blob || o.userData.cloth) return; const m0=Array.isArray(o.material)?o.material[0]:o.material; if(m0.transparent) return; for(let q=o;q;q=q.parent) if(!q.visible || (q.userData && q.userData.crew)) return; solid.push(new THREE.Box3().setFromObject(o)); });   // 場景裡不透明的東西
   const hits=(fx,fz,ux,uz)=>{ const hx=fx+ux*1.75, hz=fz+uz*1.75, a=clampXZ(fx,fz,t), b=clampXZ(hx,hz,{x:fx,z:fz}); if(Math.hypot(a.x-fx,a.z-fz)>0.01 || Math.hypot(b.x-hx,b.z-hz)>0.01) return 1e9;   // 腳和頭都要在能站的範圍裡（不躺進牆）
@@ -2235,7 +2239,7 @@ function buildSmash(){ const out=[], bb=new THREE.Box3(), actors=new Set(Object.
     const k = o===LV.myRide ? 'mine' : o.userData.smash || (human ? 'person' : null); if(!k || !o.visible) return; bb.setFromObject(o); const c=bb.getCenter(new THREE.Vector3());
     if(bb.min.y>yardY()+1.5 || bb.max.y<yardY()-0.3) return;   // 只算站在地面上的
     out.push(k==='person' ? {kind:k, o, x:c.x, z:c.z, hx:0.25, hz:0.25} : {kind:k, o, x:c.x, z:c.z, hx:(bb.max.x-bb.min.x)/2, hz:(bb.max.z-bb.min.z)/2}); });
-  for(let k=out.length-1;k>=0;k--){ const q=out[k]; if(q.kind!=='person') continue; const H=LV.hoist; if(H && Math.abs(q.x-H.x)<H.hw+0.1 && Math.abs(q.z-H.z)<H.hd+0.1){ out.splice(k,1); continue; }   /* 電梯車廂裡的阿姨不算 */ let ok=false; for(let a=0;a<8 && !ok;a++){ const x=q.x+Math.cos(a*Math.PI/4)*0.95, z=q.z+Math.sin(a*Math.PI/4)*0.95; if(!occBlocked(x,z,0)) ok=true; } if(!ok) out.splice(k,1); }   // 走不到旁邊的人（在車廂裡、被東西圍住）不算
+  for(let k=out.length-1;k>=0;k--){ const q=out[k]; if(q.kind!=='person') continue; const H=LV.hoist; if(!isFinite(q.x) || !isFinite(q.z)) continue;   /* 走動的師父還沒算出位置（動畫還沒跑過）：先留著 */ if(H && Math.abs(q.x-H.x)<H.hw+0.1 && Math.abs(q.z-H.z)<H.hd+0.1){ out.splice(k,1); continue; }   /* 電梯車廂裡的阿姨不算 */ let ok=false; for(let a=0;a<8 && !ok;a++){ const x=q.x+Math.cos(a*Math.PI/4)*0.95, z=q.z+Math.sin(a*Math.PI/4)*0.95; if(!occBlocked(x,z,0)) ok=true; } if(!ok) out.splice(k,1); }   // 走不到旁邊的人（在車廂裡、被東西圍住）不算
   LV.smashRects.forEach(r=>{ const q=Object.assign({}, r), m=new THREE.Mesh(new THREE.BoxGeometry(r.hx*2-0.6,3.0,r.hz*2-0.6), new THREE.MeshBasicMaterial()); m.visible=false; m.position.set(r.x,yardY()+1.5,r.z); LV.group.add(m); q.o=null; q.pickM=m; out.push(q); });   // 工務所／警衛室：放一個看不見的盒子給滑鼠點
   out.forEach(q=>{ const tg=q.pickM||q.o; if(!tg) return; tg.traverse(m=>{ if(m.isMesh){ m.userData.pick={kind:'smash', s:q}; LV.pick.push(m); } }); });   // 點得到：拿著球棒點車、點人＝走過去動手
   LV.smash=out; }
@@ -2251,7 +2255,17 @@ function nearSmash(){ if(!LV.smash) return null; const p=LV.actors.you; let best
 function smashSwing(s){ const me=LV.actors.you; if(me.swing) return; me.dest=null; me.onArrive=null; const ex=Math.max(s.x-s.hx,Math.min(s.x+s.hx,me.x)), ez=Math.max(s.z-s.hz,Math.min(s.z+s.hz,me.z)); me.face=Math.atan2(ex-me.x,ez-me.z);
   me.swing={t:0, id:'bat', target:{x:ex, z:ez, smash:s}, done:()=>smashDone(s)}; }
 function smashHit(s){ const o=s.o; if(o){ const x0=o.position.x, z0=o.position.z; let k=0; const f=dt=>{ k+=dt; const e=Math.max(0,1-k/0.5); o.position.x=x0+Math.sin(k*70)*0.05*e; o.position.z=z0+Math.cos(k*61)*0.04*e; if(k>0.5){ o.position.x=x0; o.position.z=z0; LV.fx.splice(LV.fx.indexOf(f),1); } }; LV.fx.push(f); }   // 被砸到的東西抖一下
-  if(s.kind==='person' && o){ o.rotation.order='YXZ'; o.rotation.x=-Math.PI/2; o.position.y=yardY()+0.18; } }   // 工人被打倒
+  if(s.kind==='person' && o) crewKnock(s); }   // 工人被打飛：跟同事一樣噴裝、流血
+// 外面的師父被球棒打到：往後飛出去倒地（找沒東西擋的地方），安全帽、眼鏡、板夾噴飛，星星、蚊香眼（借用同事被打飛的那一套）
+function crewKnock(s){ const o=s.o, me=LV.actors.you, u=o.userData; u.down=true; if(o.parent!==LV.group){ LV.group.updateMatrixWorld(true); LV.group.attach(o); }   /* 站在電梯車廂裡的人：先拿出來，位置照舊 */ let dx=o.position.x-me.x, dz=o.position.z-me.z; const d=Math.hypot(dx,dz)||1; dx/=d; dz/=d;
+  let L1=0.3; for(const dd of [1.8,1.4,1.0,0.7]){ const x=o.position.x+dx*dd, z=o.position.z+dz*dd; if(!LV.occ || !occBlocked(x+dx*1.6,z+dz*1.6,-0.1)){ L1=dd; break; } }   // 躺下的頭那一端也要有空位
+  const face=Math.atan2(-dx,-dz), pa={g:o, x:o.position.x, z:o.position.z, knock:{t:0, x0:o.position.x, z0:o.position.z, x1:o.position.x+dx*L1, z1:o.position.z+dz*L1, face}}, k=pa.knock; o.rotation.order='YXZ';
+  knockFly(pa,dx,dz);
+  const f=dt=>{ k.t+=dt; const q=Math.min(1,k.t/0.6), e=1-Math.pow(1-q,2), bo=q>=1 ? Math.sin(Math.min(1,(k.t-0.6)/0.25)*Math.PI)*0.1 : 0, x=k.x0+(k.x1-k.x0)*e, z=k.z0+(k.z1-k.z0)*e; pa.x=x; pa.z=z;
+    o.position.set(x, gyAt(x,z)+Math.sin(q*Math.PI)*0.9+0.17*Math.min(1,q*1.5)+bo, z); o.rotation.y=face; o.rotation.x=-Math.PI/2*Math.min(1,q*1.4); o.rotation.z=0;
+    u.armL.rotation.x=u.armR.rotation.x=0; u.armL.rotation.z=1.3; u.armR.rotation.z=-1.3; u.legL.rotation.x=0.35; u.legR.rotation.x=-0.2; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=0; if(l.userData.ankle) l.userData.ankle.rotation.x=0; });
+    knockParts(pa,k,dt); };
+  LV.fx.push(f); }
 function smashDone(s){ const boss=LV.actors[L.boss];   /* 砸自己的車、怪手：球棒還拿在手上 */
   if(s.kind==='mine'){ bubble('you','（心在淌血）……自己的車。分期還沒繳完。',true); return; }
   if(s.kind==='dig'){ bubble('you','（怪手：毫髮無傷）',true); if(LV.call && LV.call.left===undefined){ LV.call.dig=true; LV.call.t=Math.min(LV.call.t,0.8); } return; }   // 砸怪手：主任馬上打來
