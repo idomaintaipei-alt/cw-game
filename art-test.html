@@ -1051,19 +1051,24 @@ function seeBox(w,h,d,x,y,z,m,t=0.006){ const g=new THREE.Group(), e=mat.rcEdge;
 function stat(mesh){ (LV.host||LV.group).add(mesh); return mesh; }
 function camGlide(c){ camGoal={theta:c.theta, phi:c.phi, dist:c.dist}; const T=new THREE.Vector3(...c.t), lv=LV; let k=0; LV.fx.push(dt=>{ if(LV!==lv || k>=1) return; k=Math.min(1,k+dt*1.2); target.lerp(T, Math.min(1,dt*4)); if(k>=1) target.copy(T); }); }   // 鏡頭慢慢移到 c（看的點、角度、遠近）
 // 週三的梁柱接頭（單位公尺，孔在原點、往 -z 鑽）：邊梁＋樓板正面在 z=0；左邊一支柱子凸出 5 公分；鑽孔那一塊（x ±0.21、y ±0.15、深 0.32）挖空，放半透明的方塊
-function rcJoint(){ const R=(w,h,d,x,y,z)=>stat(box(w,h,d,x,y,z,mat.rc)), lm=new THREE.LineBasicMaterial({color:0x4a463f}), E=(w,h,d,x,y,z)=>{ const l=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w,h,d)), lm); l.position.set(x,y,z); stat(l); }, X0=-1.5, X1=1.5, YB=-0.6, YT=0.25, WX=0.21, WY=0.15, WD=0.32, BD=0.4;   // E＝外輪廓線（梁是好幾塊拼的，線照整支梁畫，看不到拼縫）
-  R(-WX-X0,YT-YB,BD, (X0-WX)/2,(YT+YB)/2,-BD/2); R(X1-WX,YT-YB,BD, (X1+WX)/2,(YT+YB)/2,-BD/2);                         // 邊梁：洞的左邊、右邊
-  R(2*WX,YT-WY,BD, 0,(YT+WY)/2,-BD/2); R(2*WX,-WY-YB,BD, 0,(YB-WY)/2,-BD/2); R(2*WX,2*WY,BD-WD, 0,0,-(WD+BD)/2);   // 洞的上面、下面、後面
-  R(X1-X0,0.2,0.8, 0,YT-0.1,-BD-0.4); E(X1-X0,YT-YB,BD, 0,(YT+YB)/2,-BD/2); E(X1-X0,0.2,0.8, 0,YT-0.1,-BD-0.4);                                                                               // 樓板（往室內延伸）
-  stat(box(0.5,2.15,0.55, -1.2,-0.375,-0.225, std(0xb8b2a5))); E(0.5,2.15,0.55, -1.2,-0.375,-0.225);                // 柱子顏色深一點，跟梁分得出來                                                               // 柱子：比梁面凸出 5 公分
-  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>stat(cyl(0.012,0.5,'y', -1.2+a*0.17,0.95,-0.225+b*0.19, mat.rebar,6)));   // 柱頭的鋼筋：上面一層還沒做
-  const emb=(x,z)=>{ stat(box(0.26,0.17,0.012, x,0,z+0.006, mat.anchor)); [[-0.09,-0.05],[0.09,-0.05],[-0.09,0.05],[0.09,0.05]].forEach(([a,b])=>stat(cyl(0.011,0.006,'z', x+a,b,z+0.015, mat.steel,6))); };   // 已經埋好的預埋件
-  emb(-1.2,0.05); emb(1.2,0);                                                                                        // 兩邊都有，中間這一個漏了
-  const ring=new THREE.Mesh(new THREE.RingGeometry(0.17,0.19,40), new THREE.MeshBasicMaterial({color:0xd62828, side:THREE.DoubleSide})); ring.position.set(0,0,0.004); stat(ring);   // 紅漆圈起來：漏埋的位置
-  stat(board(['漏埋','少了一塊預埋件'], 0.45,0.02,0.004,0,0.3,'#c2bdb1','#d62828'));                                   // 噴在梁上的字
-  { const pts=[[-0.13,-0.085],[0.13,-0.085],[0.13,0.085],[-0.13,0.085],[-0.13,-0.085]].map(([x,y])=>new THREE.Vector3(x,y,0.0045)), ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({color:0xd62828, dashSize:0.018, gapSize:0.012})); ln.computeLineDistances(); stat(ln); }   // 紅色虛線：本來應該有預埋件的位置（跟兩邊一樣大）
-  stat(board(['預埋件（有埋到）'], 1.2,-0.16,0.004,0,0.31,'#374151','#ffffff'));                                     // 右邊那塊：有埋到的長這樣
-  stat(board(['3F'], -1.2,0.45,0.054,0,0.16,'#374151','#ffffff')); }                                                  // 樓層牌貼在柱子上
+// 週三的樓板邊（跟週二同一款）：樓板頂 y=0.1、底 y=-0.1、邊在 z=0；漏埋的位置在原點，透視只從紅圈看得進去
+function slabEdgeD3(){ const R=(w,h,d,x,y,z)=>stat(box(w,h,d,x,y,z,mat.rc)), lm=new THREE.LineBasicMaterial({color:0x4a463f}), E=(w,h,d,x,y,z)=>{ const l=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w,h,d)), lm); l.position.set(x,y,z); stat(l); };
+  R(1.4,0.2,1.2, -0.9,0,-0.6); R(1.4,0.2,1.2, 0.9,0,-0.6); R(0.4,0.2,0.88, 0,0,-0.76); E(3.2,0.2,1.2, 0,0,-0.6);                    // 樓板：中間挖一塊給透視
+  stat(box(0.4,0.2,0.32, 0,0,-0.16, std(0xc2bdb1,{transparent:true, opacity:.45, depthWrite:false})));                                 // 透視：半透明的混凝土
+  { const sh=new THREE.Shape(); sh.moveTo(-0.2,-0.1); sh.lineTo(0.2,-0.1); sh.lineTo(0.2,0.1); sh.lineTo(-0.2,0.1); sh.lineTo(-0.2,-0.1); const ho=new THREE.Path(); ho.absellipse(0,0,0.15,0.085,0,Math.PI*2,true); sh.holes.push(ho);
+    const f=new THREE.Mesh(new THREE.ShapeGeometry(sh,40), mat.rc); f.position.z=0.0006; stat(f); }                                     // 樓板邊的面：只在紅圈裡挖開，看得進去
+  stat(box(0.4,0.002,0.32, 0,0.101,-0.16, mat.rc)); stat(box(0.4,0.002,0.32, 0,-0.101,-0.16, mat.rc));                                 // 上下面蓋起來：從上面、下面看不進去
+  const rg=new THREE.Mesh(new THREE.RingGeometry(0.15,0.172,48), new THREE.MeshBasicMaterial({color:0xd62828, side:THREE.DoubleSide})); rg.scale.y=0.085/0.15; rg.position.set(0,0,0.004); stat(rg);   // 紅漆噴的圈
+  [-0.055,0.055].forEach(y=>[-0.04,-0.16,-0.28].forEach(z=>stat(cyl(0.008,0.5,'x', 0,y,z, mat.rebar,8))));                              // 板筋網：上下兩層、平行樓板邊的
+  [-0.13,0.13].forEach(x=>[-0.04,0.04].forEach(y=>stat(cyl(0.008,0.3,'z', x,y,-0.17, mat.rebar,8))));                                    // 垂直樓板邊的（避開鑽孔的位置）
+  LV.refs.marks=[stat(box(0.09,0.002,0.001, 0,0,0.0035, mat.dark)), stat(box(0.002,0.09,0.001, 0,0,0.0035, mat.dark))];               // 鑽孔位置：十字墨線（鑽完孔就收起來）
+  [-0.8,0.8,1.4].forEach(x=>{ stat(box(0.26,0.17,0.012, x,0,0.006, mat.anchor)); [[-0.09,-0.05],[0.09,-0.05],[-0.09,0.05],[0.09,0.05]].forEach(([a,b])=>stat(cyl(0.011,0.006,'z', x+a,b,0.015, mat.steel,6))); });   // 一排預埋件（跟週二同一款），中間漏了一塊
+  stat(box(0.5,1.35,0.5, -1.35,-0.775,-0.25, std(0xb8b2a5))); E(0.5,1.35,0.5, -1.35,-0.775,-0.25);                                    // 柱子（樓板下面）
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>stat(cyl(0.012,0.6,'y', -1.35+a*0.17,0.4,-0.25+b*0.17, mat.rebar,6)));                // 柱頂伸出上一層的柱筋（上一層還沒做）
+  stat(board(['3F'], -1.35,-0.45,0.004,0,0.16,'#374151','#ffffff'));                                                                     // 樓層牌
+  { const c=document.createElement('canvas'); c.width=512; c.height=220; const g=c.getContext('2d'); g.fillStyle='#d62828'; g.font='bold 92px "Microsoft JhengHei",sans-serif'; g.fillText('← 漏埋', 8, 96); g.font='bold 60px "Microsoft JhengHei",sans-serif'; g.fillText('少一塊預埋件', 8, 186);
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(0.4,0.172), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c), transparent:true})); m.position.set(0.415,0,0.003); stat(m); }   // 紅漆直接噴在樓板邊（沒有框），箭頭指著紅圈
+  LV.refs.marks.push(stat(label('紅圈：少一塊預埋件（透視看進去）','#b91c1c', 0,0.24,0.06,0.034)), stat(label('預埋件（有埋到）','#374151', 0.8,0.2,0.06,0.034))); }
 function ground(y,m){ const g=new THREE.Mesh(new THREE.PlaneGeometry(200,200), m||(L.office||L.bench ? mat.floor : mat.site)); g.rotation.x=-Math.PI/2; g.position.y=y; g.receiveShadow=true; stat(g); }
 
 // 設計部辦公室：牆、窗、白板、辦公桌、盆栽；那面牆變成「模型投影」
@@ -1187,30 +1192,25 @@ const LEVELS = [
 
 // ---------- 週二 ----------
 { id:'L2', name:'週三　漏埋補救', short:'週三', desc:'例外狀況：有一排預埋件灌漿時漏埋了，只能事後用化學錨栓補。這不是正常做法。', trDone:'沒人承認是誰漏埋的',
-  bench:true, gy:-0.16, boss:'lin', noShadow:true, cam:{t:[-0.35,-0.35,-0.2], theta:.6, phi:1.22, dist:4.4, min:0.3, max:6.5}, zoomIn:{t:[0.06,0,-0.02], theta:.75, phi:1.25, dist:.8},   // 開場先看整個梁柱接頭，講完話再拉近到鑽孔的地方
+  bench:true, gy:-0.16, boss:'lin', noShadow:true, cam:{t:[-0.2,-0.12,-0.3], theta:.6, phi:1.2, dist:3.8, min:0.3, max:6.5}, zoomIn:{t:[0.06,0,-0.02], theta:.75, phi:1.25, dist:.8},   // 開場先看整個梁柱接頭，講完話再拉近到鑽孔的地方
   build(){
-    ground(-1.45); rcJoint(); stat(box(0.414,0.294,0.314, 0,0,-0.16, std(0xc2bdb1,{transparent:true, opacity:.5, depthWrite:false})));   // 透視：跟梁同色的半透明混凝土（不畫深色邊框，才不會像挖好的洞）
-    { const pts=[[-0.207,-0.147],[0.207,-0.147],[0.207,0.147],[-0.207,0.147],[-0.207,-0.147]].map(([x,y])=>new THREE.Vector3(x,y,0.003)), ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({color:0x3a4350, dashSize:0.02, gapSize:0.014})); ln.computeLineDistances(); stat(ln); }   // 前面一圈細虛線：透視的範圍
-    [-0.105,0.105].forEach(y=>[-0.06,-0.26].forEach(z=>stat(cyl(0.011,0.5,'x', 0,y,z, mat.rebar,8))));                                   // 梁的主筋：上下各兩支
-    [-0.17,0.17].forEach(x=>{ [-0.06,-0.26].forEach(z=>stat(cyl(0.006,0.222,'y', x,0,z, mat.rebar,6))); [-0.105,0.105].forEach(y=>stat(cyl(0.006,0.2,'z', x,y,-0.16, mat.rebar,6))); });   // 箍筋（鑽孔的位置在兩圈箍筋中間、上下主筋中間）
-    stat(box(0.12,0.003,0.001, 0,0,0.0035, mat.dark)); stat(box(0.003,0.12,0.001, 0,0,0.0035, mat.dark));                                // 鑽孔位置：十字墨線
-    stat(board(['透視','裡面沒有預埋件','還沒鑽孔'], -0.36,-0.06,0.004,0,0.24,'#4b5563','#ffffff'));   /* 放在紅圈左邊，不擋透視的地方 */
+    ground(-1.45); slabEdgeD3();
     add('drill', cyl(0.006,0.075,'z', 0,0,-0.0375, mat.hole));
     add('clean', cyl(0.0035,0.22,'z', 0,0,0.05, mat.steel)); add('clean', cyl(0.0075,0.03,'z', 0,0,-0.055, mat.brush));
-    add('premix', box(0.14,0.11,0.004, 0.25,-0.24,0.003, mat.card));                                                                   // 試打用的紙板：貼在梁上
-    [[0.205,0xf1e4e2],[0.25,0xe39a9a],[0.295,null]].forEach(([x,c])=>add('premix', ball(0.013, c===null?mat.resin:std(c), x,-0.24,0.009, 1.5,1,0.5)));   // 三坨試打的膠：偏白（沒混勻）→ 粉紅 → 均勻深紅
-    add('premix', label('試打：均勻才能用','#374151', 0.42,-0.24,0.07,0.032));   /* 放在紙板右邊，不會被槍擋住 */
+    add('premix', box(0.14,0.004,0.11, 0.35,0.102,-0.2, mat.card));                                                                   // 試打用的紙板：放在樓板上
+    [[0.305,0xf1e4e2],[0.35,0xe39a9a],[0.395,null]].forEach(([x,c])=>add('premix', ball(0.013, c===null?mat.resin:std(c), x,0.109,-0.2, 1.5,0.5,1)));   // 三坨試打的膠：偏白（沒混勻）→ 粉紅 → 均勻深紅
+    add('premix', label('試打：均勻才能用','#374151', 0.56,0.16,-0.2,0.032));   /* 放在紙板右邊，不會被槍擋住 */
     { const gun=new THREE.Group(), gy=std(0x8e959c), dk=std(0x2b2f36), wt=std(0xeef1f4), glove=std(0xd9d9d9), slv=std(0x2f6fd0);   // 藥劑槍：槍口在原點，槍身往 +z（朝鏡頭）
       gun.add(cyl(0.006,0.09,'z',0,0,0.045,wt,10)); gun.add(cyl(0.012,0.02,'z',0,0,0.1,wt,10)); [-1,1].forEach(e=>gun.add(cyl(0.02,0.19,'z',e*0.022,0,0.205,std(0xe6e2d8),14)));   // 混合管、管座、雙管藥劑
       gun.add(box(0.075,0.012,0.22,0,0.028,0.205,gy)); gun.add(box(0.075,0.06,0.012,0,0,0.104,gy)); gun.add(box(0.075,0.06,0.02,0,0,0.315,gy)); gun.add(cyl(0.004,0.12,'z',0,0.015,0.385,gy,6));   // 槍架、前後板、推桿
       const hd=box(0.028,0.11,0.035,0,-0.075,0.3,dk); hd.rotation.x=0.2; gun.add(hd); const tr=box(0.01,0.07,0.018,0,-0.055,0.262,dk); tr.rotation.x=0.2; gun.add(tr);   // 握把、扳機
       gun.add(ball(0.042,glove,0,-0.075,0.318,1.1,1.4,1.0)); const sl=cyl(0.038,0.32,'y',0.02,-0.25,0.38,slv,12); sl.rotation.x=-0.45; gun.add(sl);   // 戴手套的手、往畫面外的袖子
-      gun.position.set(0.295,-0.24,0.018); gun.visible=false; gun.traverse(o=>{ o.castShadow=false; }); stat(gun); LV.refs.gun=gun; }
+      gun.position.set(0.395,0.127,-0.2); gun.rotation.x=-Math.PI/2; gun.visible=false;   /* 試打：槍口朝下打在紙板上 */ gun.traverse(o=>{ o.castShadow=false; }); stat(gun); LV.refs.gun=gun; }
     LV.refs.resin = add('inject', cyl(0.0062,0.05,'z', 0,0,-0.05, mat.resin));
     add('rod', cyl(0.005,0.13,'z', 0,0,-0.005, mat.steel));
     LV.refs.ring = add('rod', at(new THREE.Mesh(new THREE.TorusGeometry(0.009,0.003,8,20), mat.resin), 0,0,0.002));
-    add('cure', label('養護 乾燥 9h','#8a5a00', 0.06,0.1,0.03,0.045));
-    add('plate', box(0.09,0.09,0.006, 0,0,0.006, mat.steelDark)); add('plate', cyl(0.009,0.008,'z', 0,0,0.014, mat.steel,6));
+    add('cure', label('養護 乾燥 9h','#8a5a00', 0,0.2,0.06,0.045));   /* 在樓板上方，不壓在紅圈上 */
+    add('plate', box(0.26,0.17,0.012, 0,0,0.008, mat.steelDark)); add('plate', cyl(0.009,0.008,'z', 0,0,0.018, mat.steel,6));   /* 補的鐵板跟旁邊的預埋件一樣大，托架才鎖得上同一個位置 */
   },
   tray:['inject','plate','drill','cure','premix','rod','clean'],
   recap:['化學錨栓：少埋預埋件時的補救', '1 鑽孔　2 清孔　3 預打藥劑', '4 注膠　5 植入螺桿', '6 等膠硬　7 鎖托架', '能埋好就要埋好', '這是補救，不是做法'],   // 收工後的整理卡
@@ -1226,8 +1226,12 @@ const LEVELS = [
     {who:'lin', t:'我聽得到。開始吧，點右邊的工具。'} ],
   outroGood:[ {who:'lin', t:'可以。這支我敢讓 SGS 拉。', mood:'smile'}, {who:'lin', t:'但是記住，今天這個是補救。能埋的時候就要埋好，不要留到今天。'}, {who:'you', t:'（被琳姊稱讚了……應該算吧？）'} ],
   outroBad:[ {who:'lin', t:'錨栓是植好了，異常單 {N} 張。明天拉拔，你站最前面看。'}, {who:'lin', t:'還有，這種補救的工作，最好一次都不要有。'} ],
-  onPlace:{ premix(){ LV.refs.gun.visible=true; }, inject(){ LV.refs.gun.position.set(0,0,0.018); }, rod(){ LV.refs.gun.visible=false; },   // 藥劑槍：試打 → 移到孔口注膠 → 插螺桿時收起來
-    cure(){ LV.refs.resin.material=mat.resinCured; LV.refs.ring.material=mat.resinCured; } },
+  onPlace:{ drill(){ LV.refs.marks.forEach(m=>m.visible=false); },                                                    // 用完就收起來：畫面上只留這一步要看的
+    premix(){ LV.refs.gun.visible=true; LV.parts.clean.meshes.forEach(m=>m.visible=false); },                                         // 刷子收起來、藥劑槍出來試打
+    inject(){ LV.refs.gun.position.set(0,0,0.018); LV.refs.gun.rotation.x=0; LV.parts.premix.meshes.forEach(m=>m.visible=false); },   // 紙板收起來、槍移到孔口
+    rod(){ LV.refs.gun.visible=false; },
+    cure(){ LV.refs.resin.material=mat.resinCured; LV.refs.ring.material=mat.resinCured; },
+    plate(){ LV.parts.cure.meshes.forEach(m=>m.visible=false); } },
   steps:[
     { id:'drill', name:'鑽孔', plain:'鑽一個孔，等一下螺桿要插進去。M10 化學錨栓用 12mm 鑽頭，比螺桿大一圈，留位置給膠。', tr:'十二不是十', hint:'在 RC 上鑽孔。孔深要到**原廠最小埋深**以上。',
       q:{ title:'M10 化學錨栓，拿幾 mm 的鑽頭？', body:'DEWALT PURE 500+ 或 Hilti HIT-HY 200-R V3，螺桿 M10。', src:SRC.anchor, opts:[
