@@ -1724,7 +1724,7 @@ function spotOff(th,ph,d){ const c=spotCam||(spotCam=camera.clone()); c.copy(cam
   return v.z>1 || px<24 || px>vw()-(TOUCH?66:24) || py<top || py>vh()-70; }
 function ensureSpotVisible(){ if(!spot.visible || !L || L.bench || L.office) return; const cur=camGoal||{theta,phi,dist}, off = !camGoal && spotOff(theta,phi,dist);
   const st=need(), base = st && st.in ? {theta:2.7, phi:0.95, dist:9.5} : camHome ? {theta:camHome.theta, phi:camHome.phi, dist:camHome.dist} : cur, lo=LV.orbit?LV.orbit[0]:-1e9, hi=LV.orbit?LV.orbit[1]:1e9; let tries;
-  if(off){ const me=LV.actors.you; if(me) target.set((me.x+spot.position.x)/2, target.y, (me.z+spot.position.z)/2);   // 藍圈不在畫面裡：畫面移到角色和藍圈的中間，兩個都看得到
+  if(off){ const me=LV.actors.you; if(me && !TOUCH) target.set((me.x+spot.position.x)/2, target.y, (me.z+spot.position.z)/2);   // 藍圈不在畫面裡：畫面移到角色和藍圈的中間，兩個都看得到
     tries = [{theta:cur.theta, phi:cur.phi, dist:Math.min(cur.dist, base.dist*1.3)}, base]; }
   else { if(!spotBlocked(cur.theta,cur.phi,cur.dist)) return; tries=[cur, base]; }
   for(const b of tries) for(const kz of [1,1.25,1.5]) for(const dp of [0,-0.22]) for(const dt of [0,0.35,-0.35,0.7,-0.7,1.05,-1.05,1.4,-1.4,1.9,-1.9]){ const th=b.theta+dt, ph=Math.max(0.45,b.phi+dp), d=Math.min(maxD,b.dist*kz); if(th<lo || th>hi) continue;
@@ -1973,7 +1973,7 @@ function crowd(dt,now){ const p=LV.actors.you; if(!p) return;
 // ===================== 主迴圈 =====================
 let lastT=performance.now();
 function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/1000; lastT=now; { const ic=!!(cut && (cut.kind==='pour' || cut.stage<2)); if(ic!==inCut){ inCut=ic; document.body.classList.toggle('incut',ic); } }
-  spotChk+=dt; if(spotChk>0.5){ spotChk=0; if(carry && spot.visible && !pd && !touches.size && !camGoal && !cut && !dlgOpen && !talkCam && performance.now()-userCamT>1200) ensureSpotVisible(); }   /* 拿著料：藍圈看不到就自動調鏡頭（你剛動過鏡頭的話先不搶） */   /* 過場動畫中：收起資訊框 */
+  spotChk+=dt; if(spotChk>0.5){ spotChk=0; if(carry && spot.visible && !pd && !touches.size && !camGoal && !(cut && cut.stage<2) && !dlgOpen && !talkCam && performance.now()-userCamT>1200) ensureSpotVisible(); }   /* 拿著料：藍圈看不到就自動調鏡頭（你剛動過鏡頭的話先不搶） */   /* 過場動畫中：收起資訊框 */
     // 時間不會倒著走
   for(let i=anims.length-1;i>=0;i--){ const a=anims[i]; a.m.visible=performance.now()>=a.t0; if(!a.m.visible) continue; const k=Math.min(1,Math.max(0,(performance.now()-a.t0)/450)); const e=1-Math.pow(1-k,3); a.m.position.y=a.from+(a.to-a.from)*e; if(k>=1) anims.splice(i,1); }
   if(camGoal){ theta=camGoal.theta+Math.atan2(Math.sin(theta-camGoal.theta),Math.cos(theta-camGoal.theta)); theta+=(camGoal.theta-theta)*0.08; phi+=(camGoal.phi-phi)*0.08; dist+=(camGoal.dist-dist)*0.08; if(Math.abs(camGoal.theta-theta)<1e-3&&Math.abs(camGoal.phi-phi)<1e-3) camGoal=null; }
@@ -1982,7 +1982,8 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
   if(L && !L.bench && LV.actors.you && !(cut && cut.stage<2)){ const q=Math.min(1,dt*2.5), me=LV.actors.you;
     if(dlgOpen && talkWho){ const a=LV.actors[talkWho]||me; if(!talkCam) talkCam={t:[target.x,target.y,target.z], dist, free:false};          // 講話：鏡頭移到說話的人（偏向他，你也在畫面裡），拉近一點
       if(!talkCam.free){ const fx = a===me ? me.x : a.x*0.7+me.x*0.3, fz = a===me ? me.z : a.z*0.7+me.z*0.3; target.x+=(fx-target.x)*q; target.z+=(fz-target.z)*q; target.y+=(gyAt(a.x,a.z)+1.2-target.y)*q; dist+=(Math.min(talkCam.dist,7)-dist)*q; } }
-    else if(talkCam && !dlgOpen){ const k=talkCam, keepD = k.zoomed || !!camGoal; target.x+=(k.t[0]-target.x)*q; target.y+=(k.t[1]-target.y)*q; target.z+=(k.t[2]-target.z)*q; if(!keepD) dist+=(k.dist-dist)*q;   // 講完：畫面一定移回原本看的地方（講話時你動過鏡頭也一樣，不然畫面會停在說話的人那邊回不來）；遠近也還原，除非你自己縮放過，或有別的鏡頭指令
+    else if(talkCam && !dlgOpen){ const k=talkCam, keepD = k.zoomed || !!camGoal; if(TOUCH){ k.t[0]=me.x; k.t[2]=me.z; }   // 手機：講完不是回到原本的地方，是回到你身上（你可能已經走開了）
+      target.x+=(k.t[0]-target.x)*q; target.y+=(k.t[1]-target.y)*q; target.z+=(k.t[2]-target.z)*q; if(!keepD) dist+=(k.dist-dist)*q;   // 講完：畫面一定移回原本看的地方（講話時你動過鏡頭也一樣，不然畫面會停在說話的人那邊回不來）；遠近也還原，除非你自己縮放過，或有別的鏡頭指令
       if(Math.hypot(target.x-k.t[0],target.z-k.t[2])<0.03 && (keepD || Math.abs(dist-k.dist)<0.03)) talkCam=null; } }
   if(L && !L.bench){ const p=LV.actors.you;
     const kw=keys.w||keys.arrowup, ks=keys.s||keys.arrowdown, kd=keys.d||keys.arrowright, ka=keys.a||keys.arrowleft, jm=Math.hypot(joy.x,joy.y), jOn=jm>0.18;   // 搖桿推超過一點點才算
@@ -1992,8 +1993,9 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
       if(jOn){ fx+=cs*joy.x+sn*joy.y; fz+=-sn*joy.x+cs*joy.y; }   /* 搖桿：往上推＝往前（離開鏡頭），往右推＝往右 */
       const m=Math.hypot(fx,fz); if(m>0){ p.dest=clampXZ(p.x+fx/m*0.5, p.z+fz/m*0.5, p); p.onArrive=null; lastAct=now; } }
     Object.values(LV.actors).forEach(a=>{ if(a.who==='you' && dlgOpen) { const d=a.dest; a.dest=null; stepActor(a,dt,t); a.dest=d; } else stepActor(a,dt,t); });
-    const idleFollow = TOUCH && performance.now()-userCamT>1500;   /* 手機：停下來 1.5 秒後，鏡頭也慢慢回到角色身上（像手遊） */
-    if(p && (p.dest || idleFollow) && p.g.visible && !dlgOpen && !talkCam && !cut && !LV.hoisting && performance.now()-userCamT>350){ const q=Math.min(1,dt*(p.dest?2.4:1.2)); target.x+=(p.x-target.x)*q; target.z+=(p.z-target.z)*q;   /* 鏡頭跟著角色走（你正在拖鏡頭的時候不跟） */
+    /* 手機：鏡頭一直跟著角色（一指轉視角、兩指縮放都是繞著角色轉，不會把角色甩出畫面）；電腦：角色在走才跟，你正在拖鏡頭的時候不跟 */
+    if(p && (p.dest || TOUCH) && p.g.visible && !dlgOpen && !(talkCam && !TOUCH) && !(cut && cut.stage<2) && !LV.hoisting && (TOUCH || performance.now()-userCamT>350)){   /* 進場座駕停在場邊時 cut 還在（stage 2），那時要照樣跟 */ const q=Math.min(1,dt*(p.dest?2.4:1.2)); target.x+=(p.x-target.x)*q; target.z+=(p.z-target.z)*q;   /* 鏡頭跟著角色走（你正在拖鏡頭的時候不跟） */
+      if(TOUCH){ const ex=target.x-p.x, ez=target.z-p.z, e=Math.hypot(ex,ez), lim=1.2; if(e>lim){ target.x=p.x+ex/e*lim; target.z=p.z+ez/e*lim; } }   /* 手機：畫面中心最多落後角色 1.2 公尺，跑再快也不會跑出畫面 */
       if(LV.room){ const R=LV.room; target.x=Math.min(R.x1-1.3,Math.max(R.x0+1.3,target.x)); target.z=Math.min(R.z1-1.3,Math.max(R.z0+1.3,target.z)); } }
     if(cut) stepCut(dt);
     if(cut && cut.stage<2) placeBubbles(now); else crowd(dt,now);
