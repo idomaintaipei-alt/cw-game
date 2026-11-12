@@ -790,14 +790,14 @@ function siteOffice(){ const cx=L.cx, y0=L.gy, wall=std(0xe9e6dc), dk=std(0x3a43
   S(box(0.8,0.06,1.5, cx+5.8,y0+0.74,4.6, mat.wood)); [[-0.34,-0.68],[0.34,-0.68],[-0.34,0.68],[0.34,0.68]].forEach(([a,b])=>S(box(0.06,0.74,0.06, cx+5.8+a,y0+0.37,4.6+b, dk)));        // 辦公桌、螢幕、椅子
   S(box(0.04,0.4,0.62, cx+6.0,y0+1.08,4.6, dk)); S(box(0.02,0.34,0.56, cx+5.975,y0+1.08,4.6, std(0x7fd0ff,{emissive:0x2a6f9a}))); S(box(0.05,0.12,0.05, cx+6.02,y0+0.83,4.6, dk)); S(box(0.2,0.02,0.24, cx+6.02,y0+0.78,4.6, dk));   /* 螢幕的支架和底座 */
   S(box(0.5,0.08,0.5, cx+5.0,y0+0.48,4.6, std(0x3b6fd0))); S(box(0.08,0.55,0.5, cx+4.76,y0+0.8,4.6, std(0x3b6fd0))); S(cyl(0.035,0.4,'y', cx+5.0,y0+0.24,4.6, dk,8)); S(box(0.56,0.04,0.07, cx+5.0,y0+0.03,4.6, dk)); S(box(0.07,0.04,0.56, cx+5.0,y0+0.03,4.6, dk)); }   /* 椅子的腳和腳座 */
-// 週五的廠房：鋼構（柱、斜梁、屋頂檁條）、地坪；後牆和右側牆已經封好板。前面這道外牆（x -3.4～10.6）是這一關要裝的
+// 週五的廠房：鋼構（柱、斜梁、屋頂檁條）、地坪；後牆和左右兩側的牆已經封好板。前面這道外牆（x -3.4～10.6）是這一關要裝的
 function factory(){ const y0=L.gy, S=m=>{ m.castShadow=false; return stat(m); }, X=[-3.5,-0.1,2.1,4.9,7.7,10.5], st=mat.steelDark, GY=[0.4,1.6,2.8];
   S(box(14.3,0.08,8.2, 3.55,y0+0.04,-4.1, mat.rc));                                                                                   // 地坪
   X.forEach(x=>{ if(x!==-0.1 && x!==2.1) S(box(0.15,3.5,0.15, x,1.5,-0.08, st)); S(box(0.15,3.5,0.15, x,1.5,-8.12, st));               // 前排柱（中間兩支關卡自己有）、後排柱
     [-1,1].forEach(e=>{ const r=box(0.14,0.22,4.25, x,3.92,-4.1-e*2.0, st); r.rotation.x=-e*0.32; S(r); }); });                        // 斜梁：兩邊低、中間屋脊高，下端接在柱頭上
   [-0.5,-2.3,-4.1,-5.9,-7.7].forEach(z=>S(box(14.2,0.1,0.07, 3.5,3.42+0.33*(4.0-Math.abs(z+4.1)),z, mat.steel)));                    // 屋頂檁條
   GY.forEach(y=>{ S(box(3.3,0.15,0.06, -1.85,y,0.03, mat.steel)); S(box(8.4,0.15,0.06, 6.4,y,0.03, mat.steel)); });                   // 這道牆其他跨的檁條
-  S(box(14.2,3.3,0.1, 3.55,1.4,-8.25, mat.face)); S(box(0.1,3.3,8.1, 10.66,1.4,-4.15, mat.face)); }                                  // 後牆、右側牆：已經封好的三明治板
+  S(box(14.2,3.3,0.1, 3.55,1.4,-8.25, mat.face)); [10.66,-3.66].forEach(x=>S(box(0.1,3.3,8.1, x,1.4,-4.15, mat.face))); }             // 後牆、左右兩側的牆：已經封好的三明治板（原本只有右側，左側整面空著）
 // 室內的房間：地板只鋪到牆，四面都有牆；鏡頭永遠留在房間裡面（placeCam 會在碰到牆之前把鏡頭拉近），看不到牆的背面和房間外面
 function room(x0,x1,z0,z1,h,wm,door){ const y0=L.gy, W=x1-x0, D=z1-z0, fg=new THREE.PlaneGeometry(W,D), uv=fg.attributes.uv; for(let i=0;i<uv.count;i++) uv.setXY(i, uv.getX(i)*W/200, uv.getY(i)*D/200);
   const f=new THREE.Mesh(fg, mat.office); f.rotation.x=-Math.PI/2; f.position.set((x0+x1)/2,y0,(z0+z1)/2); f.receiveShadow=true; stat(f);
@@ -1521,7 +1521,7 @@ function makeBike(kind){ const S=BIKES[kind], g=new THREE.Group(), u=g.userData,
     add(cyl(0.012,0.4,'z', -0.34,1.13,0, dk,8)); }                                                                         // 龍頭橫桿                                        // 後扶手
   u.seat={x:0.36*k, y:0.81}; return g; }
 // 同事開的普通車（不放廠牌）：sedan＝銀色轎車、pickup＝白色發財車、hatch＝紅色小車。車頭朝 -x
-function makeCommonCar(kind,col){ const g=new THREE.Group(), gl=std(0x2d4a6e,{emissive:0x0c1826}), dk=std(0x1b1e24), hub=std(0x9aa1a8), add=m=>{ g.add(m); return m; };
+function makeCommonCar(kind,col){ const g=new THREE.Group(), gl=std(0x161d26,{emissive:0x0b1622, roughness:0.25}),   /* 深茶色玻璃：深色、淺色的車身都看得出車窗（原本深藍玻璃配深藍車身就看不見） */ dk=std(0x1b1e24), hub=std(0x9aa1a8), add=m=>{ g.add(m); return m; };
   const wheels=(xs,z,r)=>[[-xs,-z],[-xs,z],[xs,-z],[xs,z]].forEach(([x,zz])=>add(wheel(x,zz,hub,r)));
   if(kind==='pickup'){ const wt=std(col!==undefined?col:0xf2f2ee), W=1.6;                                                                       // 發財車：前面一個方方的駕駛室，後面一個開放的貨斗
     add(box(1.5,1.35,W, -1.45,1.15,0, wt)); add(box(0.04,0.6,W-0.2, -2.21,1.45,0, gl)); [-1,1].forEach(e=>add(box(0.8,0.5,0.03, -1.4,1.45,e*(W/2+0.005), gl)));   // 駕駛室、擋風玻璃、側窗
