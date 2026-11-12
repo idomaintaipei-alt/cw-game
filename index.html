@@ -86,6 +86,7 @@
   #toasts { position:fixed; left:12px; top:140px; z-index:8; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
   .toast { display:flex; align-items:center; gap:10px; background:rgba(16,17,21,.97); border:1px solid #4b4f58; border-radius:44px; padding:7px 20px 7px 7px; min-width:250px; transform:translateX(-130%); transition:transform .4s cubic-bezier(.2,.9,.3,1.1); box-shadow:0 6px 22px rgba(0,0,0,.55); }
   .toast.in { transform:translateX(0); }
+  .toast.plat { border:2px solid #9fe8ff; padding:12px 26px 12px 12px; min-width:300px; box-shadow:0 0 26px rgba(159,232,255,.55), 0 6px 22px rgba(0,0,0,.55); } .toast.plat .cup { transform:scale(1.5); margin:0 8px; } .toast.plat .t1 { color:#9fe8ff; font-size:13px; } .toast.plat .t2 { font-size:19px; }   /* 白金獎盃：框大、會發光 */
   .cup { flex:none; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#23262d; }
   .bronze { color:#d08a45; } .silver { color:#cfd6df; } .gold { color:#ffd166; } .platinum { color:#9fe8ff; }
   .toast .t1 { font-size:11px; color:var(--dim); } .toast .t2 { font-size:15px; font-weight:bold; }
@@ -1469,30 +1470,32 @@ TROPHY['misc.prank']={ name:'手很癢', grade:'bronze', desc:'拿起不是施�
 TROPHY['misc.bat']={ name:'全壘打', grade:'silver', desc:'拿球棒敲同事。任務失敗，警衛已經在樓下' };
 TROPHY['misc.drink']={ name:'上工先來一杯', grade:'silver', desc:'在工地喝保力達 B 套伯朗。任務失敗，酒測沒過' };
 TROPHY['misc.bump']={ name:'借過不會說', grade:'bronze', desc:'第一次撞到同事' };
-TROPHY['misc.bump10']={ name:'人體保齡球', grade:'bronze', desc:'累計撞同事 10 次' };
 TROPHY['misc.fail']={ name:'友軍誤傷', grade:'bronze', desc:'把同事惹到任務失敗' };
 TROPHY['misc.fan']={ name:'學長好', grade:'bronze', desc:'成績好到有小跟班' };
 TROPHY['misc.skin']={ name:'人要衣裝', grade:'bronze', desc:'第一次在置物櫃換造型（自費）' };
 TROPHY['misc.ride']={ name:'殺到工地', grade:'silver', desc:'第一次開車或搭直升機進場' };
 TROPHY['misc.ontime']={ name:'準時下班', grade:'gold', desc:'一天在 90 秒內下班或收工。現實中沒有人見過' };
-TROPHY['plat']={ name:'外牆職人', grade:'platinum', desc:'五天全部過完。恭喜，你正式成為一顆螺絲' };
+TROPHY['plat']={ name:'外牆職人', grade:'platinum', desc:'拿到其他所有獎盃。恭喜，你正式成為一顆螺絲' };
 const GRADE = { bronze:'銅', silver:'銀', gold:'金', platinum:'白金' };
 const CUP = '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M6 3h12v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V18h3v3H8v-3h3v-3.1A5 5 0 0 1 7.3 12H7a4 4 0 0 1-4-4V5h3V3zm0 4H5v1a2 2 0 0 0 1 1.7V7zm12 0v2.7A2 2 0 0 0 19 8V7h-1z"/></svg>';
 let earned = store.get('cwstory_trophies',{});
 [['L5.clash','L5.revise'],['L5.front','L5.cost'],['L5.compare','L5.fab'],['L5.confirm','L5.embed']].forEach(([a,b])=>{ if(earned[a]){ if(!earned[b]) earned[b]=earned[a]; delete earned[a]; store.set('cwstory_trophies',earned); } });   // 週一的五件事換過：舊的獎盃換成對應的新獎盃，不會平白少四個
 const toastQ=[]; let toasting=false, actx=null;
-function chime(grade){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); const notes = grade==='platinum'?[523,659,784,1047]:grade==='gold'?[523,784,1047]:[659,988];
+function chime(grade){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); const notes = grade==='platinum'?[523,659,784,1047,1319,1568]:grade==='gold'?[523,784,1047]:[659,988];
   notes.forEach((f,i)=>{ const o=actx.createOscillator(), g=actx.createGain(); o.type='sine'; o.frequency.value=f; const t=actx.currentTime+i*0.11;
     g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.12,t+0.02); g.gain.exponentialRampToValueAtTime(0.001,t+0.5); o.connect(g).connect(actx.destination); o.start(t); o.stop(t+0.55); }); }catch(e){} }
 function award(id){ if(earned[id]||!TROPHY[id]) return false; earned[id]=Date.now(); store.set('cwstory_trophies',earned); toastQ.push(TROPHY[id]); pumpToast(); trCount();
-  if(id!=='plat' && LEVELS.every(l=>earned[l.id+'#done'])) award('plat'); return true; }
+  if(id!=='plat') checkPlat(); return true; }
+function checkPlat(){ if(!earned.plat && Object.keys(TROPHY).every(k=>k==='plat' || earned[k])) award('plat'); }   // 白金：其他獎盃全部拿到才給（跟 PSN 一樣）
 function pumpToast(){ if(toasting||!toastQ.length) return; toasting=true; const t=toastQ.shift();
   const d=document.createElement('div'); d.className='toast';
   const c=document.createElement('div'); c.className='cup '+t.grade; c.innerHTML=CUP;
   const x=document.createElement('div'); const a=document.createElement('div'); a.className='t1'; a.textContent = t.kind==='skin' ? '解鎖新造型（到置物櫃換）' : `你獲得了${GRADE[t.grade]}獎盃`; if(t.kind==='skin') c.innerHTML=SHIRT; const b=document.createElement('div'); b.className='t2'; b.textContent=t.name; x.append(a,b);
+  const pl=t.grade==='platinum' && t.kind!=='skin'; if(pl){ d.classList.add('plat'); a.textContent='恭喜！你已獲得所有獎盃'; }   // 白金：特別版
   d.append(c,x); $('#toasts').append(d); chime(t.grade);
   requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('in')));
-  setTimeout(()=>d.classList.remove('in'), 2300); setTimeout(()=>{ d.remove(); toasting=false; pumpToast(); }, 2750); }
+  setTimeout(()=>d.classList.remove('in'), pl?4800:2300); setTimeout(()=>{ d.remove(); toasting=false; pumpToast(); }, pl?5250:2750); }
+setTimeout(()=>{ try{ checkPlat(); }catch(e){} }, 1500);   // 開場檢查一次：刪掉「人體保齡球」後，原本只差那一個的人直接拿到白金
 function trCount(){ $('#trCount').textContent = `${Object.keys(earned).filter(k=>TROPHY[k]).length}/${Object.keys(TROPHY).length}`; }
 
 // ===================== 造型（置物櫃）與座駕 =====================
@@ -2458,7 +2461,7 @@ function hurt(cost,a,why){ if(done||failed) return; patience=Math.max(0,patience
 function failMission(a,why){ failed=true; done=true; const p=LV.actors.you; if(p){ p.dest=null; p.onArrive=null; } award('misc.fail');
   setTimeout(()=>{ failSound(); $('#failWhy').textContent=(why==='drink'?'工地禁止飲酒。':'不准騷擾友軍。')+WHY[why]+'人資已收到通知。'; drawFace($('#failFace'), a.who, 'mad');
     $('#failLine').textContent='「'+fill(KICK[a.who]||'學長……為什麼……')+'」'; $('#failWho').textContent='—— '+cname(a.who)+'，'+CAST[a.who].role; $('#fail').style.display='flex'; }, 800); }
-function bump(a){ a.bumps++; bumpTotal++; a.wob=1; lastAct=performance.now(); nextIdle=Math.max(nextIdle, lastAct+8000); award('misc.bump'); if(bumpTotal>=10) award('misc.bump10');
+function bump(a){ a.bumps++; bumpTotal++; a.wob=1; lastAct=performance.now(); nextIdle=Math.max(nextIdle, lastAct+8000); award('misc.bump');
   const me=LV.actors.you, long = me.carry==='upright'||me.carry==='across'||me.carry==='overhead', tier = a.bumps<=1 ? 0 : a.bumps<=3 ? 1 : 2;
   let text=pickOne(BUMP[a.who][tier]), pen='';
   if(long && tier===1 && a.who==='tie') text='料！料會打到人啦！';
