@@ -507,7 +507,7 @@ function bgCrew(list, S){ const ups=[];
     if(w.carry==='broom'){ const br=new THREE.Group(), hl=Math.hypot(0.88,0.9), stk=cyl(0.016,hl,'y', 0,0,0, mat.wood,6); stk.position.set(0,0.56,0.85); stk.rotation.x=-Math.atan2(0.9,0.88); br.add(stk);   // 推式掃把：握把從手拉到前面地上
       br.add(box(0.7,0.06,0.08, 0,0.09,1.33, std(0x2b2f36))); br.add(box(0.68,0.05,0.07, 0,0.035,1.33, std(0x8a6a42))); g.add(br); u.armL.rotation.x=u.armR.rotation.x=-0.8; u.armL.rotation.z=0.12; u.armR.rotation.z=-0.12; }   // 掃把頭、刷毛（貼地）
     if(w.kind==='haul'){ const N=5, dx=w.b.x-w.a.x, dz=w.b.z-w.a.z, L0=Math.hypot(dx,dz), ux=dx/L0, uz=dz/L0, mk=(px,pz)=>{ const arr=[]; for(let k=0;k<N;k++){ const b=box(0.36,0.26,0.3, px,w.y+0.13+k*0.27,pz, mat.crate); b.castShadow=false; S(b); arr.push(b); } return arr; };   // 兩疊箱子，在走路路線的兩端外面
-      w.stA=mk(w.a.x-ux*0.95, w.a.z-uz*0.95); w.stB=mk(w.b.x+ux*0.95, w.b.z+uz*0.95);   /* 箱子離腳 95 公分：蹲下時膝蓋、頭碰不到，手伸出去剛好拿到 */ w.held=box(0.36,0.26,0.3, 0,1.15,0.32, mat.crate); g.add(w.held); w.N=N; w.L0=L0; }
+      w.stA=mk(w.a.x-ux*1.05, w.a.z-uz*1.05); w.stB=mk(w.b.x+ux*1.05, w.b.z+uz*1.05);   /* 箱子離腳 95 公分：蹲下時膝蓋、頭碰不到，手伸出去剛好拿到 */ w.held=box(0.36,0.26,0.3, 0,1.15,0.32, mat.crate); g.add(w.held); w.N=N; w.L0=L0; }
     if(w.kind==='write'){ const cb=new THREE.Group(); cb.add(box(0.24,0.32,0.02,0,0,0,mat.dark)); cb.add(box(0.2,0.27,0.006,0,-0.01,0.013,mat.white)); cb.position.set(0.05,-0.28,0.1); cb.rotation.x=-1.25; u.armL.userData.elbow.add(cb); u.armL.rotation.x=-1.15; u.armL.rotation.z=0.3; }
     g.userData.crew=w; S(g); const len = w.b ? Math.hypot(w.b.x-w.a.x, w.b.z-w.a.z) : 0;   // crew＝背景工人（給自動檢查找）
     ups.push(t=>{ const tt=t+ph;
@@ -520,7 +520,7 @@ function bgCrew(list, S){ const ups=[];
         else if(ph<BT+WT){ const q=(ph-BT)/WT; x=P.x+(Q.x-P.x)*q; z=P.z+(Q.z-P.z)*q; nP--; hold=true; face=Math.atan2(Q.x-P.x,Q.z-P.z); }                     // 抱著走過去
         else if(ph<2*BT+WT){ const q=(ph-BT-WT)/BT; x=Q.x; z=Q.z; bend=Math.sin(Math.PI*q); nP--; if(q>0.5) nQ++; else hold=true; face=Math.atan2(Q.x-P.x,Q.z-P.z); }   // 在 Q 彎腰放下
         else { const q=(ph-2*BT-WT)/WT; x=Q.x+(P.x-Q.x)*q; z=Q.z+(P.z-Q.z)*q; nP--; nQ++; face=Math.atan2(P.x-Q.x,P.z-Q.z); }                                  // 空手走回來
-        sP.forEach((b,i)=>b.visible=i<nP); sQ.forEach((b,i)=>b.visible=i<nQ); w.held.visible=hold; g.position.x=x; g.position.z=z; g.rotation.y=face; g.rotation.x=bend*0.3; g.position.y=w.y;   // 蹲下去拿、放：屁股往下、上身稍微前傾
+        sP.forEach((b,i)=>b.visible=i<nP); sQ.forEach((b,i)=>b.visible=i<nQ); w.held.visible=hold; g.position.x=x; g.position.z=z; g.rotation.y=face; g.rotation.x=bend*0.15; g.position.y=w.y;   /* 美術版頭大：上身少前傾一點，頭才不會撞進箱子 */   // 蹲下去拿、放：屁股往下、上身稍微前傾
         const walking = bend===0, sw=walking?Math.sin(tt*8)*0.6:0; u.legL.rotation.x=sw-1.85*bend; u.legR.rotation.x=-sw-1.85*bend; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=2.25*bend; if(l.userData.ankle) l.userData.ankle.rotation.x=-0.7*bend; }); if(bend>0) g.position.y+=w.y-footLow(g);   /* 膝蓋彎；量鞋底，剛好踩在地上 */ if(hold){ u.armL.rotation.x=u.armR.rotation.x=-1.25; } else { u.armL.rotation.x = bend ? -1.1*bend : -sw*0.5; u.armR.rotation.x = bend ? -1.1*bend : sw*0.5; } }
       else if(w.kind==='walk'){ const q=((tt*(w.carry==='broom'?0.45:0.7)/len)%2+2)%2,   /* 掃地走得慢 */ k=q<1?q:2-q, dir=q<1?1:-1, x=w.a.x+(w.b.x-w.a.x)*k, z=w.a.z+(w.b.z-w.a.z)*k; g.position.x=x; g.position.z=z; g.rotation.y=Math.atan2((w.b.x-w.a.x)*dir,(w.b.z-w.a.z)*dir);
         const sw=Math.sin(tt*8)*0.6; u.legL.rotation.x=sw; u.legR.rotation.x=-sw; if(!w.carry){ u.armL.rotation.x=-sw*0.5; u.armR.rotation.x=sw*0.5; } } }); });
@@ -588,7 +588,7 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
     bgCrew([ {kind:'tie', x:cx-16.2, y:top, z:-6.0, ry:0.4, vest:0x7b8794}, {kind:'tie', x:cx-13.0, y:top, z:-9.5, ry:2.0},
       {kind:'walk', carry:'rebar', a:{x:cx-16.4,z:-3.4}, b:{x:cx-12.9,z:-3.4}, y:top, vest:0xd9e021},   /* 從鋼筋那捆扛到鋼筋網上，離邊緣至少 1.5 公尺 */
       {kind:'hammer', x:cx-12.0, y:fl(NF-2), z:-2.4, ry:0, vest:0x7b8794},
-      {kind:'walk', a:{x:cx-15.8,z:-1.43}, b:{x:cx-12.2,z:-1.43}, y:sb(3), vest:0xff7a1a},   /* 鷹架踏板上走：不走到卸料平台（x -18.6～-16.2）底下，頭才不會撞進平台的鋼梁 */
+      {kind:'walk', a:{x:cx-14.25,z:-1.43}, b:{x:cx-12.2,z:-1.43}, y:sb(3), vest:0xff7a1a},   /* 鷹架踏板上走：不走到卸料平台（x -18.6～-16.2）底下，頭才不會撞進平台的鋼梁 */
       {kind:'write', x:cx-10.68, y:sb(2), z:-6.0, ry:0, vest:0xd9e021},   /* 側面鷹架上：沿著踏板站著檢查（不面向安全網，手不會穿出去） */
       {kind:'haul', a:{x:cx-15.6,z:1.6}, b:{x:cx-12.4,z:1.6}, y:y0, vest:0x7b8794} ], S); }   /* 搬貨：一箱一箱從左邊那疊搬到右邊那疊 */
   S(box(1.9,0.2,1.9, cx-12.2,y0+0.1,0.2, mat.rc));
