@@ -553,7 +553,15 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
       for(let x=cx-18.3; x<=cx-11.3+1e-6; x+=1.0) if(!near(x,z)){ const h=top-0.21-lo; NS(cyl(0.024,h,'y', x,lo+h/2,z, mat.steelDark,6)); NS(box(0.14,0.01,0.14, x,lo+0.005,z, mat.steelDark)); } } }   // 鋼管支撐（避開柱子）＋底板
   for(let k=0;k<=4;k++) S(cyl(0.03,TH+1,'y', cx-18.8+k*2.1,y0+(TH+1)/2,-1.2, mat.steelDark,6));
   for(let k=0;k<=5;k++) S(cyl(0.03,TH+1,'y', cx-10.4,y0+(TH+1)/2,-1.6-k*2.1, mat.steelDark,6));
-  for(let k=1;k<=Math.floor(TH/2);k++){ S(cyl(0.03,8.6,'x', cx-14.6,y0+k*2.0,-1.2, mat.steelDark,6)); S(cyl(0.03,10.9,'z', cx-10.4,y0+k*2.0,-6.85, mat.steelDark,6)); }
+  const BRG = hi ? {z0:-7.85, z1:-5.85, k:4} : null;   // 空橋穿過東側鷹架的地方（兩根立桿之間、第 4 層）：那一層的橫桿和踏板斷開
+  const sideZ=(k,f)=>{ if(BRG && k===BRG.k){ f(-12.3,BRG.z0); f(BRG.z1,-1.4); } else f(-12.3,-1.4); };
+  for(let k=1;k<=Math.floor(TH/2);k++){ S(cyl(0.03,8.6,'x', cx-14.6,y0+k*2.0,-1.2, mat.steelDark,6)); sideZ(k,(za,zb)=>S(cyl(0.03,zb-za,'z', cx-10.4,y0+k*2.0,(za+zb)/2, mat.steelDark,6))); }
+  if(BRG){ const xa=cx-10.8, xb=-3.67, L=xb-xa, xc=(xa+xb)/2, zc=(BRG.z0+BRG.z1)/2, yd=y0+7.2, W=1.8, st=std(0x59616c), wh=std(0xe9edf0), gl=std(0x9fd0f0,{transparent:true, opacity:0.45, depthWrite:false});   // 空橋：大樓三樓接到隔壁棟
+    S(box(L,0.25,W, xc,yd-0.125,zc, st)); S(box(L,0.02,W-0.1, xc,yd+0.01,zc, std(0xb8bcc2)));                                                    // 橋面（鋼構＋地坪）
+    S(box(L+0.1,0.14,W+0.1, xc,yd+2.48,zc, wh)); [-1,1].forEach(e=>S(box(L,2.3,0.03, xc,yd+1.2,zc+e*(W/2-0.03), gl)));                         // 屋頂、兩側玻璃
+    [-1,1].forEach(e=>{ const z=zc+e*(W/2+0.06); [yd-0.18, yd+2.35].forEach(y=>S(box(L,0.12,0.1, xc,y,z, st)));                              // 外側鋼桁架：上下弦
+      const n=Math.round(L/1.2); for(let i=0;i<=n;i++){ const x=xa+L*i/n; S(box(0.1,2.53,0.1, x,yd+1.085,z, st)); if(i<n){ const dx=L/n, dg=box(Math.hypot(dx,2.53),0.07,0.07, x+dx/2,yd+1.085,z, st); dg.rotation.z=(i%2?1:-1)*Math.atan2(2.53,dx); S(dg); } } });   // 直桿、斜桿
+    S(board(['空橋','（還沒開放）'], xc,yd+1.5,zc+W/2+0.13,0,1.1,'#1d4f86','#ffffff')); }                                                   // 橋上的牌子
   const netF=new THREE.Mesh(new THREE.PlaneGeometry(8.7,TH+0.6), mat.net); netF.position.set(cx-14.6,y0+(TH+0.6)/2,-1.1); stat(netF);
   const netS=new THREE.Mesh(new THREE.PlaneGeometry(11.0,TH+0.6), mat.net); netS.rotation.y=Math.PI/2; netS.position.set(cx-10.3,y0+(TH+0.6)/2,-6.85); stat(netS);
   // 西面、北面也搭鷹架＋掛網（四面都要有防護）
@@ -563,7 +571,7 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
     S(box(0.55,0.05,10.6, cx-19.08,y0+k*2.0-0.07,-7.0, mat.wood)); S(box(8.0,0.05,0.55, cx-14.8,y0+k*2.0-0.085,-12.58, mat.wood)); }   /* 踏板：四面各差 0.5～1 公分高，轉角不疊在同一個高度 */
   [[11.85,-7.025,'x',cx-19.47],[9.2,cx-14.9,'z',-12.95],[0.52,cx-19.21,'z',-1.1],[0.6,-12.65,'x',cx-10.3]].forEach(([w,c,ax,f])=>{ const n=new THREE.Mesh(new THREE.PlaneGeometry(w,TH+0.6), mat.net);   // 西面、北面的網，再補兩個轉角
     if(ax==='x'){ n.rotation.y=Math.PI/2; n.position.set(f,y0+(TH+0.6)/2,c); } else n.position.set(c,y0+(TH+0.6)/2,f); stat(n); });
-  for(let k=1;k<=Math.floor(TH/2);k++){ S(box(8.6,0.05,0.55, cx-14.6,y0+k*2.0-0.06,-1.48, mat.wood)); S(box(0.55,0.05,10.9, cx-10.68,y0+k*2.0-0.075,-6.85, mat.wood)); }   /* 側面的踏板低 1.5 公分，轉角跟正面的踏板不會疊在同一個高度 */                                   // 鷹架上每一層的施工平台（踏板）
+  for(let k=1;k<=Math.floor(TH/2);k++){ S(box(8.6,0.05,0.55, cx-14.6,y0+k*2.0-0.06,-1.48, mat.wood)); sideZ(k,(za,zb)=>S(box(0.55,0.05,zb-za, cx-10.68,y0+k*2.0-0.075,(za+zb)/2, mat.wood))); }   /* 側面的踏板低 1.5 公分，轉角跟正面的踏板不會疊在同一個高度 */                                   // 鷹架上每一層的施工平台（踏板）
   const rod=(p0,p1,r,m)=>{ const d=new THREE.Vector3().subVectors(p1,p0), o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),6), m); o.position.copy(p0).add(p1).multiplyScalar(0.5); o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), d.normalize()); S(o); };   // 兩點之間拉一根桿子或鋼索
   const pf=std(0xf08a1c), plate=std(0x8e959c);
   [[-17.4,2],[-15.4,4],[-17.2,5]].filter(([a,k])=>k<=NF).forEach(([a,k])=>{ const x=cx+a, yy=y0+H*k, zb=-1.7, zf=0.3, W=2.2, xs=[x-W/2+0.04, x+W/2-0.04];   // 外挑的卸料平台：從樓板邊（z=-1.7）伸出去 2 公尺
@@ -1227,7 +1235,8 @@ const LEVELS = [
       gun.add(cyl(0.006,0.09,'z',0,0,0.045,wt,10)); gun.add(cyl(0.012,0.02,'z',0,0,0.1,wt,10)); [-1,1].forEach(e=>gun.add(cyl(0.02,0.19,'z',e*0.022,0,0.205,std(0xe6e2d8),14)));   // 混合管、管座、雙管藥劑
       gun.add(box(0.075,0.012,0.22,0,0.028,0.205,gy)); gun.add(box(0.075,0.06,0.012,0,0,0.104,gy)); gun.add(box(0.075,0.06,0.02,0,0,0.315,gy)); gun.add(cyl(0.004,0.12,'z',0,0.015,0.385,gy,6));   // 槍架、前後板、推桿
       const hd=box(0.028,0.11,0.035,0,-0.075,0.3,dk); hd.rotation.x=0.2; gun.add(hd); const tr=box(0.01,0.07,0.018,0,-0.055,0.262,dk); tr.rotation.x=0.2; gun.add(tr);   // 握把、扳機
-      gun.add(ball(0.042,glove,0,-0.075,0.318,1.1,1.4,1.0)); const sl=cyl(0.038,0.32,'y',0.02,-0.25,0.38,slv,12); sl.rotation.x=-0.45; gun.add(sl);   // 戴手套的手、往畫面外的袖子
+      gun.add(ball(0.042,glove,0,-0.075,0.318,1.1,1.4,1.0)); const sl=cyl(0.038,0.32,'y',0.02,-0.25,0.38,slv,12); sl.rotation.x=-0.45; sl.visible=false; gun.add(sl);   /* 注膠（槍水平）：袖子往下 */
+      { const dv=new THREE.Vector3(0.05,0.55,0.85).normalize(), sv=cyl(0.038,0.32,'y',0,0,0,slv,12); sv.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dv); sv.position.set(dv.x*0.19,-0.075+dv.y*0.19,0.318+dv.z*0.19); gun.add(sv); LV.refs.slV=sv; } LV.refs.slH=sl;   /* 試打（槍朝下）：袖子從手往上、往後，接到站在樓板上的人（不跟著槍轉成橫的） */   // 戴手套的手、往畫面外的袖子
       gun.position.set(0.395,0.127,-0.2); gun.rotation.x=-Math.PI/2; gun.visible=false;   /* 試打：槍口朝下打在紙板上 */ gun.traverse(o=>{ o.castShadow=false; }); stat(gun); LV.refs.gun=gun; }
     LV.refs.resin = add('inject', cyl(0.0062,0.05,'z', 0,0,-0.05, mat.resin));
     add('rod', cyl(0.005,0.13,'z', 0,0,-0.005, mat.steel));
@@ -1251,7 +1260,7 @@ const LEVELS = [
   outroBad:[ {who:'lin', t:'錨栓是植好了，異常單 {N} 張。明天拉拔，你站最前面看。'}, {who:'lin', t:'還有，這種補救的工作，最好一次都不要有。'} ],
   onPlace:{ drill(){ LV.refs.marks.forEach(m=>m.visible=false); },                                                    // 用完就收起來：畫面上只留這一步要看的
     premix(){ LV.refs.gun.visible=true; LV.parts.clean.meshes.forEach(m=>m.visible=false); },                                         // 刷子收起來、藥劑槍出來試打
-    inject(){ LV.refs.gun.position.set(0,0,0.018); LV.refs.gun.rotation.x=0; LV.parts.premix.meshes.forEach(m=>m.visible=false); },   // 紙板收起來、槍移到孔口
+    inject(){ LV.refs.gun.position.set(0,0,0.018); LV.refs.gun.rotation.x=0; LV.refs.slV.visible=false; LV.refs.slH.visible=true; LV.parts.premix.meshes.forEach(m=>m.visible=false); },   // 紙板收起來、槍移到孔口
     rod(){ LV.refs.gun.visible=false; },
     cure(){ LV.refs.resin.material=mat.resinCured; LV.refs.ring.material=mat.resinCured; },
     plate(){ LV.parts.cure.meshes.forEach(m=>m.visible=false); } },
