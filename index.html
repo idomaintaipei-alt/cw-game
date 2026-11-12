@@ -1908,13 +1908,14 @@ setInterval(hudTick,120);
 // 擋住角色的東西變半透明：從鏡頭往角色的胸口和腳邊各拉一條線，線上的東西（人、地板、本來就透明的不算）換成半透明的材質；不擋了就換回來
 var occRay=new THREE.Raycaster(), occOn=new Map();   // var：換關卡的程式可能比這裡先跑
 const fadeCache=new WeakMap(); function fadeMat(m){ let f=fadeCache.get(m); if(!f){ f=m.clone(); f.transparent=true; f.opacity=Math.min(m.opacity,0.22); f.depthWrite=false; fadeCache.set(m,f); } return f; }   // 同一種材質只做一份半透明的
-function occTick(){ if(!L || L.bench || !LV.actors.you || !LV.group) return; const me=LV.actors.you, skip=new Set(); Object.values(LV.actors).forEach(a=>a.g.traverse(o=>skip.add(o)));
+function occRestore(){ occOn.forEach((v,o)=>{ o.material=v.m; }); occOn.clear(); }
+function occTick(){ if(!L || L.bench || !LV.actors.you || !LV.group) return; if(LV.hoisting || (cut && cut.stage<2)){ if(occOn.size) occRestore(); return; }   /* 搭電梯、進場過場的時候不做（鏡頭貼著電梯走，電梯會一下透明一下不透明） */ const me=LV.actors.you, skip=new Set(); Object.values(LV.actors).forEach(a=>a.g.traverse(o=>skip.add(o)));
   const hit=new Set(), cp=camera.position;
   if(me.g.visible && !L.office) for(const hy of [1.1,0.25]){ const tp=new THREE.Vector3(me.x, me.g.position.y+hy, me.z), dir=tp.clone().sub(cp), len=dir.length(); occRay.set(cp, dir.normalize()); occRay.camera=camera; occRay.near=0.2; occRay.far=len-0.35;   /* camera：線碰到名牌（sprite）時要用 */
-    occRay.intersectObjects(LV.group.children,true).forEach(h=>{ const o=h.object; if(!o.isMesh || skip.has(o) || o.userData.blob || o===spot) return; const m0=occOn.has(o)?occOn.get(o):o.material; if(Array.isArray(m0)) return; if(m0.transparent && !occOn.has(o)) return;
+    occRay.intersectObjects(LV.group.children,true).forEach(h=>{ const o=h.object; if(!o.isMesh || skip.has(o) || o.userData.blob || o===spot) return; const m0=occOn.has(o)?occOn.get(o).m:o.material; if(Array.isArray(m0)) return; if(m0.transparent && !occOn.has(o)) return;
       let q=o, v=true; while(q){ if(!q.visible) v=false; q=q.parent; } if(v) hit.add(o); }); }
-  occOn.forEach((m,o)=>{ if(!hit.has(o)){ o.material=m; occOn.delete(o); } });                                         // 不擋了：換回原本的材質
-  hit.forEach(o=>{ if(!occOn.has(o)){ occOn.set(o,o.material); o.material=fadeMat(o.material); } }); }                  // 擋住了：換成半透明
+  const now=performance.now(); occOn.forEach((v,o)=>{ if(hit.has(o)) v.t=now; else if(now-v.t>700){ o.material=v.m; occOn.delete(o); } });   /* 不擋了 0.7 秒才換回來：不會一閃一閃 */                                         // 不擋了：換回原本的材質
+  hit.forEach(o=>{ if(!occOn.has(o)){ occOn.set(o,{m:o.material, t:now}); o.material=fadeMat(o.material); } }); }                  // 擋住了：換成半透明
 setInterval(occTick,100);
 var helpT=null; function touchHud(){ if(!TOUCH) return; const on = !!(L && !L.bench); $('#joy').style.display = on ? 'block' : 'none'; document.body.classList.toggle('joyon', on);   // 手機：要走路的關卡才有搖桿
   const h=$('#help'); h.classList.remove('fadeout'); clearTimeout(helpT); helpT=setTimeout(()=>h.classList.add('fadeout'), 10000); }   // 說明開場顯示 10 秒，之後收起來，不擋畫面                                                                  // 手機：放大、縮小、回正三顆按鈕
