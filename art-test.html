@@ -1482,7 +1482,10 @@ function makeCommonCar(kind,col){ const g=new THREE.Group(), gl=std(0x2d4a6e,{em
   const sedan = kind==='sedan', paint=std(col!==undefined?col:sedan?0xb9bec4:0xa8242c), W=sedan?1.75:1.68, L2=sedan?2.25:1.9;
   add(extr(sedan ? [[-L2,0.35],[-L2-0.05,0.7],['q',-L2,0.86,-1.6,0.88],[-0.85,0.92],['q',-0.45,1.36,0.3,1.38],[0.95,1.36],['q',1.6,1.3,1.95,0.95],[L2,0.9],[L2,0.35]]
                  : [[-L2,0.35],[-L2-0.05,0.68],['q',-L2,0.85,-1.4,0.9],[-0.8,0.98],['q',-0.45,1.42,0.2,1.45],[1.3,1.43],['q',1.75,1.4,L2,1.0],[L2,0.35]], W, paint, 0.06));   // 車身的側面輪廓（轎車有車尾行李箱、小車是掀背）
-  add(extr(sedan ? [[-0.8,0.95],['q',-0.42,1.32,0.3,1.34],[0.9,1.32],['q',1.5,1.27,1.8,0.96]] : [[-0.75,1.0],['q',-0.42,1.38,0.2,1.41],[1.25,1.39],['q',1.68,1.36,1.85,1.03]], W-0.12, gl, 0.03));   // 車窗
+  add(extr(sedan ? [[-0.8,0.95],['q',-0.42,1.32,0.3,1.34],[0.9,1.32],['q',1.5,1.27,1.8,0.96]] : [[-0.75,1.0],['q',-0.42,1.38,0.2,1.41],[1.25,1.39],['q',1.68,1.36,1.85,1.03]], W+0.03, gl, 0.01));   // 側窗：比車身寬一點點，從側面看得到
+  const pane=(x0,y0,x1,y1,w)=>{ const L=Math.hypot(x1-x0,y1-y0), a=Math.atan2(y1-y0,x1-x0), nx=-Math.sin(a), ny=Math.cos(a), m=box(L,0.02,w, (x0+x1)/2+nx*0.035,(y0+y1)/2+ny*0.035,0, gl); m.rotation.z=a; add(m); };   // 斜的玻璃：貼在車身斜面外面
+  if(sedan){ pane(-0.86,0.95,-0.3,1.31,W-0.2); pane(1.42,1.31,1.86,1.0,W-0.24); } else { pane(-0.8,1.0,-0.3,1.37,W-0.2); pane(1.32,1.42,1.82,1.06,W-0.24); }   // 前擋風玻璃、後擋玻璃
+  [-1,1].forEach(e=>add(box(0.1,0.36,0.03, sedan?0.3:0.25, 1.15, e*(W/2+0.02), paint)));   // 中間的車柱（把側窗分成前後兩片）
   add(box(2*L2-0.2,0.08,W+0.02, 0,0.45,0, dk));                                                                             // 下面一圈黑色飾條
   [-1,1].forEach(e=>{ add(box(0.06,0.1,0.32, -L2-0.02,0.72,e*(W/2-0.25), mat.lamp)); add(box(0.06,0.1,0.3, L2+0.01,0.82,e*(W/2-0.22), mat.red)); add(box(0.12,0.06,0.04, -0.4,1.0,e*(W/2+0.03), dk)); });   // 大燈、尾燈、後照鏡
   wheels(sedan?1.35:1.2, W/2-0.12, 0.31); return g; }
@@ -1585,7 +1588,7 @@ function stepPour(c,dt){ c.t+=dt; const t=c.t, A1=1.5, A2=1.0, P=5.5, E1=0.8, E2
 function stepCut(dt){ if(cut.kind==='pour'){ stepPour(cut,dt); return; }
   if(cut.kind==='walk'){ const c=cut; c.t+=dt; if(!LV.hoisting || c.t>45){ LV.hoisting=false; cut=null; if(c.then) c.then(); } return; }   // 走上樓的這一段：鏡頭跟著人
   const c=cut, g=c.g, u=g.userData, heli=c.kind==='heli', dur=heli?3.4:2.6; c.t+=dt; const k=Math.min(1,c.t/dur);
-  if(c.stage<2 && !LV.hoisting){ const tx = c.stage===0 ? (heli || L.yard!==undefined ? L.cx-8 : L.cx-4.5) : L.yard!==undefined ? (LV.actors.you.x+L.cx)/2 : L.cx, ty = (c.stage===0 ? yardY() : L.gy)+(c.stage===0 && heli ? 3.2 : 1.3), q=Math.min(1,dt*3); target.x+=(tx-target.x)*q; target.y+=(ty-target.y)*q; }
+  if(c.stage<2 && !LV.hoisting){ const follow = c.stage===0 && !heli, tx = follow ? g.position.x : c.stage===0 ? L.cx-8 : (LV.actors.you.x+L.cx)/2, ty = (c.stage===0 ? yardY() : L.gy)+(c.stage===0 && heli ? 3.2 : 1.3), q=Math.min(1,dt*3); target.x+=(tx-target.x)*q; target.y+=(ty-target.y)*q; if(follow) target.z+=(g.position.z-target.z)*q; else if(c.stage===1) target.z+=(LV.actors.you.z-target.z)*q; }   /* 開車、騎車：鏡頭跟著車子走（停車格在北門附近，不跟會跑出畫面） */
   if(heli){ const e=1-Math.pow(1-k,2), sp = c.stage ? Math.max(2,30-(c.t-dur)*6) : 34; g.position.set(L.cx-13.5, yardY()+(1-e)*14, 7.5); /* 降在車道旁邊的空地，不停在路中間 */ g.rotation.y=2.75+(1-e)*2.2; g.rotation.z = c.stage ? 0 : Math.sin(c.t*2.2)*0.05;
     u.rotor.rotation.y+=dt*sp; u.tail.rotation.z+=dt*30; u.disc.material.opacity=Math.min(0.16, sp/34*0.16)*(sp>8?1:0); u.strobe.visible=(c.t*2.5)%1<0.2; }
   else { const e=1-Math.pow(1-k,3); const ps=parkSpot(), P=q=>{ const v=Math.max(0,Math.min(1,(q-0.82)/0.18)); return {x:L.cx-6.4-ps.turn*v*v*(3-2*v), z:ps.z-(1-q)*(ps.z-ps.z0)}; }   /* 沿著便道開進來，最後一段往左彎進停車區的空格 */, pa=P(e), pb=P(Math.min(1,e+0.004));   /* 路線：最後一段往左彎進車道旁的空地 */
