@@ -470,7 +470,7 @@ function bgCrew(list, S){ const ups=[];
     if(w.carry==='rebar'){ const r=new THREE.Group(); for(let k=0;k<4;k++) r.add(cyl(0.018,2.4,'z', 0.2+(k%2)*0.03,1.48+Math.floor(k/2)*0.03,0.2, mat.rebar,6)); g.add(r); u.armR.rotation.x=-2.7; }
     if(w.carry==='box'){ g.add(box(0.36,0.26,0.3, 0,1.15,0.32, mat.crate)); u.armL.rotation.x=u.armR.rotation.x=-1.25; }
     if(w.kind==='write'){ const cb=new THREE.Group(); cb.add(box(0.24,0.32,0.02,0,0,0,mat.dark)); cb.add(box(0.2,0.27,0.006,0,-0.01,0.013,mat.white)); cb.position.set(0.05,-0.28,0.1); cb.rotation.x=-1.25; u.armL.userData.elbow.add(cb); u.armL.rotation.x=-1.15; u.armL.rotation.z=0.3; }
-    S(g); const len = w.b ? Math.hypot(w.b.x-w.a.x, w.b.z-w.a.z) : 0;
+    g.userData.crew=w; S(g); const len = w.b ? Math.hypot(w.b.x-w.a.x, w.b.z-w.a.z) : 0;   // crew＝背景工人（給自動檢查找）
     ups.push(t=>{ const tt=t+ph;
       if(w.kind==='tie'){ g.rotation.x=0.8; u.armL.rotation.x=-0.7+Math.sin(tt*9)*0.18; u.armR.rotation.x=-0.7+Math.sin(tt*9+1.4)*0.18; u.legL.rotation.x=u.legR.rotation.x=-0.25; }
       else if(w.kind==='hammer'){ g.rotation.x=0.18; const sw=Math.sin(tt*6); u.armR.rotation.x = sw>0 ? -2.3+sw*1.6 : -2.3; u.armL.rotation.x=-0.9; }
@@ -513,7 +513,7 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
     bgCrew([ {kind:'tie', x:cx-16.2, y:top, z:-6.0, ry:0.4, vest:0x7b8794}, {kind:'tie', x:cx-13.0, y:top, z:-9.5, ry:2.0},
       {kind:'walk', carry:'rebar', a:{x:cx-17.6+0.8,z:-4.0}, b:{x:cx-11.0,z:-4.0}, y:top, vest:0xd9e021},
       {kind:'hammer', x:cx-12.0, y:fl(NF-2), z:-2.4, ry:0, vest:0x7b8794},
-      {kind:'walk', a:{x:cx-18.3,z:-1.48}, b:{x:cx-11.3,z:-1.48}, y:sb(3), vest:0xff7a1a},
+      {kind:'walk', a:{x:cx-15.8,z:-1.48}, b:{x:cx-11.3,z:-1.48}, y:sb(3), vest:0xff7a1a},   /* 鷹架踏板上走：不走到卸料平台（x -18.6～-16.2）底下，頭才不會撞進平台的鋼梁 */
       {kind:'hammer', x:cx-10.68, y:sb(2), z:-6.0, ry:Math.PI/2, vest:0xd9e021},
       {kind:'walk', carry:'box', a:{x:cx-16.5,z:1.6}, b:{x:cx-13.0,z:1.6}, y:y0, vest:0x7b8794} ], S); }
   S(box(1.9,0.2,1.9, cx-12.2,y0+0.1,0.2, mat.rc)); for(let k=1;k<=NF;k++) S(box(0.9,0.06,0.5, cx-12.2,y0+H*k,-0.95, mat.steelDark));
@@ -728,7 +728,7 @@ function plantWorld(){ const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShad
   wall(cx-24,-22, cx-9.3,-22); wall(cx-4.7,-22, cx+27,-22); wall(cx-24,-22, cx-24,17); wall(cx+27,-22, cx+27,17); wall(cx-24,17, cx-9.3,17); wall(cx-4.7,17, cx+27,17);                // 圍牆；車道頭尾留門
   standBoard(['廠區限速 10 公里','（堆高機例外）'], cx+6.2,3.4,-0.7,2.3,'#f2cf1d','#1b1e24');
   bgCrew([ {kind:'walk', carry:'box', a:{x:cx+10.6,z:6.4}, b:{x:cx+14.6,z:6.4}, y:y0, vest:0xff7a1a},   // 廠區的工人：搬貨、在板夾上點數、進出廠房
-    {kind:'write', x:cx+15.2, y:y0, z:-4.2, ry:0.6, vest:0x7b8794}, {kind:'walk', a:{x:cx-20.5,z:0.4}, b:{x:cx-13.5,z:0.4}, y:y0, vest:0xd9e021} ], S);
+    {kind:'write', x:cx+12.6, y:y0, z:-2.5, ry:Math.PI/2, vest:0x7b8794},   /* 站在廠房外面那捆板旁邊點數（原本站進廠房裡面） */ {kind:'walk', a:{x:cx-20.5,z:0.4}, b:{x:cx-13.5,z:0.4}, y:y0, vest:0xd9e021} ], S);
   [[-44,-50,14,12,20],[-20,-56,10,10,28],[2,-52,16,10,15],[24,-58,12,12,24],[48,-44,14,12,19],[58,-10,12,16,22],[-56,-20,12,16,18],[-58,10,14,14,25],[-30,48,16,10,20],[10,52,12,12,26],[40,46,14,12,17]]
     .forEach(([x,z,w,d,h],k)=>{ const b=box(w,h,d, cx+x,y0+h/2,z, mat.far[k%3]); b.receiveShadow=false; S(b); }); }
 // 公安旗的圖案（畫一次，大家共用）
@@ -1749,7 +1749,8 @@ function heliWelcome(){ const E=LV.escort; if(!E || !E.carpet) return; const C=E
 function climbIn(sx,sz,kind){ const me=LV.actors.you, H=LV.hoist; LV.hoisting=true; H.run=false; H.t=0; H.cage.position.y=H.Y; me.liftY=undefined;   // 四樓那一關進場：在地面走到施工電梯，搭上四樓
   me.x = sx===undefined ? L.cx-7.0 : sx; me.z = sz===undefined ? 15.0 : sz; me.g.position.set(me.x, gyAt(me.x,me.z), me.z); me.g.visible=true;   /* 模型也馬上搬過去，不然會在原地閃一格 */                                                      // 沒有座駕：從前面的大門走進來
   const pts=entryPath(kind||'walk').slice(1), go=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go : ()=>{ if(LV.escort){ H.board=true; H.bt=0; } else H.run=true; }; }; go(); }   /* 有小弟：等他們走進電梯再開 */      // 站在樓板上就是樓板的高度
-function clampXZ(x,z,from){ x=Math.min(L.cx+4.2,Math.max(L.cx-4.2,x)); const zmin = L.office ? -2.4 : insideOK() && x>0.05 ? -1.9 : 0.85; z=Math.min(6.6,Math.max(zmin,z));
+function clampXZ(x,z,from){ x=Math.min(L.cx+4.2,Math.max(L.cx-4.2,x)); if(insideOK() && (from ? from.z : z)<0.35) x=Math.max(0.05,x);   /* 人在室內側：往左走到邊就停，不會被丟到牆外（原本會直接穿牆出去） */
+  const zmin = L.office ? -2.4 : insideOK() && x>=0.05 ? -1.9 : 0.85; z=Math.min(6.6,Math.max(zmin,z));
   if(insideOK() && (x<2.75 || x>4.5) && z<0.85 && z>-0.15){                                // 牆的位置不能站，也不能穿過去；要進室內只能繞牆的右端
     if(from && from.x>=2.7 && from.x<=4.55 && from.z<0.85 && from.z>-0.15) x = x<2.75 ? 2.75 : 4.5;              // 鍵盤：人在牆右端的通道裡，往牆走就停在通道邊
     else z = (from ? from.z : z)>0.35 ? 0.85 : -0.15; }                         // 鍵盤：人在哪一側就留在哪一側，沿著牆滑，不會穿過去
