@@ -747,6 +747,19 @@ function seeBox(w,h,d,x,y,z,m,t=0.006){ const g=new THREE.Group(), e=mat.rcEdge;
   [-1,1].forEach(a=>[-1,1].forEach(b=>{ g.add(box(w+t,t,t, 0,a*h/2,b*d/2, e)); g.add(box(t,h+t,t, a*w/2,0,b*d/2, e)); g.add(box(t,t,d+t, a*w/2,b*h/2,0, e)); }));
   g.position.set(x,y,z); return g; }
 function stat(mesh){ (LV.host||LV.group).add(mesh); return mesh; }
+function camGlide(c){ camGoal={theta:c.theta, phi:c.phi, dist:c.dist}; const T=new THREE.Vector3(...c.t), lv=LV; let k=0; LV.fx.push(dt=>{ if(LV!==lv || k>=1) return; k=Math.min(1,k+dt*1.2); target.lerp(T, Math.min(1,dt*4)); if(k>=1) target.copy(T); }); }   // 鏡頭慢慢移到 c（看的點、角度、遠近）
+// 週三的梁柱接頭（單位公尺，孔在原點、往 -z 鑽）：邊梁＋樓板正面在 z=0；左邊一支柱子凸出 5 公分；鑽孔那一塊（x ±0.21、y ±0.15、深 0.32）挖空，放半透明的方塊
+function rcJoint(){ const R=(w,h,d,x,y,z)=>stat(box(w,h,d,x,y,z,mat.rc)), lm=new THREE.LineBasicMaterial({color:0x4a463f}), E=(w,h,d,x,y,z)=>{ const l=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w,h,d)), lm); l.position.set(x,y,z); stat(l); }, X0=-1.5, X1=1.5, YB=-0.6, YT=0.25, WX=0.21, WY=0.15, WD=0.32, BD=0.4;   // E＝外輪廓線（梁是好幾塊拼的，線照整支梁畫，看不到拼縫）
+  R(-WX-X0,YT-YB,BD, (X0-WX)/2,(YT+YB)/2,-BD/2); R(X1-WX,YT-YB,BD, (X1+WX)/2,(YT+YB)/2,-BD/2);                         // 邊梁：洞的左邊、右邊
+  R(2*WX,YT-WY,BD, 0,(YT+WY)/2,-BD/2); R(2*WX,-WY-YB,BD, 0,(YB-WY)/2,-BD/2); R(2*WX,2*WY,BD-WD, 0,0,-(WD+BD)/2);   // 洞的上面、下面、後面
+  R(X1-X0,0.2,0.8, 0,YT-0.1,-BD-0.4); E(X1-X0,YT-YB,BD, 0,(YT+YB)/2,-BD/2); E(X1-X0,0.2,0.8, 0,YT-0.1,-BD-0.4);                                                                               // 樓板（往室內延伸）
+  stat(box(0.5,2.15,0.55, -1.2,-0.375,-0.225, std(0xb8b2a5))); E(0.5,2.15,0.55, -1.2,-0.375,-0.225);                // 柱子顏色深一點，跟梁分得出來                                                               // 柱子：比梁面凸出 5 公分
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>stat(cyl(0.012,0.5,'y', -1.2+a*0.17,0.95,-0.225+b*0.19, mat.rebar,6)));   // 柱頭的鋼筋：上面一層還沒做
+  const emb=(x,z)=>{ stat(box(0.26,0.17,0.012, x,0,z+0.006, mat.anchor)); [[-0.09,-0.05],[0.09,-0.05],[-0.09,0.05],[0.09,0.05]].forEach(([a,b])=>stat(cyl(0.011,0.006,'z', x+a,b,z+0.015, mat.steel,6))); };   // 已經埋好的預埋件
+  emb(-1.2,0.05); emb(1.2,0);                                                                                        // 兩邊都有，中間這一個漏了
+  const ring=new THREE.Mesh(new THREE.RingGeometry(0.17,0.19,40), new THREE.MeshBasicMaterial({color:0xd62828, side:THREE.DoubleSide})); ring.position.set(0,0,0.004); stat(ring);   // 紅漆圈起來：漏埋的位置
+  stat(board(['漏埋','補植'], 0.42,0.02,0.004,0,0.26,'#c2bdb1','#d62828'));                                             // 噴在梁上的字
+  stat(board(['3F'], -1.2,0.45,0.054,0,0.16,'#374151','#ffffff')); }                                                  // 樓層牌貼在柱子上
 function ground(y,m){ const g=new THREE.Mesh(new THREE.PlaneGeometry(200,200), m||(L.office||L.bench ? mat.floor : mat.site)); g.rotation.x=-Math.PI/2; g.position.y=y; g.receiveShadow=true; stat(g); }
 
 // 設計部辦公室：牆、窗、白板、辦公桌、盆栽；那面牆變成「模型投影」
@@ -870,9 +883,9 @@ const LEVELS = [
 
 // ---------- 週二 ----------
 { id:'L2', name:'週三　漏埋補救', short:'週三', desc:'例外狀況：有一排預埋件灌漿時漏埋了，只能事後用化學錨栓補。這不是正常做法。', trDone:'沒人承認是誰漏埋的',
-  bench:true, gy:-0.16, boss:'lin', noShadow:true, cam:{t:[0.06,0,-0.02], theta:.75, phi:1.25, dist:.8},
+  bench:true, gy:-0.16, boss:'lin', noShadow:true, cam:{t:[-0.35,-0.35,-0.2], theta:.6, phi:1.22, dist:4.4, min:0.3, max:6.5}, zoomIn:{t:[0.06,0,-0.02], theta:.75, phi:1.25, dist:.8},   // 開場先看整個梁柱接頭，講完話再拉近到鑽孔的地方
   build(){
-    ground(-0.16); stat(seeBox(0.42,0.3,0.32, 0,0,-0.16, mat.rcSee)); stat(board(['RC（透視）'], -0.11,-0.118,0.003,0,0.17,'#4b5563','#ffffff'));
+    ground(-1.45); rcJoint(); stat(seeBox(0.414,0.294,0.314, 0,0,-0.16, mat.rcSee)); stat(board(['鑽孔處（透視）'], -0.1,-0.118,0.004,0,0.19,'#4b5563','#ffffff'));
     add('drill', cyl(0.006,0.075,'z', 0,0,-0.0375, mat.hole));
     add('clean', cyl(0.0035,0.22,'z', 0,0,0.05, mat.steel)); add('clean', cyl(0.0075,0.03,'z', 0,0,-0.055, mat.brush));
     add('premix', box(0.12,0.12,0.004, 0.2,-0.08,0.04, mat.card)); add('premix', at(new THREE.Mesh(new THREE.SphereGeometry(0.014,16,12), mat.resin), 0.2,-0.08,0.05));
@@ -1825,7 +1838,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
   clearInterval(typer); dlgOpen=false; optsOpen=false; $('#dlg').style.display='none';
   resetGroup(); L.build(); sun.castShadow=!L.noShadow; scene.background.set(L.office||L.indoor?0x262b32:0x9aa5b0); CLOUDS.forEach(c=>c.visible=!L.office&&!L.indoor);
   $('#card').style.display='none'; $('#card').classList.remove('on'); cardNext=null;
-  if(L.bench){ const c=L.cam; target.set(...c.t); theta=c.theta; phi=c.phi; dist=c.dist; minD=dist*0.35; maxD=dist*2.5;
+  if(L.bench){ const c=L.cam; target.set(...c.t); theta=c.theta; phi=c.phi; dist=c.dist; minD=c.min||dist*0.35; maxD=c.max||dist*2.5;
     $('#help').textContent = TOUCH ? '點工具盤＝做那一步　一指拖曳＝轉視角　兩指捏合＝縮放　兩指一起移＝平移　右邊＋－＝放大、縮小' : '點右邊工具盤＝做那一步　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   else { const n=L.tray.length, per=Math.ceil(n/2);
     if(L.office) L.tray.forEach((id,k)=>makePallet(stepOf(id), L.cx+(k-(n-1)/2)*0.95, 1.6));                                 // 辦公室：立牌在你面前排成一排，跟螢幕在同一個畫面
@@ -1856,7 +1869,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
   let intro=L.intro; if(li===0){ const r=nameRoast(), k=L.roastAt||1; if(r.length){ intro=L.intro.slice(0,k).concat(r, L.intro.slice(k)); award('misc.name'); } }   // 第一天、鐵叔自我介紹之後開虧
   const gr=greet(); if(gr.length) intro=[intro[0]].concat(gr, intro.slice(1));
   if(Object.values(LV.actors).some(a=>a.follower)) award('misc.fan');
-  const go=()=>{ t0=Date.now(); lastAct=performance.now(); say(intro, ()=>fan('hello',1)); }, ride=skinState().ride;
+  const go=()=>{ t0=Date.now(); lastAct=performance.now(); say(intro, ()=>{ fan('hello',1); if(L.zoomIn) camGlide(L.zoomIn); }); }, ride=skinState().ride;
   const begin=()=>{ if(!L.bench && !L.office && !L.indoor && ride!=='r_walk') runEntrance(ride.slice(2), go); else if(L.yard!==undefined){ cut={kind:'walk', t:0, stage:0, then:go}; climbIn(); } else go(); };
   if(CARD[L.id] && !cardSeen.has(L.id)){ cardSeen.add(L.id); showCard(CARD[L.id], begin); } else begin(); }      // 過場字卡每一關只播一次，重玩不再播
 
