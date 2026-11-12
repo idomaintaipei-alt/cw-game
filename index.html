@@ -25,6 +25,13 @@
   #camBtns { position:fixed; right:10px; top:50%; transform:translateY(-50%); z-index:4; display:none; flex-direction:column; gap:10px; }   /* 手機：放大、縮小、鏡頭回正 */
   #camBtns button { width:46px; height:46px; padding:0; border-radius:50%; font-size:22px; font-weight:bold; background:rgba(26,32,40,.82); line-height:1; }
   #camBtns button.small { font-size:13px; }
+  #joy { position:fixed; left:18px; bottom:calc(26px + var(--lift,0px)); width:124px; height:124px; border-radius:50%; background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.38); z-index:4; display:none; touch-action:none; }   /* 手機：左下角的搖桿 */
+  #joy::before { content:''; position:absolute; inset:30px; border-radius:50%; border:1px dashed rgba(255,255,255,.25); }
+  #joyKnob { position:absolute; left:50%; top:50%; width:54px; height:54px; margin:-27px 0 0 -27px; border-radius:50%; background:rgba(255,255,255,.42); border:2px solid rgba(255,255,255,.7); box-shadow:0 2px 10px rgba(0,0,0,.35); pointer-events:none; }
+  body.incut #joy { display:none !important; }
+  body.joyon #testTag { left:auto !important; right:12px !important; }   /* 測試版標籤讓給搖桿 */
+  @media (max-height:500px) and (orientation:landscape){ body.joyon #camBtns { left:auto; right:8px; top:58%; } #joy { width:108px; height:108px; bottom:calc(12px + var(--lift,0px)); } #joy::before { inset:26px; } }   /* 打橫：三顆鏡頭按鈕回到右邊，左下給搖桿 */
+  #help.fadeout { opacity:0; transition:opacity .8s; pointer-events:none; }
   body.incut #side, body.incut #ticker, body.incut #help, body.incut #camBtns, body.incut #testTag { display:none !important; }   /* 過場動畫：資訊框先收起來，不蓋住畫面 */
   #sub { position:fixed; left:50%; bottom:calc(16px + var(--lift,0px)); transform:translateX(-50%); z-index:5; display:none; max-width:calc(100% - 24px); padding:6px 14px; border-radius:6px; background:rgba(10,12,15,.78); color:#fff; font-size:14px; line-height:1.5; text-align:center; pointer-events:none; }   /* 過場時的字幕 */
   #sub b { color:#ffd166; margin-right:6px; }
@@ -126,7 +133,8 @@
     header { padding:6px 8px; } header h1 { font-size:14px; } #stats { gap:6px; font-size:12px; } #stats button { padding:3px 7px; font-size:12px; }
     #ticker { left:8px; right:8px; top:calc(var(--topH,64px) + 6px); max-width:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; padding:4px 8px; }
     #side { left:8px; right:8px; width:auto; max-width:none; top:calc(var(--topH,64px) + 38px); } #side .card { padding:8px 10px; } #goal { font-size:13px; }
-    #help { left:8px; right:8px; top:auto; bottom:calc(8px + var(--lift,0px)); max-width:none; font-size:11px; }
+    #help { left:8px; right:8px; top:auto; bottom:calc(8px + var(--lift,0px)); max-width:none; font-size:12px; }
+    body.joyon #help { bottom:calc(164px + var(--lift,0px)); }   /* 有搖桿：說明放在搖桿上面 */
     #testTag { bottom:calc(44px + var(--lift,0px)) !important; font-size:11px !important; }
     #toasts { top:auto; bottom:42%; left:8px; right:8px; } .toast { min-width:0; max-width:100%; }   /* 獎盃提示不會比螢幕寬 */
     .bub { font-size:12px; padding:4px 8px; }
@@ -172,6 +180,7 @@
 <div id="help"></div>
 <div id="sub"></div>
 <div id="zoomHint">畫面被放大了：點這一行縮回原本大小（或兩指往內捏）</div>
+<div id="joy"><div id="joyKnob"></div></div>
 <div id="camBtns"><button id="zIn" aria-label="放大">＋</button><button id="zOut" aria-label="縮小">－</button><button id="zHome" class="small" aria-label="鏡頭回正">回正</button></div>
 <div id="fade"></div>
 <div id="testTag" style="display:none; position:fixed; left:12px; bottom:12px; z-index:3; font-size:12px; background:#7a3340; color:#fff; padding:5px 10px; border-radius:6px">測試版：造型和座駕全部解鎖</div>
@@ -1532,7 +1541,7 @@ const VP_A='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-sc
 function unzoom(){ const m=document.querySelector('meta[name=viewport]'); m.setAttribute('content',VP_B); setTimeout(()=>{ m.setAttribute('content',VP_A); setTimeout(()=>{ scrollTo(0,0); refit(); },120); },80); }   // 把縮放設定換一下再換回來：iPhone 會重新照設定排版，回到 1 倍
 const zoomed = () => !!(window.visualViewport && visualViewport.scale>1.05);
 const UI=document.getElementById('ui');
-['header','#help','#sub','#zoomHint','#camBtns','#testTag','#ticker','#side','#toasts','#err','#dlg','#menu','#cast','#troph','#locker','#card','#fail','#dayEnd','#nameDlg'].forEach(q=>{ const e=document.querySelector(q); if(e) UI.append(e); });   // 資訊框都搬進 #ui（畫布、淡出黑幕、頭上的泡泡留在外面：它們跟著 3D 畫面走）
+['header','#help','#sub','#zoomHint','#joy','#camBtns','#testTag','#ticker','#side','#toasts','#err','#dlg','#menu','#cast','#troph','#locker','#card','#fail','#dayEnd','#nameDlg'].forEach(q=>{ const e=document.querySelector(q); if(e) UI.append(e); });   // 資訊框都搬進 #ui（畫布、淡出黑幕、頭上的泡泡留在外面：它們跟著 3D 畫面走）
 function syncUI(){ const vv=window.visualViewport; if(!vv) return; const k=vv.scale;
   if(k<1.01 && Math.abs(vv.offsetLeft)<1 && Math.abs(vv.offsetTop)<1){ if(UI.style.transform){ UI.style.transform=''; UI.style.width=''; UI.style.height=''; } return; }
   UI.style.width=(vv.width*k)+'px'; UI.style.height=(vv.height*k)+'px'; UI.style.transform=`translate(${vv.offsetLeft}px,${vv.offsetTop}px) scale(${1/k})`; }   // 整頁被放大 k 倍：這一層反過來縮 1/k，移到看得到的那一塊
@@ -1815,10 +1824,11 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
     LV.pick.push(spot.userData.disc);
     if(L.view){ target.set(...L.view.t); theta=L.view.theta; phi=L.view.phi; dist=L.view.dist; } else { target.set(L.cx, L.gy+1.3, 2.5); theta=0.5; phi=1.08; dist=12; }
     minD=4; maxD=24;
-    $('#help').textContent = TOUCH ? '點地板＝走路　點棧板＝拿材料　點藍圈＝安裝　點同事＝聊天　一指拖曳＝轉視角　兩指捏合＝縮放　兩指一起移＝平移　右邊按鈕＝放大、縮小、回正' : '點地板＝走路（WASD 也行）　點棧板＝拿材料　點藍色圈圈＝安裝　點同事＝聊天　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
+    $('#help').textContent = TOUCH ? '左下搖桿＝走路（也可以點地板）　點棧板＝拿材料　點藍圈＝安裝　點同事＝聊天　一指拖曳＝轉視角　兩指＝縮放、平移' : '點地板＝走路（WASD 也行）　點棧板＝拿材料　點藍色圈圈＝安裝　點同事＝聊天　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   if(LV.room) maxD=Math.min(maxD,15);
   if(vw()<vh() && LV.room) phi=Math.min(phi,0.78);   // 手機直著拿：畫面窄，鏡頭拉遠一點；室內被牆擋住拉不遠，就改成從高一點往下看
   camHome={t:[target.x,target.y,target.z], theta, phi, dist};
+  if(typeof touchHud==='function') touchHud();
   $('#lvTitle').textContent=L.name; $('#stepN').textContent=L.steps.length; hideDayEnd(); $('#menu').style.display='none';
   clearBubbles(); nextIdle=performance.now()+9000; lastAct=performance.now();
   cut=null; prank=null; multiN=0; patience=100; failed=false; warned=false; $('#fail').style.display='none'; $('#patWrap').style.display=L.bench?'none':''; patUI();
@@ -1845,6 +1855,13 @@ function onClick(e){ if(dlgOpen){ advance(); return; } if(!L||L.bench) return; i
     if(p.kind==='npc'){ if(prank){ const a=LV.actors[p.who]; moveTo(a.x,a.z,null); LV.actors.you.hitWho=p.who; } else goNpc(p.who); return; } }   // 拿著來亂的東西點同事＝故意走過去敲他
   gplane.constant=-L.gy; if(ray.ray.intersectPlane(gplane,hitPt)){ const c=clampXZ(hitPt.x,hitPt.z); moveTo(c.x,c.z,null); ping.position.set(c.x,L.gy+0.02,c.z); ping.visible=true; pingLife=1; } }
 const keys={};
+// 搖桿：手指按在圓裡拖，圓鈕跟著走；往哪推人就往哪走（跟鍵盤 WASD 一樣照鏡頭方向）
+const joy={x:0, y:0, on:false, id:null}; { const J=document.getElementById('joy'), K=document.getElementById('joyKnob'), R=44;
+  const mv=e=>{ const b=J.getBoundingClientRect(), k=b.width/(J.offsetWidth||124),   /* k＝資訊框那一層被縮放的倍數（整頁被放大時才不是 1） */ cx=b.left+b.width/2, cy=b.top+b.height/2; let dx=(e.clientX-cx)/k, dy=(e.clientY-cy)/k; const m=Math.hypot(dx,dy); if(m>R){ dx*=R/m; dy*=R/m; }
+    K.style.transform=`translate(${dx}px,${dy}px)`; joy.x=dx/R; joy.y=dy/R; };
+  J.addEventListener('pointerdown',e=>{ e.preventDefault(); joy.on=true; joy.id=e.pointerId; try{ J.setPointerCapture(e.pointerId); }catch(_){} mv(e); });
+  J.addEventListener('pointermove',e=>{ if(joy.on && e.pointerId===joy.id) mv(e); });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>J.addEventListener(ev,e=>{ if(e.pointerId!==joy.id) return; joy.on=false; joy.id=null; joy.x=joy.y=0; K.style.transform=''; })); }
 addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; const k=e.key.toLowerCase(); keys[k]=true;
   if((k===' '||k==='enter') && dlgOpen){ e.preventDefault(); advance(); }
   if(k==='e' && !dlgOpen && L && !L.bench && !done){ const p=LV.actors.you; if(carry && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1){ spotArmed=true; tryInstall(); return; }
@@ -1857,7 +1874,9 @@ addEventListener('keydown',e=>{ if(e.target.tagName!=='INPUT' && e.key.toLowerCa
 const scrollable = el => el && el.closest && el.closest('.overlay .box, #dayEnd .inner, #dlg');
 document.addEventListener('touchmove',e=>{ if(zoomed() && e.touches.length>1) return; if(e.touches.length>1 || !scrollable(e.target)) e.preventDefault(); },{passive:false});   /* 兩指一律不准放大整頁；一指只有在清單、對話框裡面可以滑 */
 let lastTap=0; document.addEventListener('touchend',e=>{ const n=Date.now(); if(n-lastTap<300 && !(e.target.closest && e.target.closest('button,input'))) e.preventDefault(); lastTap=n; },{passive:false});   /* 連點兩下不要放大整頁 */
-if(TOUCH) $('#camBtns').style.display='flex';                                                                  // 手機：放大、縮小、回正三顆按鈕
+if(TOUCH) $('#camBtns').style.display='flex';
+var helpT=null; function touchHud(){ if(!TOUCH) return; const on = !!(L && !L.bench); $('#joy').style.display = on ? 'block' : 'none'; document.body.classList.toggle('joyon', on);   // 手機：要走路的關卡才有搖桿
+  const h=$('#help'); h.classList.remove('fadeout'); clearTimeout(helpT); helpT=setTimeout(()=>h.classList.add('fadeout'), 10000); }   // 說明開場顯示 10 秒，之後收起來，不擋畫面                                                                  // 手機：放大、縮小、回正三顆按鈕
 const zoomBy=f=>{ if(cut && cut.stage<2) return; camGoal=null; userCamT=performance.now(); if(talkCam){ talkCam.free=true; talkCam.zoomed=true; } dist=Math.min(maxD,Math.max(minD,dist*f)); };
 $('#zIn').onclick=()=>zoomBy(0.8); $('#zOut').onclick=()=>zoomBy(1.25); $('#zHome').onclick=()=>{ if(!(cut && cut.stage<2)) camReset(); };
 
@@ -1924,10 +1943,11 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
     else if(talkCam && !dlgOpen){ const k=talkCam, keepD = k.zoomed || !!camGoal; target.x+=(k.t[0]-target.x)*q; target.y+=(k.t[1]-target.y)*q; target.z+=(k.t[2]-target.z)*q; if(!keepD) dist+=(k.dist-dist)*q;   // 講完：畫面一定移回原本看的地方（講話時你動過鏡頭也一樣，不然畫面會停在說話的人那邊回不來）；遠近也還原，除非你自己縮放過，或有別的鏡頭指令
       if(Math.hypot(target.x-k.t[0],target.z-k.t[2])<0.03 && (keepD || Math.abs(dist-k.dist)<0.03)) talkCam=null; } }
   if(L && !L.bench){ const p=LV.actors.you;
-    const kw=keys.w||keys.arrowup, ks=keys.s||keys.arrowdown, kd=keys.d||keys.arrowright, ka=keys.a||keys.arrowleft;
-    if(!(kw||ks||kd||ka)) keyTheta=theta;                                         // 放開按鍵才跟上鏡頭的新角度：鏡頭自己轉的時候，按住的方向不會跟著歪掉
+    const kw=keys.w||keys.arrowup, ks=keys.s||keys.arrowdown, kd=keys.d||keys.arrowright, ka=keys.a||keys.arrowleft, jm=Math.hypot(joy.x,joy.y), jOn=jm>0.18;   // 搖桿推超過一點點才算
+    if(!(kw||ks||kd||ka||jOn)) keyTheta=theta;                                         // 放開按鍵才跟上鏡頭的新角度：鏡頭自己轉的時候，按住的方向不會跟著歪掉
     if(!dlgOpen && !failed && !p.swing && !(cut && cut.stage<2)){ let fx=0,fz=0; const sn=Math.sin(keyTheta), cs=Math.cos(keyTheta); if(kw){ fx-=sn; fz-=cs; } if(ks){ fx+=sn; fz+=cs; }
       if(kd){ fx+=cs; fz-=sn; } if(ka){ fx-=cs; fz+=sn; }
+      if(jOn){ fx+=cs*joy.x+sn*joy.y; fz+=-sn*joy.x+cs*joy.y; }   /* 搖桿：往上推＝往前（離開鏡頭），往右推＝往右 */
       const m=Math.hypot(fx,fz); if(m>0){ p.dest=clampXZ(p.x+fx/m*0.5, p.z+fz/m*0.5, p); p.onArrive=null; lastAct=now; } }
     Object.values(LV.actors).forEach(a=>{ if(a.who==='you' && dlgOpen) { const d=a.dest; a.dest=null; stepActor(a,dt,t); a.dest=d; } else stepActor(a,dt,t); });
     if(cut) stepCut(dt);
