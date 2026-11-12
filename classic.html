@@ -1844,6 +1844,7 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
   if(f.grin){ g.add(box(0.09,0.018,0.01,0,1.479,0.193,mat.dark)); g.add(box(0.07,0.008,0.011,0,1.48,0.195,mat.white));   /* 咧嘴笑：一條細縫、只露一點點牙（太大會像爆牙） */ [-1,1].forEach(sd=>{ const cn=box(0.024,0.008,0.012,sd*0.052,1.486,0.19,mat.dark); cn.rotation.z=sd*0.5; g.add(cn); }); }   // 露齒的笑：嘴咧開、一排白牙、嘴角往上
   else if(!f.mustache) g.add(box(0.07,0.012,0.012,0,1.475,0.196,mat.dark));
   }
+  const flyFrom=(n0,k)=>g.children.slice(n0).forEach(o=>o.userData.fly=k), nH=g.children.length;   /* 被球棒打到會噴飛的東西做記號（安全帽、皇冠、燈圈、眼鏡、墨鏡、光圈） */
   // 安全帽，或辦公室的頭髮
   const HY = off ? 0 : (c.hero && !f.shades) ? 0.03 : 0.055;   /* 安全帽抬高：帽簷不能切到眼皮、眼鏡、墨鏡（主角是小黑點眼睛，抬 3 公分就夠） */
   if(off){ const hd=new THREE.Mesh(new THREE.SphereGeometry(f.buzz?0.203:0.21,24,12,0,Math.PI*2,0,Math.PI*0.5), std(c.hair||0x2a2320)); hd.position.set(0,1.585,0.01); hd.rotation.x=-0.3; hd.castShadow=true; g.add(hd); }
@@ -1852,15 +1853,18 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
     [[0,0.014],[-0.065,0.008],[0.065,0.008]].forEach(([xo,t])=>{ const A0=0.75, rb=new THREE.Mesh(new THREE.TorusGeometry(Math.sqrt(0.221*0.221-xo*xo),t,6,28,Math.PI-2*A0),hel); rb.rotation.set(0,Math.PI/2,A0); rb.scale.y=DS;   /* 肋只在帽頂（前後各留 43 度），正面空出來給貼紙 */ rb.position.set(xo,1.6+HY,0.01); g.add(rb); });   // 頂上三條加強肋：沿著帽殼彎下來，不會凸出去
     const brim=cyl(0.25,0.018,'y',0,1.605+HY,0.045,hel,32); brim.scale.z=1.12; g.add(brim); { const lip=new THREE.Mesh(new THREE.TorusGeometry(0.25,0.01,6,32),hel); lip.rotation.x=Math.PI/2; lip.scale.y=1.12; lip.position.set(0,1.605+HY,0.045); g.add(lip); }   // 帽簷＋圓角收邊
     { const st=new THREE.Group(), gr=std(0x2fa84f); st.add(cyl(0.034,0.004,'z',0,0,0,mat.white,20)); st.add(box(0.044,0.012,0.004,0,0,0.003,gr)); st.add(box(0.012,0.044,0.004,0,0,0.003,gr)); st.position.set(0,1.72+HY,0.2); st.rotation.x=-0.58;   /* 貼在帽殼表面外面一點，不會陷進去 */ g.add(st); } }   // 正面的工安貼紙：白底綠十字
+  if(!off) flyFrom(nH,'helmet');
   if(f.mullet){ const hm2=std(c.hair||0x2a2320); g.add(box(0.27,0.22,0.06, 0,1.43,-0.17, hm2)); [-1,1].forEach(sd=>{ const t=box(0.07,0.12,0.05, sd*0.1,1.3,-0.165, hm2); t.rotation.z=sd*0.15; g.add(t); }); }   // 狼尾：後腦的頭髮留長，垂到脖子（戴安全帽從後面也看得到）
   if(f.belt){ const bt=new THREE.Mesh(new THREE.TorusGeometry(0.168,0.022,6,24), std(0xf4f4f0)); bt.rotation.x=Math.PI/2; bt.scale.y=0.74; bt.position.y=0.82; g.add(bt); g.add(box(0.06,0.045,0.02,0,0.82,0.13,mat.chrome)); }   // 白腰帶、皮帶頭
-  if(!off && c.helmetFx==='rainbow'){ const led=new THREE.Mesh(new THREE.TorusGeometry(0.222,0.016,8,28), std(0xffffff,{emissive:0xffffff})); led.rotation.x=Math.PI/2; led.position.set(0,1.645+HY,0.01); g.add(led);
+  if(!off && c.helmetFx==='rainbow'){ const led=new THREE.Mesh(new THREE.TorusGeometry(0.222,0.016,8,28), std(0xffffff,{emissive:0xffffff})); led.rotation.x=Math.PI/2; led.position.set(0,1.645+HY,0.01); led.userData.fly='helmet'; g.add(led);
     fx.push(t=>{ const h=(t*0.4)%1; hel.color.setHSL(h,1,0.58); hel.emissive.setHSL(h,1,0.22); led.material.emissive.setHSL((h+0.5)%1,1,0.6); }); }
+  const nC=g.children.length;
   if(!off && c.crown){ const band=new THREE.Mesh(new THREE.CylinderGeometry(0.168,0.172,0.06,20,1,true), std(0xffc61f,{emissive:0x3a2600, side:THREE.DoubleSide})); band.position.set(0,1.74+HY,0.01); g.add(band);
     for(let i=0;i<6;i++){ const a=i/6*Math.PI*2, sp=new THREE.Mesh(new THREE.ConeGeometry(0.042,0.16,4), mat.gold); sp.position.set(Math.sin(a)*0.155,1.84+HY,0.01+Math.cos(a)*0.155); g.add(sp); g.add(ball(0.025,mat.red,Math.sin(a)*0.178,1.74+HY,0.01+Math.cos(a)*0.178)); } }
+  flyFrom(nC,'helmet');
   // 人物特徵
   if(f.mustache){ [-1,1].forEach(sd=>g.add(ball(0.04,mat.dark,sd*0.04,1.49,0.192,1.25,0.5,0.5))); }
-  if(f.glasses){ [-1,1].forEach(sd=>{ const r=new THREE.Mesh(new THREE.TorusGeometry(0.048,0.009,6,18),mat.dark); r.position.set(sd*0.078,1.578,0.2); g.add(r); }); g.add(box(0.066,0.01,0.01,0,1.585,0.206,mat.dark)); }   // 眼鏡：框上緣不超過帽簷
+  if(f.glasses){ const nG=g.children.length; [-1,1].forEach(sd=>{ const r=new THREE.Mesh(new THREE.TorusGeometry(0.048,0.009,6,18),mat.dark); r.position.set(sd*0.078,1.578,0.2); g.add(r); }); g.add(box(0.066,0.01,0.01,0,1.585,0.206,mat.dark)); flyFrom(nG,'glasses'); }   // 眼鏡：框上緣不超過帽簷
   const hm=std(c.hair||0x2a2320);
   if(f.bob){ const bk=new THREE.Mesh(new THREE.CylinderGeometry(0.212,0.24,0.33,22,1,true,Math.PI/2-0.75,Math.PI+1.5), std(c.hair||0x2a2320,{side:THREE.DoubleSide})); bk.position.set(0,1.455,0.0); bk.castShadow=true; g.add(bk);   // 鮑伯頭：後腦和兩側的頭髮垂到下巴，下緣往外翹一點
     const rim=new THREE.Mesh(new THREE.TorusGeometry(0.235,0.022,6,22,Math.PI+1.5), hm); rim.rotation.x=Math.PI/2; rim.rotation.z=Math.PI-0.75; rim.position.set(0,1.295,0); g.add(rim); }
@@ -1871,13 +1875,13 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
   if(f.stubble){ const sb=new THREE.Mesh(new THREE.SphereGeometry(0.203,20,10,0,Math.PI*2,1.85,0.75), new THREE.MeshBasicMaterial({color:0x5a4a40, transparent:true, opacity:.3})); sb.position.set(0,1.57,0.01); g.add(sb); }
   if(f.towel){ const tw=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.04,8,22),mat.white); tw.rotation.x=Math.PI/2; tw.position.y=1.4; g.add(tw); g.add(box(0.07,0.18,0.03,0.1,1.3,0.15,mat.white)); }
   // 造型配件
-  if(f.shades){ [-1,1].forEach(sd=>g.add(ball(0.064,mat.dark,sd*0.078,1.588,0.176,1.15,0.8,0.5))); g.add(box(0.06,0.018,0.018,0,1.598,0.208,mat.dark)); g.add(box(0.39,0.016,0.016,0,1.6,0.11,mat.dark)); }
+  if(f.shades){ const nS=g.children.length; [-1,1].forEach(sd=>g.add(ball(0.064,mat.dark,sd*0.078,1.588,0.176,1.15,0.8,0.5))); g.add(box(0.06,0.018,0.018,0,1.598,0.208,mat.dark)); g.add(box(0.39,0.016,0.016,0,1.6,0.11,mat.dark)); flyFrom(nS,'shades'); }
   if(f.tape){ g.add(box(0.1,0.1,0.06,0.2,0.86,0.1,mat.anchor)); g.add(ball(0.025,mat.white,0.2,0.86,0.135)); }
   if(f.chain){ const ch=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.034,8,24), mat.gold); ch.rotation.x=Math.PI/2-0.4; ch.position.set(0,1.36,0.04); g.add(ch); g.add(cyl(0.07,0.026,'z',0,1.2,0.165,mat.gold,20)); g.add(cyl(0.04,0.03,'z',0,1.2,0.168,mat.red,16)); }
   if(f.boots) fx.push(t=>{ const h=(t*0.6)%1; bootM.color.setHSL(h,1,0.6); bootM.emissive.setHSL(h,1,0.25); soleM.emissive.setHSL((h+0.33)%1,1,0.55); });
   if(f.halo){ const hg=new THREE.Group(); hg.position.set(0,1.6,-0.24); hg.add(new THREE.Mesh(new THREE.TorusGeometry(0.33,0.025,8,36), mat.gold));
     for(let i=0;i<12;i++){ const a=i/12*Math.PI*2, ray=box(0.036,i%2?0.11:0.18,0.02, Math.sin(a)*0.45, Math.cos(a)*0.45, 0, mat.gold); ray.rotation.z=-a; hg.add(ray); }
-    g.add(hg); fx.push(t=>{ hg.rotation.z=t*1.2; hg.scale.setScalar(1+0.07*Math.sin(t*5)); }); }
+    hg.userData.fly='halo'; g.add(hg); fx.push(t=>{ hg.rotation.z=t*1.2; hg.scale.setScalar(1+0.07*Math.sin(t*5)); }); }
   if(f.cape){ const cp=new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.42,0.98,16,1,true,Math.PI-1.25,2.5), std(0xd3202e,{side:THREE.DoubleSide})); cp.position.set(0,0.9,0.02); cp.castShadow=true; g.add(cp);
     const col=new THREE.Mesh(new THREE.TorusGeometry(0.17,0.034,8,24), mat.gold); col.rotation.x=Math.PI/2; col.position.y=1.39; g.add(col); fx.push(t=>{ cp.rotation.x=0.1+0.07*Math.sin(t*3); }); }
   if(!off && c.vestKind==='sequin'){ const sp=[]; for(let i=0;i<12;i++){ const a=i*2.4, y=0.88+((i*37)%42)/100, r=rAt(y)+0.004; const d=ball(0.018,mat.shine,Math.sin(a)*r,y,Math.cos(a)*r*0.72); g.add(d); sp.push(d); }
@@ -1889,8 +1893,8 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
 }
 const TOUCH=matchMedia('(pointer:coarse)').matches;                                     // 手機、平板：用手指操作
 const SIT=0.36;                                                                        // 坐下來，身體降低多少
-function seat(a){ const g=a.g, ch=std(0x3b6fd0), dk=std(0x3a4350); a.seated=true; a.deskFace = a.x>L.cx ? Math.PI/2 : -Math.PI/2; a.face=a.deskFace;       // 坐在工位上：椅子跟著人，可以滑
-  [box(0.5,0.08,0.5, 0,0.69,-0.02, ch), box(0.5,0.55,0.08, 0,1.0,-0.28, ch), cyl(0.04,0.3,'y', 0,0.5,-0.02, dk,8),   /* 椅墊頂面在大腿下面，大腿壓在椅墊上 */ box(0.56,0.05,0.08, 0,SIT+0.03,-0.02, dk), box(0.08,0.05,0.56, 0,SIT+0.03,-0.02, dk)].forEach(m=>g.add(m));
+function seat(a){ const g=a.g, ch=std(0x3b6fd0), dk=std(0x3a4350), chair=new THREE.Group(); chair.userData.chair=true; a.seated=true; a.deskFace = a.x>L.cx ? Math.PI/2 : -Math.PI/2; a.face=a.deskFace;       // 坐在工位上：椅子跟著人，可以滑
+  [box(0.5,0.08,0.5, 0,0.69,-0.02, ch), box(0.5,0.55,0.08, 0,1.0,-0.28, ch), cyl(0.04,0.3,'y', 0,0.5,-0.02, dk,8),   /* 椅墊頂面在大腿下面，大腿壓在椅墊上 */ box(0.56,0.05,0.08, 0,SIT+0.03,-0.02, dk), box(0.08,0.05,0.56, 0,SIT+0.03,-0.02, dk)].forEach(m=>chair.add(m)); g.add(chair);
   g.traverse(o=>{ if(o.userData.blob) o.position.y=SIT+0.014; }); }
 function makeActor(who,x,z){ const c=CAST[who], g=makePerson(c); g.rotation.order='YXZ'; LV.group.add(g);   /* 先轉向、再彎腰：鞠躬、仰頭喝、揮棒都照人自己面對的方向彎，不是照場景的方向 */
   const bl=new THREE.Mesh(new THREE.CircleGeometry(0.38,20), mat.blob); bl.rotation.x=-Math.PI/2; bl.position.y=0.014; bl.userData.blob=true; bl.raycast=()=>{}; g.add(bl);   // 腳下貼地的影子：太陽的影子落在背後，從正面看不到，人會像飄著
@@ -1943,11 +1947,37 @@ function stepActor(a,dt,t){ let moving=false;
   if(a.knock){ const k=a.knock; k.t+=dt; const q=Math.min(1,k.t/0.6), e=1-Math.pow(1-q,2), bo=q>=1 ? Math.sin(Math.min(1,(k.t-0.6)/0.25)*Math.PI)*0.1 : 0;   // 被球棒打飛：往後飛 2 公尺、空中往後倒、落地躺平再彈一下
     a.x=k.x0+(k.x1-k.x0)*e; a.z=k.z0+(k.z1-k.z0)*e; a.g.position.set(a.x, gyAt(a.x,a.z)+Math.sin(q*Math.PI)*0.9+0.17*Math.min(1,q*1.5)+bo, a.z); a.face=k.face; a.g.rotation.y=k.face; a.g.rotation.x=-Math.PI/2*Math.min(1,q*1.4); a.g.rotation.z=0;   /* 方向用挑好的那個（不然會被「轉頭看你」蓋掉） */
     u.armL.rotation.x=u.armR.rotation.x=0; u.armL.rotation.z=1.3; u.armR.rotation.z=-1.3; u.legL.rotation.x=0.35; u.legR.rotation.x=-0.2;
-    if(k.t>1.0 && !k.said){ k.said=true; bubble(a.who,'……（眼冒金星）',true); } }
+    if(k.t>1.0 && !k.said){ k.said=true; bubble(a.who,'……（眼冒金星）',true); }
+    knockParts(a,k,dt); }
   if(a.bow>0 && a.g.visible){ const th=0.75*Math.sin(Math.PI*(1-a.bow/0.9)), off=0.8*Math.sin(th); a.g.rotation.x=th; a.g.position.x-=Math.sin(a.face)*off; a.g.position.z-=Math.cos(a.face)*off; a.g.position.y+=0.8*(1-Math.cos(th));   // 鞠躬：以腰（0.8 公尺高）為中心往前彎，腳留在原地
     u.legL.rotation.x=u.legR.rotation.x=-th; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=0; }); u.armL.rotation.x=u.armR.rotation.x=-0.15; a.bowing=true; }
   else if(a.bowing){ a.bowing=false; a.g.rotation.x=0; }
   if(u.fx) for(const f of u.fx) f(t); }
+// 被球棒打到：安全帽（連皇冠、燈圈）、眼鏡、墨鏡、光圈、板夾從身上拆下來各自噴飛；額頭流血、噴血滴；坐著的人椅子留下來滑開轉圈，人從座位上飛出去
+function knockFly(t,ux,uz){ const g=t.g, u=g.userData, k=t.knock, sets={}; g.updateMatrixWorld(true);
+  g.traverse(o=>{ if(o.userData.fly) (sets[o.userData.fly]=sets[o.userData.fly]||[]).push(o); }); if(u.clip) sets.clip=[u.clip];
+  k.parts=[]; Object.entries(sets).forEach(([key,list])=>{ const pv=new THREE.Group(), c=new THREE.Vector3(); list.forEach(o=>c.add(o.getWorldPosition(new THREE.Vector3()))); c.divideScalar(list.length);
+    pv.position.copy(c); LV.group.add(pv); pv.updateMatrixWorld(true); list.forEach(o=>pv.attach(o));   // 同一樣東西的零件包成一組一起飛（安全帽有帽殼、肋、帽簷、貼紙）
+    const sp=key==='helmet'?2.0:1.2+Math.random()*0.8, lat=(Math.random()-0.5)*1.6;
+    k.parts.push({o:pv, key, v:new THREE.Vector3(ux*sp-uz*lat, key==='helmet'?3.4:2.4+Math.random()*0.8, uz*sp+ux*lat), w:new THREE.Vector3(5+Math.random()*6, Math.random()*5-2.5, 4+Math.random()*5)}); });
+  const H=u.head||g, oy=u.head?-1.37:0, red=std(0xc0121e,{roughness:0.35});   // 美術版的頭在 u.head 群組裡（以脖子 1.37 為原點）
+  H.add(ball(0.055,red,0.06,1.75+oy,0.11,1,0.45,0.8)); H.add(ball(0.026,red,0.09,1.68+oy,0.168,0.7,1.7,0.5));   // 額頭一塊血、往下流一道
+  const hp=g.localToWorld(new THREE.Vector3(0,1.7,0)); for(let i=0;i<7;i++){ const d=ball(0.024,red,0,0,0); d.position.copy(hp); LV.group.add(d);
+    k.parts.push({o:d, drop:true, v:new THREE.Vector3(ux*(1+Math.random()*2)+(Math.random()-0.5)*1.6, 1.4+Math.random()*2, uz*(1+Math.random()*2)+(Math.random()-0.5)*1.6), w:new THREE.Vector3()}); }   // 噴出去的血滴
+  k.red=red; const ch=g.children.find(o=>o.userData.chair);
+  if(ch){ LV.group.attach(ch); k.chair={o:ch, t:0, vx:ux*1.3, vz:uz*1.3, w:(Math.random()<0.5?-1:1)*8}; t.seated=false; g.traverse(o=>{ if(o.userData.blob) o.position.y=0.014; }); } }   // 椅子留在原地、被撞得滑開轉圈
+function knockParts(a,k,dt){ if(k.parts) k.parts.forEach(p=>{ if(p.rest) return; const o=p.o, px=o.position.x, pz=o.position.z; p.v.y-=9.8*dt; o.position.addScaledVector(p.v,dt);
+    o.rotation.x+=p.w.x*dt; o.rotation.y+=p.w.y*dt; o.rotation.z+=p.w.z*dt;
+    const c=clampXZ(o.position.x,o.position.z,{x:px,z:pz}); if(Math.abs(c.x-o.position.x)+Math.abs(c.z-o.position.z)>1e-4){ o.position.x=c.x; o.position.z=c.z; p.v.x*=-0.3; p.v.z*=-0.3; }   // 撞到牆就彈回來，不會飛出房間
+    const gy=gyAt(o.position.x,o.position.z), b=new THREE.Box3().setFromObject(o); if(b.min.y>=gy) return; o.position.y+=gy-b.min.y;
+    if(p.drop){ p.rest=true; o.scale.set(1.7,0.12,1.7); o.position.y=gy+0.004; return; }   // 血滴落地變一小點
+    p.v.y=Math.abs(p.v.y)*0.35; p.v.x*=0.6; p.v.z*=0.6; p.w.multiplyScalar(0.5);
+    if(p.v.length()<0.7){ p.rest=true; o.rotation.set(p.key==='helmet'?0:-Math.PI/2, o.rotation.y, 0); o.updateMatrixWorld(true); o.position.y+=gy-new THREE.Box3().setFromObject(o).min.y+0.002; } });   /* 落地彈一下，慢下來就停：安全帽正正地躺在地上，其他的平放 */
+  if(k.chair){ const c=k.chair, e=Math.max(0,1-c.t/1.1); c.t+=dt; const px=c.o.position.x, pz=c.o.position.z; c.o.position.x+=c.vx*e*dt; c.o.position.z+=c.vz*e*dt; c.o.rotation.y+=c.w*e*dt;
+    const q=clampXZ(c.o.position.x,c.o.position.z,{x:px,z:pz}); c.o.position.x=q.x; c.o.position.z=q.z; }   // 辦公椅：有輪子，滑開、轉圈，慢慢停
+  if(k.t>0.85 && !k.pool){ const hp=a.g.localToWorld(new THREE.Vector3(0,a.g.userData.head?1.68:1.6,0)), pl=new THREE.Mesh(new THREE.CircleGeometry(a.g.userData.head?0.5:0.34,22), std(0x8e0d16,{roughness:0.3, polygonOffset:true, polygonOffsetFactor:-2}));
+    pl.rotation.x=-Math.PI/2; pl.position.set(hp.x, gyAt(hp.x,hp.z)+0.012, hp.z); pl.raycast=()=>{}; pl.scale.setScalar(0.05); LV.group.add(pl); k.pool=pl; }   // 頭下面一灘血，慢慢變大
+  if(k.pool && k.pool.scale.x<1) k.pool.scale.setScalar(Math.min(1,k.pool.scale.x+dt*0.4)); }
 function knockDown(t,dx,dz){ t.dest=null; t.onArrive=null; t.wob=0; const gy=gyAt(t.x,t.z), skip=new Set(), solid=[]; Object.values(LV.actors).forEach(a=>a.g.traverse(o=>skip.add(o))); LV.group.updateMatrixWorld(true);
   LV.group.traverse(o=>{ if(!o.isMesh || skip.has(o) || o.userData.blob || o.userData.cloth) return; const m0=Array.isArray(o.material)?o.material[0]:o.material; if(m0.transparent) return; for(let q=o;q;q=q.parent) if(!q.visible || (q.userData && q.userData.crew)) return; solid.push(new THREE.Box3().setFromObject(o)); });   // 場景裡不透明的東西
   const hits=(fx,fz,ux,uz)=>{ const hx=fx+ux*1.75, hz=fz+uz*1.75, a=clampXZ(fx,fz,t), b=clampXZ(hx,hz,{x:fx,z:fz}); if(Math.hypot(a.x-fx,a.z-fz)>0.01 || Math.hypot(b.x-hx,b.z-hz)>0.01) return 1e9;   // 腳和頭都要在能站的範圍裡（不躺進牆）
@@ -1956,7 +1986,7 @@ function knockDown(t,dx,dz){ t.dest=null; t.onArrive=null; t.wob=0; const gy=gyA
   for(let i=0;i<16;i++){ const ang=(i%2?1:-1)*Math.ceil(i/2)*Math.PI/8, c=Math.cos(ang), sn=Math.sin(ang), vx=dx*c-dz*sn, vz=dx*sn+dz*c;   // 先試正後方，再往左右越偏越多，一圈 16 個方向
     for(const d of [2.2,1.8,1.4,1.0,0.7,0.4]){ const fx=t.x+vx*d, fz=t.z+vz*d, h=hits(fx,fz,vx,vz); if(h<1e9 && (!best || h<best.h)) best={h, x:fx, z:fz, ux:vx, uz:vz}; if(h===0) break; } if(best && best.h===0) break; }   // 飛得越遠越好；躺不下就近一點、偏一點；真的沒有空位就挑壓到最少的
   const end = best ? {x:best.x, z:best.z} : clampXZ(t.x+dx*0.4, t.z+dz*0.4, t), ux = best ? best.ux : dx, uz = best ? best.uz : dz;
-  t.knock={t:0, x0:t.x, z0:t.z, x1:end.x, z1:end.z, face:Math.atan2(-ux,-uz)}; t.face=t.knock.face; t.g.rotation.order='YXZ'; }   // 面向打他的人，往反方向飛；躺下的時候頭朝飛出去的方向
+  t.knock={t:0, x0:t.x, z0:t.z, x1:end.x, z1:end.z, face:Math.atan2(-ux,-uz)}; t.face=t.knock.face; t.g.rotation.order='YXZ'; knockFly(t,ux,uz); }   // 面向打他的人，往反方向飛；躺下的時候頭朝飛出去的方向
 function drawFace(cv, who, mood){ const c=CAST[who], g=cv.getContext('2d'), W=cv.width, s=W/192, hex=n=>'#'+n.toString(16).padStart(6,'0'), off=!!(L && L.office) && cv.id!=='lkFace';
   g.setTransform(s,0,0,s,0,0); g.clearRect(0,0,192,192);
   const bg=g.createLinearGradient(0,0,0,192); bg.addColorStop(0,'#2b3440'); bg.addColorStop(1,'#161b21'); g.fillStyle=bg; g.fillRect(0,0,192,192);
@@ -2240,9 +2270,20 @@ function prankItem(id){ const g=new THREE.Group(); if(id==='bat'){ const m=new T
   else { g.add(bottle(-0.07)); g.add(cyl(0.036,0.12,'y',0.08,-0.04,0,std(0xb98a4e),14)); g.add(cyl(0.037,0.012,'y',0.08,0.024,0,mat.steel,14)); } return g; }   // 一瓶保力達 B＋一罐伯朗咖啡
 function bottle(x){ const g=new THREE.Group(), br=std(0x5a3418); g.add(cyl(0.045,0.2,'y',0,0,0,br,14)); g.add(cyl(0.018,0.07,'y',0,0.135,0,br,10)); g.add(cyl(0.022,0.02,'y',0,0.18,0,mat.mark,10)); g.add(cyl(0.0465,0.09,'y',0,-0.01,0,mat.white,14)); g.position.x=x; return g; }
 function makePrank(id,x,z){ const g=new THREE.Group(), it=prankItem(id), bat=id==='bat'; g.position.set(x,L.gy,z); g.add(box(0.36,0.3,0.36,0,0.15,0,mat.crate)); it.position.set(0,bat?0.74:0.4,0); if(bat) it.rotation.z=0.16; g.add(it);
-  g.add(label(bat && L.office ? '球棒（不是辦公用的）' : PRANK[id].tag,'#7a3340',0,bat?1.5:0.98,0,0.2)); LV.group.add(g); g.traverse(o=>{ if(o.isMesh||o.isSprite){ o.userData.pick={kind:'prank',id}; LV.pick.push(o); } });
+  LV.group.add(g);   /* 隱藏功能：不掛標籤，走近才會跳內心獨白（我們不鼓勵暴力，只是好玩） */ g.traverse(o=>{ if(o.isMesh||o.isSprite){ o.userData.pick={kind:'prank',id}; LV.pick.push(o); } });
   const ob={x,z,hx:0.2,hz:0.2}; LV.obs.push(ob); LV.pranks[id]={x,z,item:it,obs:ob}; }
-function goPrank(id){ const q=LV.pranks[id], t=standNear(q.x,q.z,0.7,q.obs); moveTo(t.x,t.z,()=>{ const me=LV.actors.you; if(rectDist(q.obs,me.x,me.z).d<0.9) togglePrank(id); }); }
+function goPrank(id){ const q=LV.pranks[id], t=standNear(q.x,q.z,0.7,q.obs); moveTo(t.x,t.z,()=>{ const me=LV.actors.you; if(rectDist(q.obs,me.x,me.z).d<0.9){ if(prank===id) togglePrank(id); else thinkPrank(id); } }); }
+// 走到球棒、保力達 B 旁邊：先跳內心掙扎，選了「拿」才真的拿起來；選算了，要走開再回來才會再想一次
+const THINK={ bat:[['……一支球棒。','我真的要這麼幹嗎？拿起來，朝誰的頭狠狠地打下去……？'],['……球棒耶。','工地主任就在旁邊。我在想什麼？'],['……手好癢。','不行，打下去就不用上班了。（好像也不錯？）']],
+  batOff:[['……辦公室怎麼會有球棒？','我真的要這麼幹嗎？朝誰的頭狠狠地打下去……？'],['……這支球棒是誰的？','施工圖還沒畫完。冷靜。']],
+  drink:[['……保力達 B 套伯朗。','上班真的可以喝酒嗎……？喝了會不會被琳姊開單？'],['……一瓶保力達 B。','工地前輩都這樣喝的吧？……吧？'],['……好想喝一口。','可是等一下要爬鷹架耶。']] };
+const THINK_OPT={ bat:['……拿起來（後果自負）','算了，我是來上班的'], drink:['……喝一口就好（後果自負）','下班再說']};
+let thinkOff={};   // 想過一次（選算了）就先不再想，要走開 1.6 公尺以上才重新算
+function thinkPrank(id){ if(done||dlgOpen||failed||carry||prank) return; const th=pickOne(THINK[id==='bat' && L.office ? 'batOff' : id]), op=THINK_OPT[id]; thinkOff[id]=true;
+  dlgOpen=true; optsOpen=true; dlgQ=[]; dlgDone=null; $('#dlg').style.display='flex'; $('#dBar').style.display='none'; showLine({who:'you', t:'（內心 OS）'+th[0]+'\n'+th[1]});
+  const o=$('#dOpts'); o.innerHTML=''; op.forEach((t,k)=>{ const b=document.createElement('button'); b.textContent=t; b.dataset.think=k?'no':'yes'; b.onclick=()=>{ optsOpen=false; o.innerHTML=''; endDlg(); if(!k) togglePrank(id); }; o.appendChild(b); }); }
+function prankNear(){ if(!L || L.bench || !LV.pranks) return; const p=LV.actors.you; if(!p) return;
+  for(const id in LV.pranks){ const d=rectDist(LV.pranks[id].obs,p.x,p.z).d; if(d>1.6) thinkOff[id]=false; else if(d<0.75 && !thinkOff[id] && prank!==id && !(p.dest && !p.onArrive)) thinkPrank(id); } }   /* 走過去路過不算：要停下來或是點它走過去才算 */
 function togglePrank(id){ if(done||dlgOpen) return; const me=LV.actors.you, hold=me.g.userData.hold, q=LV.pranks[id]; if(me.swing) return;
   if(id==='drink'){ if(carry||prank){ say([{who:L.boss, t:'手上的先放好。'}]); return; } const boss=LV.actors[L.boss], b=bottle(0); q.item.visible=false; b.position.set(0,-0.32,0.05); b.rotation.x=0.9; me.g.userData.armR.userData.elbow.add(b); me.dest=null; me.onArrive=null;   // 拿起來就喝
     me.swing={t:0, id:'drink', target:boss, done:()=>{ WHY.drink=PRANK.drink.why; award('misc.drink'); failMission(boss,'drink'); }}; return; }
@@ -2420,7 +2461,7 @@ addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; const k=e
   if((k===' '||k==='enter') && dlgOpen){ e.preventDefault(); advance(); }
   if(k==='e' && !dlgOpen && L && !L.bench && !done){ const p=LV.actors.you; if(carry && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1){ spotArmed=true; tryInstall(); return; }
     if(prank){ const near=Object.values(LV.actors).filter(a=>a!==p && Math.hypot(a.x-p.x,a.z-p.z)<0.95).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0]; if(near){ prankHit(near); return; } }   // 拿著來亂的東西，在同事旁邊按 E＝敲下去
-    const pk=Object.keys(LV.pranks).find(id=>rectDist(LV.pranks[id].obs,p.x,p.z).d<0.7); if(pk){ togglePrank(pk); return; }
+    const pk=Object.keys(LV.pranks).find(id=>rectDist(LV.pranks[id].obs,p.x,p.z).d<0.7); if(pk){ if(prank===pk) togglePrank(pk); else thinkPrank(pk); return; }
     let bestId=null, bd=1.0; Object.entries(LV.pallets).forEach(([id,q])=>{ const d=rectDist(q.obs,p.x,p.z).d; if(d<bd && !placed.has(id)){ bd=d; bestId=id; } }); if(bestId) tryPick(bestId); } });
 addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
 addEventListener('keydown',e=>{ if(e.target.tagName!=='INPUT' && e.key.toLowerCase()==='c' && !(cut && cut.stage<2)) camReset(); });
@@ -2433,13 +2474,13 @@ if(TOUCH) $('#camBtns').style.display='flex';
 function actInfo(){ if(!L || L.bench || done || dlgOpen || failed || (cut && cut.stage<2)) return null; const p=LV.actors.you; if(!p) return null;
   if(carry && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1) return '安裝';
   if(prank && Object.values(LV.actors).some(o=>o!==p && Math.hypot(o.x-p.x,o.z-p.z)<0.95)) return prank==='bat' ? '揮棒' : '動手';   // 跟 E 鍵一樣：拿著來亂的東西站在同事旁邊＝動手（後果自負）
-  const pk=Object.keys(LV.pranks).find(id=>rectDist(LV.pranks[id].obs,p.x,p.z).d<0.7); if(pk) return prank===pk ? '放回去' : '拿起來';
+  const pk=Object.keys(LV.pranks).find(id=>rectDist(LV.pranks[id].obs,p.x,p.z).d<0.7); if(pk && prank===pk) return '放回去';   // 隱藏功能：沒拿的時候不顯示「拿起來」
   if(carry || prank) return null;
   let best=null, bd=1.0; Object.entries(LV.pallets).forEach(([id,q])=>{ const d=rectDist(q.obs,p.x,p.z).d; if(d<bd && !placed.has(id)){ bd=d; best=id; } }); if(!best) return null; const nm=plain(stepOf(best).pal||stepOf(best).name); return ITEM[L.id+'.'+best] ? '拿「'+nm+'」' : '來'+nm; }   // 材料＝拿「預埋件」；工作（立牌）＝來放樣、來聯絡灌漿廠
 const pressE=()=>{ dispatchEvent(new KeyboardEvent('keydown',{key:'e'})); dispatchEvent(new KeyboardEvent('keyup',{key:'e'})); };
 document.getElementById('actBtn').addEventListener('click',e=>{ e.stopPropagation(); pressE(); });
 const _pv=new THREE.Vector3();
-function hudTick(){ document.body.classList.toggle('dlgopen', !!dlgOpen); if(!TOUCH) return;
+function hudTick(){ document.body.classList.toggle('dlgopen', !!dlgOpen); prankNear(); if(!TOUCH) return;
   const a=actInfo(), b=$('#actBtn'); if(a){ if(b.textContent!==a) b.textContent=a; b.style.display='block'; } else b.style.display='none';
   const P=$('#ptr'); let on=false;                                                                                     // 藍圈不在畫面裡：從角色往藍圈的方向，在畫面邊緣放一個箭頭
   if(carry && spot.visible && L && !L.bench){ _pv.set(spot.position.x,spot.position.y+0.3,spot.position.z).project(camera); const w=vw(), h=vh(), m=30, top=($('#side').getBoundingClientRect().bottom||80)+10, bot=h-120;
