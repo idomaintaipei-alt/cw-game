@@ -1013,7 +1013,9 @@ function rcJoint(){ const R=(w,h,d,x,y,z)=>stat(box(w,h,d,x,y,z,mat.rc)), lm=new
   const emb=(x,z)=>{ stat(box(0.26,0.17,0.012, x,0,z+0.006, mat.anchor)); [[-0.09,-0.05],[0.09,-0.05],[-0.09,0.05],[0.09,0.05]].forEach(([a,b])=>stat(cyl(0.011,0.006,'z', x+a,b,z+0.015, mat.steel,6))); };   // 已經埋好的預埋件
   emb(-1.2,0.05); emb(1.2,0);                                                                                        // 兩邊都有，中間這一個漏了
   const ring=new THREE.Mesh(new THREE.RingGeometry(0.17,0.19,40), new THREE.MeshBasicMaterial({color:0xd62828, side:THREE.DoubleSide})); ring.position.set(0,0,0.004); stat(ring);   // 紅漆圈起來：漏埋的位置
-  stat(board(['漏埋','補植'], 0.42,0.02,0.004,0,0.26,'#c2bdb1','#d62828'));                                             // 噴在梁上的字
+  stat(board(['漏埋','少了一塊預埋件'], 0.45,0.02,0.004,0,0.3,'#c2bdb1','#d62828'));                                   // 噴在梁上的字
+  { const pts=[[-0.13,-0.085],[0.13,-0.085],[0.13,0.085],[-0.13,0.085],[-0.13,-0.085]].map(([x,y])=>new THREE.Vector3(x,y,0.0045)), ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({color:0xd62828, dashSize:0.018, gapSize:0.012})); ln.computeLineDistances(); stat(ln); }   // 紅色虛線：本來應該有預埋件的位置（跟兩邊一樣大）
+  stat(board(['預埋件（有埋到）'], 1.2,-0.16,0.004,0,0.31,'#374151','#ffffff'));                                     // 右邊那塊：有埋到的長這樣
   stat(board(['3F'], -1.2,0.45,0.054,0,0.16,'#374151','#ffffff')); }                                                  // 樓層牌貼在柱子上
 function ground(y,m){ const g=new THREE.Mesh(new THREE.PlaneGeometry(200,200), m||(L.office||L.bench ? mat.floor : mat.site)); g.rotation.x=-Math.PI/2; g.position.y=y; g.receiveShadow=true; stat(g); }
 
@@ -1140,7 +1142,12 @@ const LEVELS = [
 { id:'L2', name:'週三　漏埋補救', short:'週三', desc:'例外狀況：有一排預埋件灌漿時漏埋了，只能事後用化學錨栓補。這不是正常做法。', trDone:'沒人承認是誰漏埋的',
   bench:true, gy:-0.16, boss:'lin', noShadow:true, cam:{t:[-0.35,-0.35,-0.2], theta:.6, phi:1.22, dist:4.4, min:0.3, max:6.5}, zoomIn:{t:[0.06,0,-0.02], theta:.75, phi:1.25, dist:.8},   // 開場先看整個梁柱接頭，講完話再拉近到鑽孔的地方
   build(){
-    ground(-1.45); rcJoint(); stat(seeBox(0.414,0.294,0.314, 0,0,-0.16, mat.rcSee)); stat(board(['鑽孔處（透視）'], -0.1,-0.118,0.004,0,0.19,'#4b5563','#ffffff'));
+    ground(-1.45); rcJoint(); stat(box(0.414,0.294,0.314, 0,0,-0.16, std(0xc2bdb1,{transparent:true, opacity:.5, depthWrite:false})));   // 透視：跟梁同色的半透明混凝土（不畫深色邊框，才不會像挖好的洞）
+    { const pts=[[-0.207,-0.147],[0.207,-0.147],[0.207,0.147],[-0.207,0.147],[-0.207,-0.147]].map(([x,y])=>new THREE.Vector3(x,y,0.003)), ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({color:0x3a4350, dashSize:0.02, gapSize:0.014})); ln.computeLineDistances(); stat(ln); }   // 前面一圈細虛線：透視的範圍
+    [-0.105,0.105].forEach(y=>[-0.06,-0.26].forEach(z=>stat(cyl(0.011,0.5,'x', 0,y,z, mat.rebar,8))));                                   // 梁的主筋：上下各兩支
+    [-0.17,0.17].forEach(x=>{ [-0.06,-0.26].forEach(z=>stat(cyl(0.006,0.222,'y', x,0,z, mat.rebar,6))); [-0.105,0.105].forEach(y=>stat(cyl(0.006,0.2,'z', x,y,-0.16, mat.rebar,6))); });   // 箍筋（鑽孔的位置在兩圈箍筋中間、上下主筋中間）
+    stat(box(0.12,0.003,0.001, 0,0,0.0035, mat.dark)); stat(box(0.003,0.12,0.001, 0,0,0.0035, mat.dark));                                // 鑽孔位置：十字墨線
+    stat(board(['透視','裡面沒有預埋件','還沒鑽孔'], -0.36,-0.06,0.004,0,0.24,'#4b5563','#ffffff'));   /* 放在紅圈左邊，不擋透視的地方 */
     add('drill', cyl(0.006,0.075,'z', 0,0,-0.0375, mat.hole));
     add('clean', cyl(0.0035,0.22,'z', 0,0,0.05, mat.steel)); add('clean', cyl(0.0075,0.03,'z', 0,0,-0.055, mat.brush));
     add('premix', box(0.12,0.12,0.004, 0.2,-0.08,0.04, mat.card)); add('premix', at(new THREE.Mesh(new THREE.SphereGeometry(0.014,16,12), mat.resin), 0.2,-0.08,0.05));
@@ -1151,9 +1158,13 @@ const LEVELS = [
     add('plate', box(0.09,0.09,0.006, 0,0,0.006, mat.steelDark)); add('plate', cyl(0.009,0.008,'z', 0,0,0.014, mat.steel,6));
   },
   tray:['inject','plate','drill','cure','premix','rod','clean'],
+  recap:['化學錨栓：少埋預埋件時的補救', '1 鑽孔　2 清孔　3 預打藥劑', '4 注膠　5 植入螺桿', '6 等膠硬　7 鎖托架', '能埋好就要埋好', '這是補救，不是做法'],   // 收工後的整理卡
   intro:[
     {who:'lin', t:'{P}，今天跟我。三樓有一排預埋件，灌漿的時候沒埋到。'},
-    {who:'lin', t:'沒埋到，就只能事後用化學錨栓補。先講清楚：這是例外，是補救。正常的做法是昨天那樣，**板筋綁紮時就埋好**。'},
+    {who:'lin', t:'預埋件是**灌混凝土之前**就放進去的鐵板，灌好之後跟混凝土長在一起，托架就鎖在它上面。'},
+    {who:'lin', t:'少埋一塊，混凝土已經硬了，**塞不進去了**。'},
+    {who:'lin', t:'只能在混凝土上**鑽孔**，用專用的膠把**螺桿黏進孔裡**。膠硬了，再把托架鎖上去。這就叫**化學錨栓**。'},
+    {who:'lin', t:'先講清楚：這是例外，是補救。正常的做法是昨天那樣，**板筋綁紮時就埋好**。'},
     {who:'lin', t:'補的東西，更要照規矩來。明天 SGS 會來**拉拔**。'},
     {who:'lin', t:'這支 M10 你來植，我站旁邊看。每一步我都會問你為什麼。'},
     {who:'you', t:'（鐵叔比較兇，還是琳姊比較可怕……）'},
@@ -1162,31 +1173,31 @@ const LEVELS = [
   outroBad:[ {who:'lin', t:'錨栓是植好了，異常單 {N} 張。明天拉拔，你站最前面看。'}, {who:'lin', t:'還有，這種補救的工作，最好一次都不要有。'} ],
   onPlace:{ cure(){ LV.refs.resin.material=mat.resinCured; LV.refs.ring.material=mat.resinCured; } },
   steps:[
-    { id:'drill', name:'鑽孔', tr:'十二不是十', hint:'在 RC 上鑽孔。孔深要到**原廠最小埋深**以上。',
+    { id:'drill', name:'鑽孔', plain:'鑽一個孔，等一下螺桿要插進去。M10 化學錨栓用 12mm 鑽頭，比螺桿大一圈，留位置給膠。', tr:'十二不是十', hint:'在 RC 上鑽孔。孔深要到**原廠最小埋深**以上。',
       q:{ title:'M10 化學錨栓，拿幾 mm 的鑽頭？', body:'DEWALT PURE 500+ 或 Hilti HIT-HY 200-R V3，螺桿 M10。', src:SRC.anchor, opts:[
         {t:'10mm，跟螺桿一樣大', ok:false, exp:'10mm 是 M10 拉脹螺栓的鑽孔徑。**化栓 M10 要鑽 12mm**，鑽頭不可混用。'},
         {t:'12mm', ok:true, exp:'同樣 M10，**化栓鑽 12、拉脹鑽 10**。要 TAF 報告時也要選孔徑 ≥ 12mm 的規格。'} ] } },
-    { id:'clean', name:'清孔', tr:'吹二刷二吹二', temp:true, hint:'孔鑽好了，裡面都是粉塵。',
+    { id:'clean', name:'清孔', plain:'孔裡都是鑽出來的粉塵。吹乾淨、刷乾淨，膠才黏得住孔壁。', tr:'吹二刷二吹二', temp:true, hint:'孔鑽好了，裡面都是粉塵。',
       q:{ title:'孔怎麼清？', body:'孔裡有鑽孔粉塵。', src:SRC.anchor, opts:[
         {t:'吹 2・刷 2・吹 2（≥ 6 bar、無油空氣）', ok:true, exp:'粉塵沒清乾淨，**膠黏不住孔壁**。'},
         {t:'吹一下就好，省時間', ok:false, exp:'教育訓練規定**吹 2・刷 2・吹 2**。'} ] } },
-    { id:'premix', name:'預打藥劑', tr:'見紅才打', hint:'藥劑槍先往旁邊的紙板打幾槍，確認混合均勻。',
+    { id:'premix', name:'預打藥劑', plain:'膠是兩種藥劑在管口混出來的。前面幾槍還沒混勻，先打在紙板上，顏色對了才能用。', tr:'見紅才打', hint:'藥劑槍先往旁邊的紙板打幾槍，確認混合均勻。',
       q:{ title:'DEWALT 藥劑預打出來是白色，可以注入嗎？', body:'藥劑槍剛裝上新的一支。', src:SRC.anchor, opts:[
         {t:'可以，顏色不重要', ok:false, exp:'打出白色＝**混合不完全，不可用**。'},
         {t:'不行，要打到均勻深紅才可注入（3 槍以上）', ok:true, exp:'Hilti 330ml 是至少 2 槍、均勻淺灰。'} ] } },
-    { id:'inject', name:'注膠', tr:'從底開始', hint:'把膠打進孔裡。',
+    { id:'inject', name:'注膠', plain:'膠從孔底往外打，空氣才不會被關在孔裡。打到大約三分之二滿。', tr:'從底開始', hint:'把膠打進孔裡。',
       q:{ title:'膠從哪裡開始注？', body:'孔已經清好，藥劑顏色正確。', src:SRC.anchor, opts:[
         {t:'從孔口往裡灌滿', ok:false, exp:'從孔口灌會把空氣封在孔底。要**從孔底開始注**。'},
         {t:'從孔底開始注，約 2/3 滿', ok:true, exp:'從孔底注膠約 2/3，之後旋轉植入螺桿，孔口要溢膠。'} ] } },
-    { id:'rod', name:'植入螺桿', tr:'轉進去，不是插進去', hint:'旋轉植入螺桿，孔口要看到溢膠。',
+    { id:'rod', name:'植入螺桿', plain:'螺桿邊轉邊插到底，讓膠把螺紋包滿。插多深照原廠和結構計算，不能偷懶。', tr:'轉進去，不是插進去', hint:'旋轉植入螺桿，孔口要看到溢膠。',
       q:{ title:'螺桿要植多深？', body:'M10 化學錨栓。有人說統一埋 50mm 比較省事。', src:SRC.anchor, opts:[
         {t:'統一埋 50mm，省工', ok:false, exp:'SGS 拉拔：化栓**埋 50mm 只剩標準的 58～93% 拉力**，全部是混凝土錐體破壞。M10 的**原廠最小埋深**是 60mm。'},
         {t:'照原廠最小埋深，並照結構計算', ok:true, exp:'DEWALT、Hilti 的 M10 最小埋深都是 60mm。這是下限，設計埋深**照結構計算**。'} ] } },
-    { id:'cure', name:'養護', tr:'九小時的耐心', hint:'膠還沒乾。',
+    { id:'cure', name:'養護', plain:'膠還沒硬，螺桿一碰就鬆。乾燥要等 9 小時，潮濕要等 18 小時。', tr:'九小時的耐心', hint:'膠還沒乾。',
       q:{ title:'螺桿植好了，可以馬上鎖托架嗎？', body:'DEWALT，現場乾燥。', src:SRC.anchor, opts:[
         {t:'可以，螺桿已經插好了', ok:false, exp:'**養護期間不得擾動、加載**。乾燥要 9 小時，潮濕 18 小時。'},
         {t:'不行，乾燥要養護 9 小時（潮濕 18 小時）', ok:true, exp:'拉脹螺栓才是鎖完立刻可以受力。'} ] } },
-    { id:'plate', name:'鎖托架', tr:'二十牛頓米', hint:'養護完成，鎖上托架。',
+    { id:'plate', name:'鎖托架', plain:'膠硬了，才能把托架鎖上去。螺帽照原廠扭力鎖，不是越緊越好。', tr:'二十牛頓米', hint:'養護完成，鎖上托架。',
       q:{ title:'M10 螺帽，鎖多緊？', body:'DEWALT PURE 500+，M10。', src:SRC.anchor, opts:[
         {t:'越緊越牢，用力鎖', ok:false, exp:'扭力要照原廠表，**M10 不超過 20 N·m**。'},
         {t:'不超過原廠 Tmax（M10 是 20 N·m）', ok:true, exp:'扭力照原廠表。'} ] } },
@@ -2160,11 +2171,11 @@ function doPlace(){ const st=need(); placed.add(st.id); carry=null; if(st.in) ca
   if(LV.pallets[st.id]) LV.pallets[st.id].lb.visible=false;
   if(L.fx && L.fx[st.id]) L.fx[st.id](); else dropIn(st.id, st.temp, st.multi ? st.multi.length*3 : 0);
   if(L.onPlace&&L.onPlace[st.id]) L.onPlace[st.id](); award(L.id+'.'+st.id); fan('cheer',0.55); cur++; stats(); buildTray();
-  if(cur>=L.steps.length) finish(); else setGoal(); }
+  const nx=()=>{ if(cur>=L.steps.length) finish(); else setGoal(); }; if(st.plain) say([{who:L.boss, t:st.plain}], nx); else nx(); }   // plain＝做對之後，用一句白話說這步在幹嘛
 function finish(){ done=true; const sec=Math.round((Date.now()-t0)/1000); const best=store.get('cwstory_best',{}); if(!best[L.id]||score>best[L.id].s){ best[L.id]={s:score,n:ncr}; store.set('cwstory_best',best); }
   award(L.id+'#done'); if(ncr===0) award(L.id+'#clean'); if(sec<=90) award('misc.ontime'); checkUnlocks();
   const lines=(ncr===0?L.outroGood:L.outroBad).map(l=>Object.assign({},l,{t:l.t.replace('{N}',ncr)}));
-  setTimeout(()=>say(lines, ()=>{ $('#goal').textContent=L.short+(L.office?'下班。':'收工。'); showDayEnd(sec); }), 900); }
+  setTimeout(()=>say(lines, ()=>{ $('#goal').textContent=L.short+(L.office?'下班。':'收工。'); if(L.recap) showCard(L.recap, ()=>showDayEnd(sec)); else showDayEnd(sec); }), 900); }
 let deTimer=null, weekShown=false, DE_SEC=10;                                                          // 結算畫面：倒數幾秒後自動開始隔天
 function hideDayEnd(){ clearInterval(deTimer); deTimer=null; $('#dayEnd').style.display='none'; }
 function deLabels(a,h1,h2){ ['deTime','deScore','deNcr'].forEach((id,i)=>{ $('#'+id).nextElementSibling.textContent=a[i]; }); $('#deH1').textContent=h1; $('#deH2').textContent=h2; }
