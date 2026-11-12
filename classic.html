@@ -598,6 +598,7 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
   S(box(1.9,0.2,1.9, cx-12.2,y0+0.1,0.2, mat.rc));
   // 工務所（兩層貨櫃屋）和流動廁所
   // 工務所：兩層貨櫃屋（同一個顏色），二樓前面有走廊、西邊有鐵樓梯，屋頂是往前伸的鐵皮屋簷。放在隔壁棟南邊的空地（停車位西邊），直升機旋翼、尾巴、紅地毯都碰不到
+  LV.smashRects.push({kind:'office', x:cx-22, z:1.9, hx:7.5/2+0.5, hz:2.8/2+1.4});   /* 工務所：拿球棒砸它＝任務失敗 */
   const ox=cx-22, oz=1.9, OW=7.5, OD=2.8, OH=2.7, wn=std(0x9fd0f0,{emissive:0x24465a}), cw=std(0xeef1f4), ct=std(0x3d6fa8), st=std(0x59616c), fz=oz+OD/2;
   [0,1].forEach(f=>{ const yb=y0+f*OH; S(box(OW,OH-0.06,OD, ox,yb+OH/2,oz, cw)); S(box(OW+0.04,0.12,OD+0.04, ox,yb+0.06,oz, ct)); S(box(OW+0.04,0.1,OD+0.04, ox,yb+OH-0.05,oz, ct));   // 兩層同一個顏色；上下各一圈藍色框
     [-2.6,-0.9,0.8].forEach(a=>{ S(box(1.2,0.85,0.05, ox+a,yb+1.55,fz+0.01, wn)); S(box(1.3,0.06,0.07, ox+a,yb+1.1,fz+0.02, ct)); });   // 每層三扇窗＋窗台
@@ -780,6 +781,7 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
       g.fillStyle='#b9b4a8'; g.fillRect(12,12,104,148);
       const pad=new THREE.Mesh(new THREE.PlaneGeometry(2.9,2.42), std(0xffffff,{map:new THREE.CanvasTexture(c), polygonOffset:true, polygonOffsetFactor:-2, polygonOffsetUnits:-2})); pad.rotation.x=-Math.PI/2; pad.position.set(hx,Y+0.005,hz+0.46); pad.receiveShadow=true; stat(pad); }
     LV.hoist={cage:cg, x:hx, z:hz, Y, T, t:0, run:false, hw:HW, hd:HD, doors:{w:dW, s:dS}, open:{w:0,s:0}, want:{w:0,s:0}};
+    cg.traverse(o=>{ if(o.isMesh){ o.userData.pick={kind:'hoist'}; LV.pick.push(o); } }); LV.fx.push(rideFx); LV.fx.push(outFx);   /* 點電梯＝走過去搭；四樓、一樓都可以 */
     LV.fx.push(dt=>{ const H=LV.hoist; for(const k of ['w','s']){ const o=H.open; o[k]+=(H.want[k]-o[k])*Math.min(1,dt*5); if(Math.abs(H.want[k]-o[k])<0.01) o[k]=H.want[k]; H.doors[k].position.y=o[k]*1.95; } });   // 門往上拉開、放下來
     LV.fx.push((dt,t)=>{ const me=LV.actors.you, H=LV.hoist; if(!LV.hoisting || !me) return; camGoal=null;
       if(!H.run && !H.pendRun && !H.arrived && H.cage.position.y<H.Y+0.01) H.want.w = Math.hypot(me.x-(H.x-H.hw), me.z-H.z)<3.5 ? 1 : 0;   // 走近西門：門拉開
@@ -921,7 +923,7 @@ function officeWindows(x1){ const y0=L.gy, c=document.createElement('canvas'); c
   [0.4,3.4,6.4].forEach(z=>{ const w=new THREE.Mesh(new THREE.PlaneGeometry(2.4,1.5), m); w.rotation.y=-Math.PI/2; w.position.set(x1-0.02,y0+2.3,z); stat(w);
     [[0,1.55,2.5,0.08],[0,3.05,2.5,0.08],[-1.22,2.3,0.08,1.6],[1.22,2.3,0.08,1.6],[0,2.3,0.06,1.5]].forEach(([dz,y,a,b])=>stat(box(0.08,b,a, x1-0.05,y0+y,z+dz, mat.white))); }); }
 // 週五的廠區外圍（不是工地）：混凝土地坪、車道線、隔壁兩棟蓋好的廠房、堆高機、成捆的三明治板、貨車、圍牆、遠方的樓
-function plantWorld(){ const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShadow=false; }); return stat(m); }, wh=std(0xe9edf0), rf=std(0x5f7f9c), dk=std(0x3a4350);
+function plantWorld(){ LV.fx.push(outFx); const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShadow=false; }); return stat(m); }, wh=std(0xe9edf0), rf=std(0x5f7f9c), dk=std(0x3a4350);
   [cx-9.1,cx-4.9].forEach(x=>S(box(0.12,0.012,36, x,y0+0.016,-2, mat.mark)));                                                                  // 車道線
   const shed=(x,z,w,d,h,ry)=>{ const g=new THREE.Group(); g.position.set(x,y0,z); g.rotation.y=ry; g.add(box(w,h,d, 0,h/2,0, wh)); [-1,1].forEach(e=>{ const r=box(w/2+0.5,0.16,d+0.6, e*w/4,h+w*0.085,0, rf); r.rotation.z=-e*0.34; g.add(r); });
     g.add(box(3.2,3.4,0.06, -w/4,1.7,d/2+0.02, dk)); g.add(box(3.2,3.4,0.06, w/4,1.7,d/2+0.02, dk)); g.add(box(w,0.5,0.05, 0,h-0.6,d/2+0.02, rf)); g.traverse(o=>{ o.userData.noFade=true; }); S(g); };   // 蓋好的廠房：牆、斜屋頂、兩個捲門（擋到主角也不變透明）
@@ -934,10 +936,10 @@ function plantWorld(){ const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShad
   parkingLot(y0, [[cx-1.8,11.5,15.3],[cx+0.8,11.5,15.3],[cx+3.4,11.5,15.3],[cx+6.0,11.5,15.3],[cx+8.6,11.5,15.3],[cx-8.6,11.3,15.1],[cx-11.2,11.3,15.1],[cx-13.8,11.3,15.1],[cx-14.6,12.4,14.8],[cx-19.0,12.4,14.8]],
     [['hatch',cx-12.7,13.2],['sedan',cx-0.5,13.4,0x2f4a66],['pickup',cx+2.1,13.4,0x3f7fc1],['sedan',cx+4.7,13.4,0x2f5d50],['hatch',cx+7.3,13.4,0xc9a46a]], [['plainB',cx-15.0,13.6],['plainA',cx-15.9,13.6],['plainC',cx-16.8,13.6],['plainA',cx-17.7,13.6],['plainB',cx-18.6,13.6]]);   /* 同事開的都是普通車 */   // 停車區：北邊圍牆內側（直升機降落區北邊）
   const fk=new THREE.Group(), or=std(0xf08a1c); fk.position.set(cx+12.2,y0,3.6); fk.rotation.y=-0.5; fk.add(box(1.1,0.7,1.9, 0,0.6,0, or)); fk.add(box(1.0,0.9,0.9, 0,1.4,-0.3, dk)); [[-0.5,0.6],[0.5,0.6],[-0.5,-0.6],[0.5,-0.6]].forEach(([a,b])=>fk.add(cyl(0.28,0.22,'x', a,0.28,b, mat.tire,14)));
-  [-0.3,0.3].forEach(a=>{ fk.add(box(0.08,2.2,0.08, a,1.2,1.0, dk)); fk.add(box(0.1,0.05,1.1, a,0.5,1.55, mat.steel)); }); fk.add(box(0.95,0.5,0.9, 0,0.85,1.6, wh)); S(fk);                                // 堆高機，叉著一捆板
+  [-0.3,0.3].forEach(a=>{ fk.add(box(0.08,2.2,0.08, a,1.2,1.0, dk)); fk.add(box(0.1,0.05,1.1, a,0.5,1.55, mat.steel)); }); fk.add(box(0.95,0.5,0.9, 0,0.85,1.6, wh)); fk.userData.smash='dig'; S(fk);                                // 堆高機，叉著一捆板
   [[13.5,8.5,4],[15.2,8.8,3],[14.0,-2.5,5]].forEach(([a,z,n])=>{ for(let k=0;k<n;k++) S(box(1.0,0.12,3.2, cx+a,y0+0.14+k*0.13,z, k%2?mat.face:wh)); S(box(1.0,0.01,3.2, cx+a,y0+0.085+n*0.13,z, mat.film)); [-1,1].forEach(e=>S(box(1.1,0.08,0.1, cx+a,y0+0.04,z+e*1.1, mat.wood))); });   // 成捆的三明治板
   const tk=new THREE.Group(); tk.position.set(cx+16.5,y0,3.0); tk.add(box(2.3,2.3,2.2, 0,1.6,3.4, wh)); tk.add(box(2.3,0.3,6.2, 0,1.0,-0.8, dk)); [[-1.05,3.3],[1.05,3.3],[-1.05,-1.2],[1.05,-1.2],[-1.05,-2.6],[1.05,-2.6]].forEach(([a,b])=>tk.add(cyl(0.48,0.3,'x', a,0.48,b, mat.tire,16)));
-  for(let k=0;k<4;k++) tk.add(box(1.0,0.12,3.2, 0,1.22+k*0.13,-1.0, k%2?mat.face:wh)); S(tk);                                                                     // 載板的貨車
+  for(let k=0;k<4;k++) tk.add(box(1.0,0.12,3.2, 0,1.22+k*0.13,-1.0, k%2?mat.face:wh)); tk.userData.smash='car'; S(tk);                                                                     // 載板的貨車
   const wl=std(0xb9bdc2), wall=(x0,z0,x1,z1)=>{ const len=Math.hypot(x1-x0,z1-z0), b=box(len,2.2,0.2, (x0+x1)/2,y0+1.1,(z0+z1)/2, wl); b.rotation.y=Math.atan2(z0-z1,x1-x0); b.userData.noFade=true; S(b); };   /* 圍牆擋到主角也不變透明（原本鏡頭在牆外時整段消失） */
   wall(cx-24,-22, cx-9.3,-22); wall(cx-4.7,-22, cx+27,-22); wall(cx-24,-22, cx-24,17); wall(cx+27,-22, cx+27,17); wall(cx-24,17, cx-9.3,17); wall(cx-4.7,17, cx+27,17);                // 圍牆；車道頭尾留門
   { const gp=std(0x6b6f75), al=std(0xc9ced4,{metalness:.4, roughness:.4}), Z=17;                                                       // 南邊大門：門柱、伸縮門、警衛室、公司招牌
@@ -945,7 +947,7 @@ function plantWorld(){ const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShad
     S(board(['爆肝科技股份有限公司','第二工廠'], cx-4.02,y0+2.0,Z+0.36,0,1.3,'#2b2f36','#e2c48f'));                                     // 公司招牌（門柱外側）
     S(box(0.7,1.5,0.4, cx-8.92,y0+0.85,Z, al)); for(let k=0;k<6;k++) S(box(0.03,1.45,0.42, cx-9.2+k*0.11,y0+0.85,Z, mat.steelDark));   // 電動伸縮門：收在左邊門柱旁
     S(box(0.5,0.35,0.45, cx-8.92,y0+1.78,Z, std(0xf2b01e))); S(box(4.56,0.02,0.08, cx-7.0,y0+0.01,Z, mat.steelDark));                 // 馬達頭（黃色）、地上的軌道
-    const bx=cx-2.4, bz=15.95;   /* 大門右邊（左邊是你的停車格，大車停進去會壓到） */ S(box(1.6,2.4,1.4, bx,y0+1.2,bz, std(0xe9edf0))); S(box(1.9,0.12,1.7, bx,y0+2.46,bz, std(0x5f7f9c)));  // 警衛室：牆、屋頂
+    const bx=cx-2.4, bz=15.95; LV.smashRects.push({kind:'office', x:bx, z:bz, hx:0.8+0.4, hz:0.7+0.4});   /* 警衛室：拿球棒砸它＝任務失敗 */   /* 大門右邊（左邊是你的停車格，大車停進去會壓到） */ S(box(1.6,2.4,1.4, bx,y0+1.2,bz, std(0xe9edf0))); S(box(1.9,0.12,1.7, bx,y0+2.46,bz, std(0x5f7f9c)));  // 警衛室：牆、屋頂
     S(box(0.03,0.8,1.0, bx-0.815,y0+1.45,bz, std(0x9fd0f0,{emissive:0x24465a}))); S(box(0.03,0.08,1.1, bx-0.83,y0+1.02,bz, std(0x3a4350)));   // 朝大門的窗、窗台
     const sg=board(['警衛室','訪客請換證・加班免登記'], bx-0.82,y0+2.08,bz,-Math.PI/2,1.2,'#f6efe0','#1b1e24'); S(sg); }
   standBoard(['廠區限速 10 公里','（堆高機例外）'], cx+6.2,3.4,-0.7,2.3,'#f2cf1d','#1b1e24');
@@ -1024,7 +1026,7 @@ function excavator(x,y,z,ry,pile=true){ const g=new THREE.Group(); g.position.se
   const b1=new THREE.Group(); b1.position.set(-0.9,0.8,-0.35); up.add(b1); b1.add(add(box(2.8,0.32,0.32, -1.4,0,0, yl)));     // 大臂：從車身前面往前伸
   const b2=new THREE.Group(); b2.position.set(-2.8,0,0); b1.add(b2); b2.add(add(box(2.0,0.26,0.26, -1.0,0,0, yl)));             // 小臂
   const bk=new THREE.Group(); bk.position.set(-2.0,0,0); b2.add(bk); bk.add(add(box(0.5,0.55,0.75, -0.2,-0.15,0, dk))); [-0.3,-0.1,0.1,0.3].forEach(zz=>bk.add(add(box(0.12,0.08,0.06, -0.45,-0.42,zz, std(0x8e959c)))));   // 挖斗＋斗齒
-  stat(g); if(pile){ const pl=ball(1.4,std(0x8a6a45),x+Math.cos(ry)*-4.6,y,z-Math.sin(ry)*-4.6,1.3,0.55,1.1); pl.castShadow=false; stat(pl); }   // 前面一堆土
+  g.userData.smash='dig'; stat(g); if(pile){ const pl=ball(1.4,std(0x8a6a45),x+Math.cos(ry)*-4.6,y,z-Math.sin(ry)*-4.6,1.3,0.55,1.1); pl.castShadow=false; stat(pl); }   // 前面一堆土
   const ph=Math.random()*6; LV.fx.push((dt,t)=>{ const q=t*0.6+ph; up.rotation.y=Math.sin(q*0.5)*0.35; b1.rotation.z=-0.55+Math.sin(q)*0.18; b2.rotation.z=1.35+Math.sin(q+0.8)*0.3; bk.rotation.z=0.6+Math.sin(q+1.6)*0.45; }); }
 // 剪刀式高空作業車：底盤＋輪子、交叉的剪刀臂、平台＋欄杆，平台上一個工人；平台慢慢升上去、停一下、再降下來
 function scissorLift(x,y,z){ const g=new THREE.Group(); g.position.set(x,y,z); const yl=std(0xf2b01e), dk=std(0x2b2f36), add=m=>{ m.traverse(o=>{ o.castShadow=false; }); return m; };
@@ -1039,7 +1041,7 @@ function scissorLift(x,y,z){ const g=new THREE.Group(); g.position.set(x,y,z); c
 // 停車區：地上畫白線，同事的汽車停在格子裡、機車排一排（車頭朝北）；你的格子空著等你
 function parkingLot(y0, slots, cars, bikes){ const wt=std(0xf4f4f0), ln=(w,d,x,z)=>{ const m=box(w,0.012,d, x,y0+0.026,z, wt); m.castShadow=false; stat(m); };
   slots.forEach(([x,z0,z1])=>ln(0.1, z1-z0, x, (z0+z1)/2));                                                                // 格子之間的分隔線
-  cars.concat(bikes).forEach(([k,x,z,col])=>{ const g=['sedan','pickup','hatch'].includes(k) ? makeCommonCar(k,col) : makeRide(k); g.position.set(x,y0,z); g.rotation.y=Math.PI/2; g.traverse(o=>{ o.castShadow=false; }); stat(g); }); }
+  cars.concat(bikes).forEach(([k,x,z,col])=>{ const g=['sedan','pickup','hatch'].includes(k) ? makeCommonCar(k,col) : makeRide(k); g.position.set(x,y0,z); g.rotation.y=Math.PI/2; g.traverse(o=>{ o.castShadow=false; }); g.userData.smash='car'; stat(g); }); }
 // 隔壁棟的施工電梯：車廂在桁架東側（門朝樓、網狀圍板、頂板、裡面一個操作員），每層一座平台＋黃色柵門接到鷹架；車廂照停靠樓層上下跑，停的時候門拉開
 function nbHoist(mx, y0, H, NF, S){ const yl=std(0xf0b323), dk=mat.steelDark, net=std(0x59616c,{transparent:true, opacity:0.45}), cxh=mx+1.15, cz=-0.42, CW=1.5, CD=1.04;
   const cg=new THREE.Group(); cg.position.set(cxh,y0,cz); cg.add(box(CW,0.05,CD, 0,0.025,0, dk)); cg.add(box(CW,0.08,CD, 0,2.25,0, yl));   // 地板、頂板
@@ -1071,7 +1073,7 @@ function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas')
 const LV = { group:null, parts:{}, refs:{}, pallets:{}, pick:[], actors:{} };
 const anims = [];
 function resetGroup(){ if(LV.group){ scene.remove(LV.group); LV.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
+  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.down=false; LV.occ=null; LV.smash=null; LV.call=null; LV.ride=null; LV.rideArm=true; LV.myRide=null; LV.smashRects=[]; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
 function part(id){ return LV.parts[id] || (LV.parts[id]={meshes:[],ghosts:[]}); }
 function ghostOf(id, mesh){ if(mesh.isSprite) return; const gh=new THREE.Mesh(mesh.geometry, mat.ghost); gh.position.copy(mesh.position); gh.rotation.copy(mesh.rotation); gh.visible=false; (LV.host||LV.group).add(gh); part(id).ghosts.push(gh); }
 function add(id, mesh){ mesh.visible=false; mesh.userData.home=mesh.position.clone(); (LV.host||LV.group).add(mesh); part(id).meshes.push(mesh); ghostOf(id,mesh); return mesh; }
@@ -1742,7 +1744,7 @@ function rideOn(g){ const me=LV.actors.you; if(!me) return; const u=g.userData, 
   mu.armL.rotation.x=mu.armR.rotation.x=-1.05; mu.armL.rotation.z=0.12; mu.armR.rotation.z=-0.12; me.g.traverse(o=>{ if(o.userData.blob) o.visible=false; }); }
 function rideOff(g){ const me=LV.actors.you; if(me) me.g.traverse(o=>{ if(o.userData.blob) o.visible=true; }); g.updateMatrixWorld(true); _rv.set(g.userData.seat.x, 0, 0.36); g.localToWorld(_rv); return {x:_rv.x, z:_rv.z}; }   // 下車：站在坐墊旁邊
 let cut=null;   // 進場動畫：stage 0 開進來／降落，1 下車走進場，2 結束（座駕留在場邊）
-function runEntrance(kind, then){ const g=makeRide(kind); LV.group.add(g); LV.actors.you.g.visible=false; cut={kind,g,t:0,stage:0,then}; camGoal={theta:L.yard!==undefined?-0.25:0.1,phi:1.05,dist:22}; award('misc.ride'); stepCut(0); }
+function runEntrance(kind, then){ const g=makeRide(kind); LV.group.add(g); LV.myRide=g; LV.actors.you.g.visible=false; cut={kind,g,t:0,stage:0,then}; camGoal={theta:L.yard!==undefined?-0.25:0.1,phi:1.05,dist:22}; award('misc.ride'); stepCut(0); }
 // 灌漿動畫：壓送車從後門沿便道開進來停在樓下 → 撐開支撐腳、伸出臂架到這一層 → 混凝土由遠灌到近，工人跟在後面推平 → 收臂、往前開，從前門出去
 function setSeg(m,a,b){ m.position.copy(a).add(b).multiplyScalar(0.5); m.lookAt(b); m.scale.z=Math.max(0.01,a.distanceTo(b)); }   // 把一根桿子擺在 a、b 兩點之間
 function pumpTruck(){ const g=new THREE.Group(), ty=std(0xe0a91f), dk=std(0x23272d), wn=std(0x9fd0f0,{emissive:0x24465a});          // 真實比例：車長約 11 公尺、寬 2.5、高 3.4（人高 1.8）
@@ -1910,7 +1912,7 @@ function pushOut(a,slide){ for(const o of (LV.obs||[])){ const q=rectDist(o,a.x,
     if(q.d>1e-4){ nx=q.ex/q.d; nz=q.ez/q.d; a.x+=nx*(PR-q.d); a.z+=nz*(PR-q.d); }
     else { const px=o.hx-Math.abs(q.dx), pz=o.hz-Math.abs(q.dz); if(px<pz){ nx=Math.sign(q.dx)||1; nz=0; a.x=o.x+nx*(o.hx+PR); } else { nx=0; nz=Math.sign(q.dz)||1; a.z=o.z+nz*(o.hz+PR); } }
     if(slide && a.dest){ const tx=-nz, tz=nx, sg=(tx*(a.dest.x-a.x)+tz*(a.dest.z-a.z))>=0 ? 1 : -1; a.x+=tx*sg*0.03; a.z+=tz*sg*0.03; } } }   // 撞上就沿著邊滑過去
-function stepActor(a,dt,t){ let moving=false;
+function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
   if(a.dest){ const dx=a.dest.x-a.x, dz=a.dest.z-a.z, d=Math.hypot(dx,dz);
     if(a.destRef!==a.dest){ a.destRef=a.dest; a.bestD=d; a.stuck=0; }
     if(d<0.06){ a.dest=null; const f=a.onArrive; a.onArrive=null; if(f) f(); }
@@ -1918,7 +1920,8 @@ function stepActor(a,dt,t){ let moving=false;
   else if(a.who!=='you' && LV.actors.you){ const p=LV.actors.you, free = !a.follower && !dlgOpen && !(a.lookT>performance.now()), busy = free && a.seated && Math.hypot(a.x-a.home.x,a.z-a.home.z)<0.3;
     a.atDesk=busy; a.atWork = free && !a.seated && !L.office && Math.hypot(a.x-a.home.x,a.z-a.home.z)<0.9 && Math.hypot(p.x-a.x,p.z-a.z)>1.6;                 // 工地：在自己的位置、你沒走近、沒在講話＝在忙
     a.face = busy ? a.deskFace : a.atWork ? Math.atan2(L.cx-a.x, 0.2-a.z) : a.waiting ? a.face : Math.atan2(p.x-a.x,p.z-a.z); }   // 坐著的人平常面向螢幕，講話或被叫才轉過來
-  pushOut(a, moving);
+  if(LV.down && a.who==='you' && a.liftY===undefined){ if(occBlocked(a.x,a.z,-0.02)){ if(!occBlocked(a.x,a.pz0,-0.02)) a.z=a.pz0; else if(!occBlocked(a.px0,a.z,-0.02)) a.x=a.px0; else { a.x=a.px0; a.z=a.pz0; } } }   /* 在外面：撞到東西沿著邊滑 */
+  else pushOut(a, moving);
   if(a.follower && a.liftY===undefined) for(const k in LV.actors){ const o=LV.actors[k]; if(o===a || o.liftY!==undefined || !o.g.visible) continue; const dx=a.x-o.x, dz=a.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ const fx=a.x, fz=a.z; a.x+=dx/d*(0.55-d); a.z+=dz/d*(0.55-d); pushOut(a); const c=clampXZ(a.x,a.z,{x:fx,z:fz}); a.x=c.x; a.z=c.z; } }   /* 被擠開也不會擠到牆的位置上；小弟走完這一步，跟任何人都保持 55 公分（走路途中也不會擦撞） */
   if(moving && a.dest){ const d=Math.hypot(a.dest.x-a.x,a.dest.z-a.z); if(d<a.bestD-0.015){ a.bestD=d; a.stuck=0; } else a.stuck+=dt;
     if(a.stuck>0.4){ a.dest=null; a.restUntil=t+0.9; moving=false; const f=a.onArrive; a.onArrive=null; if(f) f(); } }   // 一直沒有更靠近目標＝被擋住：停下，不要原地踏步
@@ -1942,7 +1945,7 @@ function stepActor(a,dt,t){ let moving=false;
     const eL=u.armL.userData.elbow, eR=u.armR.userData.elbow; u.armR.rotation.x=u.armL.rotation.x = -1.35-1.0*e*(1-h); u.armR.rotation.z=-0.1; u.armL.rotation.z=0.5; eL.rotation.x=eR.rotation.x = -1.2*e*(1-h);   // 蓄力：球棒舉到肩後
     a.g.rotation.y = a.face - 1.6*e*(1-h) + 1.9*h + 0.3*fo; a.g.rotation.x = 0.12*e*(1-h) - 0.2*h*(1-fo*0.6); u.legL.rotation.x = -0.5*h; u.legR.rotation.x = 0.3*h;   // 轉身、前傾、跨步
     if(h>0 && !sw2.lunge){ sw2.lunge=true; const tg=sw2.target, d=Math.hypot(tg.x-a.x,tg.z-a.z)||1; a.x+=(tg.x-a.x)/d*0.25; a.z+=(tg.z-a.z)/d*0.25; }
-    if(h>=1 && !sw2.hit){ sw2.hit=true; const tg=sw2.target, d=Math.hypot(tg.x-a.x,tg.z-a.z)||1; knockDown(tg,(tg.x-a.x)/d,(tg.z-a.z)/d); camShake=0.4; thud(); bubble(tg.who,'啊！！',true); bubble('you','鏘——！',true); }   // 打到：對方被打退、畫面震、撞擊聲
+    if(h>=1 && !sw2.hit){ sw2.hit=true; const tg=sw2.target, d=Math.hypot(tg.x-a.x,tg.z-a.z)||1; if(tg.smash) smashHit(tg.smash); else { knockDown(tg,(tg.x-a.x)/d,(tg.z-a.z)/d); bubble(tg.who,'啊！！',true); } camShake=0.4; thud(); bubble('you','鏘——！',true); }   // 打到：對方被打退、畫面震、撞擊聲
     if(sw2.t>1.15){ a.g.rotation.x=0; a.swing=null; sw2.done(); } }
   if(a.knock){ const k=a.knock; k.t+=dt; const q=Math.min(1,k.t/0.6), e=1-Math.pow(1-q,2), bo=q>=1 ? Math.sin(Math.min(1,(k.t-0.6)/0.25)*Math.PI)*0.1 : 0;   // 被球棒打飛：往後飛 2 公尺、空中往後倒、落地躺平再彈一下
     a.x=k.x0+(k.x1-k.x0)*e; a.z=k.z0+(k.z1-k.z0)*e; a.g.position.set(a.x, gyAt(a.x,a.z)+Math.sin(q*Math.PI)*0.9+0.17*Math.min(1,q*1.5)+bo, a.z); a.face=k.face; a.g.rotation.y=k.face; a.g.rotation.x=-Math.PI/2*Math.min(1,q*1.4); a.g.rotation.z=0;   /* 方向用挑好的那個（不然會被「轉頭看你」蓋掉） */
@@ -2156,6 +2159,91 @@ function ask(st, cb){ const by=st.q.by||L.boss; dlgOpen=true; optsOpen=true; dlg
 function linRun(){ const a=LV.actors.lin, p=LV.actors.you; if(a&&p){ a.dest={x:p.x+0.95,z:p.z+0.35}; a.onArrive=null; } }
 function linHome(){ const a=LV.actors.lin; if(a){ a.dest={x:a.home.x,z:a.home.z}; a.onArrive=null; } }
 
+
+// ===================== 走到外面：週二搭施工電梯下一樓 =====================
+// 外面能走的範圍＝乙種圍籬裡面（留 60 公分）；擋路的東西不一個一個登記，直接把場景裡「腰部高度有實體」的東西畫進 25 公分的格子
+const OUT = () => L.yard!==undefined ? {x0:L.cx-37.4, x1:L.cx+29.4, z0:-25.4, z1:21.4} : L.plant ? {x0:L.cx-23.4, x1:L.cx+26.4, z0:-21.4, z1:16.4} : null;   // 週五：廠區圍牆裡面
+const inWork = (x,z,m=0) => x>L.cx-4.2+m && x<L.cx+4.2-m && z>0.85+m && z<6.6-m;   // 週五的工作區（平常能走的範圍）
+function buildOcc(){ const A=OUT(), n=0.25, W=Math.ceil((A.x1-A.x0)/n)+1, H=Math.ceil((A.z1-A.z0)/n)+1, d=new Uint8Array(W*H), y=yardY(), skip=new Set(), bb=new THREE.Box3();
+  Object.values(LV.actors).forEach(a=>a.g.traverse(o=>skip.add(o))); if(LV.hoist) LV.hoist.cage.traverse(o=>skip.add(o));
+  const mark=(x0,z0,x1,z1)=>{ const i0=Math.max(0,Math.floor((x0-A.x0)/n)), i1=Math.min(W-1,Math.ceil((x1-A.x0)/n)), j0=Math.max(0,Math.floor((z0-A.z0)/n)), j1=Math.min(H-1,Math.ceil((z1-A.z0)/n)); for(let j=j0;j<=j1;j++) for(let i=i0;i<=i1;i++) d[j*W+i]=1; };
+  LV.group.updateMatrixWorld(true);
+  LV.group.traverse(o=>{ if(!o.isMesh || skip.has(o) || o.userData.blob) return; for(let q=o;q;q=q.parent) if(!q.visible) return; const m0=Array.isArray(o.material)?o.material[0]:o.material; if(m0.transparent && m0.opacity<0.6) return;
+    const g=o.geometry; if(!g.boundingBox) g.computeBoundingBox(); bb.copy(g.boundingBox).applyMatrix4(o.matrixWorld); if(bb.max.y<y+0.25 || bb.min.y>y+1.7) return;   // 只看腰部高度（25 公分～1.7 公尺）
+    if(bb.max.x-bb.min.x>30 && bb.max.z-bb.min.z>30) return; mark(bb.min.x,bb.min.z,bb.max.x,bb.max.z); });
+  if(L.yard!==undefined) mark(-3.6,-10.9,13.2,8.55);   // 週二：主樓的一樓（大廳施工中，不能進去）
+  if(L.plant) mark(-3.8,-8.45,10.8,0.15);   // 週五：廠房本體（正在裝的那一跨也不能穿進去）
+  LV.occ={A,n,W,H,d}; }
+function occAt(x,z){ const O=LV.occ; if(!O) return 0; const i=Math.round((x-O.A.x0)/O.n), j=Math.round((z-O.A.z0)/O.n); return i<0||j<0||i>=O.W||j>=O.H ? 1 : O.d[j*O.W+i]; }
+function occBlocked(x,z,pad=0.04){ const r=PR+pad; if(occAt(x,z)) return true; for(let k=0;k<8;k++){ const a=k*Math.PI/4; if(occAt(x+Math.cos(a)*r, z+Math.sin(a)*r)) return true; } return false; }
+// 可以砸的東西：車（parkingLot 的車）、自己的座駕、怪手、工務所、在做事的工人
+function buildSmash(){ const out=[], bb=new THREE.Box3(); LV.group.updateMatrixWorld(true);
+  LV.group.traverse(o=>{ const k = o===LV.myRide ? 'mine' : o.userData.smash || (o.userData.crew ? 'person' : null); if(!k || !o.visible) return; bb.setFromObject(o); const c=bb.getCenter(new THREE.Vector3());
+    if(bb.min.y>yardY()+1.5 || bb.max.y<yardY()+0.2) return; out.push({kind:k, o, x:c.x, z:c.z, hx:(bb.max.x-bb.min.x)/2, hz:(bb.max.z-bb.min.z)/2}); });   // 只算站在地面上的
+  LV.smashRects.forEach(r=>out.push(Object.assign({}, r)));
+  LV.smash=out; }
+function nearSmash(){ if(!LV.smash) return null; const p=LV.actors.you; let best=null, bd=0.9; LV.smash.forEach(s=>{ const d=rectDist(s,p.x,p.z).d; if(d<bd){ bd=d; best=s; } }); return best; }
+function smashSwing(s){ const me=LV.actors.you; if(me.swing) return; me.dest=null; me.onArrive=null; const ex=Math.max(s.x-s.hx,Math.min(s.x+s.hx,me.x)), ez=Math.max(s.z-s.hz,Math.min(s.z+s.hz,me.z)); me.face=Math.atan2(ex-me.x,ez-me.z);
+  me.swing={t:0, id:'bat', target:{x:ex, z:ez, smash:s}, done:()=>smashDone(s)}; }
+function smashHit(s){ const o=s.o; if(o){ const x0=o.position.x, z0=o.position.z; let k=0; const f=dt=>{ k+=dt; const e=Math.max(0,1-k/0.5); o.position.x=x0+Math.sin(k*70)*0.05*e; o.position.z=z0+Math.cos(k*61)*0.04*e; if(k>0.5){ o.position.x=x0; o.position.z=z0; LV.fx.splice(LV.fx.indexOf(f),1); } }; LV.fx.push(f); }   // 被砸到的東西抖一下
+  if(s.kind==='person' && o){ o.rotation.order='YXZ'; o.rotation.x=-Math.PI/2; o.position.y=yardY()+0.18; } }   // 工人被打倒
+function smashDone(s){ const boss=LV.actors[L.boss];   /* 砸自己的車、怪手：球棒還拿在手上 */
+  if(s.kind==='mine'){ bubble('you','（心在淌血）……自己的車。分期還沒繳完。',true); return; }
+  if(s.kind==='dig'){ bubble('you','（怪手：毫髮無傷）',true); if(LV.call && LV.call.left===undefined){ LV.call.dig=true; LV.call.t=Math.min(LV.call.t,0.8); } return; }   // 砸怪手：主任馬上打來
+  prank=null; WHY.car='你拿球棒砸了別人的車。'; WHY.office=L.plant ? '你拿球棒砸警衛室。' : '你拿球棒砸工務所。'; WHY.prank=PRANK.bat.why; award('misc.bat'); failMission(boss, s.kind==='car' ? 'car' : s.kind==='office' ? 'office' : 'prank'); }
+// 搭施工電梯：四樓走到電梯口（或點電梯）＝問要不要下樓；一樓走到西門＝問要不要回四樓。手上的料一起帶
+function goHoist(){ const H=LV.hoist, me=LV.actors.you; if(!H || LV.ride || done) return; const t = LV.down ? {x:H.x-H.hw-0.9, z:H.z} : {x:H.x, z:6.3}; moveTo(t.x,t.z,()=>askRide()); }
+function askRide(){ const H=LV.hoist, me=LV.actors.you; if(!H || LV.ride || done || failed || dlgOpen || me.swing) return; LV.rideArm=false; const dn=!LV.down;
+  dlgOpen=true; optsOpen=true; dlgQ=[]; dlgDone=null; $('#dlg').style.display='flex'; $('#dBar').style.display='none';
+  showLine({who:'you', t: dn ? '（內心 OS）……施工電梯。\n要不要下去一樓晃一下？上班時間跑下去，主任應該會打來……' : '（內心 OS）回四樓吧。\n再不上去，主任要殺下來了。'});
+  const o=$('#dOpts'); o.innerHTML=''; (dn ? ['搭電梯下一樓','算了，回去做事'] : ['搭電梯回四樓','再晃一下']).forEach((t,k)=>{ const b=document.createElement('button'); b.textContent=t; b.dataset.think=k?'no':'yes';
+    b.onclick=()=>{ optsOpen=false; o.innerHTML=''; endDlg(); if(!k) startRide(dn ? 'down' : 'up'); }; o.appendChild(b); }); }
+function askOut(pt){ const me=LV.actors.you; LV.rideArm=false; dlgOpen=true; optsOpen=true; dlgQ=[]; dlgDone=null; $('#dlg').style.display='flex'; $('#dBar').style.display='none';
+  showLine({who:'you', t:'（內心 OS）……要不要去廠區晃一下？\n阿坤師好像一直在看這邊。'});
+  const o=$('#dOpts'); o.innerHTML=''; [['出去晃一下','yes'],['算了，回去做事','no']].forEach(([t,k])=>{ const b=document.createElement('button'); b.textContent=t; b.dataset.think=k; b.onclick=()=>{ optsOpen=false; o.innerHTML=''; endDlg();
+    if(k==='yes'){ setDown(true); const d=LV.edgeDir||{x:0,z:1}, t=pt || {x:me.x+d.x*1.5, z:me.z+d.z*1.5}; moveTo(t.x,t.z,null); } }; o.appendChild(b); }); }
+function startRide(dir){ const H=LV.hoist, me=LV.actors.you; LV.ride={dir, st:-1, t:0}; me.dest = dir==='down' ? {x:H.x, z:8.0} : {x:H.x-H.hw-0.9, z:H.z}; me.onArrive=()=>{ if(LV.ride) LV.ride.st=0; };
+}
+function rideFx(dt){ const R=LV.ride, H=LV.hoist, me=LV.actors.you; if(!R || !H || !me) return; R.t+=dt; camGoal=null;
+  const q=Math.min(1,dt*2.5); target.x+=(me.x-target.x)*q; target.y+=(me.g.position.y+1.0-target.y)*q; target.z+=(me.z-target.z)*q;   // 鏡頭跟著人
+  const dn=R.dir==='down', inD=dn?'s':'w', outD=dn?'w':'s', y0=dn?H.T:H.Y, y1=dn?H.Y:H.T;
+  if(R.st<=0 && Math.abs(H.cage.position.y-y0)>0.005){ const sp=(H.T-H.Y)/3*dt, dy=y0-H.cage.position.y; H.cage.position.y+=Math.max(-sp,Math.min(sp,dy)); H.want.s=H.want.w=0; return; }   // 車廂不在這一層：先叫上來（下來），到了才開門
+  if(R.st===0){ me.liftY=y0+(dn?0:0.02); H.want[inD]=1; if(H.open[inD]>0.95){ R.st=1; me.dest={x:H.x-0.2, z:H.z}; me.onArrive=()=>{ R.st=2; H.want[inD]=0; me.face=Math.PI/2; }; } }   // 開門、走進車廂
+  else if(R.st===1){ me.liftY=H.cage.position.y+0.02; }
+  else if(R.st===2){ me.liftY=H.cage.position.y+0.02; if(H.open[inD]<0.02){ R.st=3; R.t=0; ayiSay(dn ? '一樓喔？……上班時間跑下去，主任知道嗎？' : '四樓喔。回去好好上班。'); } }   // 門關好才開動
+  else if(R.st===3){ const k=Math.min(1,R.t/3.0), e=k<0.12 ? k*k/0.2112 : k>0.88 ? 1-(1-k)*(1-k)/0.2112 : (k-0.06)/0.88; H.cage.position.y=y0+(y1-y0)*e; me.liftY=H.cage.position.y+0.02;
+    if(k>=1){ R.st=4; H.want[outD]=1; } }
+  else if(R.st===4){ me.liftY=H.cage.position.y+0.02; if(H.open[outD]>0.95){ R.st=5; me.dest = dn ? {x:H.x-H.hw-0.9, z:H.z} : {x:H.x, z:8.0};   // 開門、走出去
+      me.onArrive=()=>{ H.want[outD]=0; me.liftY=undefined; LV.ride=null; if(dn) setDown(true); else { setDown(false); me.dest={x:H.x, z:6.2}; me.onArrive=null; } }; } }
+  else if(R.st===5){ me.liftY=H.cage.position.y+0.02; } }
+function setDown(on){ LV.down=on; LV.wasOut=false; LV.edgeP=0; if(on){ if(!LV.occ) buildOcc(); if(!LV.smash) buildSmash(); if(!LV.call) LV.call={who:L.boss, n:0, t:20}; else if(LV.call.left===undefined) LV.call.t=Math.max(LV.call.t,15); } else if(LV.call){ if(LV.call.left!==undefined){ delete LV.call.left; cdShow(null); LV.call.t=10; bubble(LV.call.who,'……總算回來了。下次就沒這麼好運。',true); } } LV.rideArm=false; }   /* 回四樓：電話先停；倒數中回來＝這次放過你 */
+// 在外面：主管會打三通電話。第一通（下樓 20 秒後）可以找藉口；第二通被戳破，沉默；第三通直接按掉 → 倒數 1 分鐘，沒回四樓＝任務失敗
+// 回四樓就停（倒數也取消）；再下樓從下一通繼續，不會重來。砸怪手＝下一通馬上打來
+const CALL = { kun:{ ok:'……嗯。快點。', two:'……你在幹嘛。我看得到你。' }, tie:{ ex:['廁所在四樓也有。','你車停哪我也知道。'], ok:'……快一點。五分鐘。', two:'{P}。四樓有廁所。你的車停在哪我也看得到。你現在在幹嘛？' },
+  lin:{ ex:['四樓有廁所。','作業時間不准回車上拿東西。'], ok:'我記下來了。五分鐘內回來。', two:'{P}，你已經離開作業區兩次。我在寫單子了。' } };
+const EXCUSE=['我……我去上個廁所。','東西放在車上忘了拿，馬上回去！'];
+const CALL_DIG = () => L.plant ? '……堆高機。是你敲的？' : '……剛剛有人說看到你拿球棒在敲我的怪手。是不是你？';
+function outFx(dt){ const me=LV.actors.you, H=LV.hoist; if(!me || done || failed || LV.ride) return;
+  if(L.plant){ if(!LV.down){ if(inWork(me.x,me.z,0.9)) LV.rideArm=true; if((LV.edgeP||0)>0.4 && LV.rideArm && !dlgOpen && !me.swing){ LV.edgeP=0; askOut(null); } return; }   // 週五：在工作區邊緣往外推＝問要不要出去
+    if(!inWork(me.x,me.z,0)) LV.wasOut=true; else if(LV.wasOut && inWork(me.x,me.z,0.35)){ setDown(false); return; } }   // 走回工作區＝回來了
+  else if(!H) return;
+  else if(!LV.down){ const d=Math.hypot(me.x-H.x, me.z-6.4); if(d>1.8) LV.rideArm=true; else if(d<0.75 && LV.rideArm && !dlgOpen && !me.dest && !me.swing) askRide(); return; }   // 四樓：站到電梯口＝問要不要下樓
+  if(H){ const d=Math.hypot(me.x-(H.x-H.hw-0.9), me.z-H.z); if(d>1.8) LV.rideArm=true; else if(d<0.75 && LV.rideArm && !dlgOpen && !me.dest && !me.swing) askRide(); }   // 一樓：站到電梯西門＝問要不要回四樓
+  const C=LV.call; if(!C) return;
+  if(C.left!==undefined){ C.left-=dt; cdShow(C.left); if(C.left<=0){ cdShow(null); WHY.phone=(L.yard!==undefined ? '你跑去一樓，' : '你跑出工作區，')+cname(C.who)+'打了三通電話，最後一通你直接按掉。'; failMission(LV.actors[C.who],'phone'); } return; }   // 第三通之後：倒數
+  if(dlgOpen || me.swing) return; C.t-=dt; if(C.t<=0) phoneRing(); }
+function cdShow(sec){ let el=document.getElementById('cdBox'); if(sec===null){ if(el) el.style.display='none'; return; }
+  if(!el){ el=document.createElement('div'); el.id='cdBox'; el.style.cssText='position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:30;background:rgba(150,20,28,.92);color:#fff;font-weight:700;padding:6px 14px;border-radius:8px;font-size:15px;pointer-events:none;box-shadow:0 2px 10px rgba(0,0,0,.4)'; document.body.append(el); }
+  const s=Math.max(0,Math.ceil(sec)); el.textContent=`⚠ ${cname(LV.call.who)}要${L.plant?'過來抓人':'殺下來'}了：0:${String(s).padStart(2,'0')}　${L.plant?'回工作區':'回四樓'}！`; el.style.display='block'; }
+function ringSound(){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); const t0=actx.currentTime; for(let k=0;k<4;k++){ const o=actx.createOscillator(), g=actx.createGain(); o.type='square'; o.frequency.value=k%2?1318:1046; g.gain.setValueAtTime(0.05,t0+k*0.12); g.gain.exponentialRampToValueAtTime(0.001,t0+k*0.12+0.11); o.connect(g); g.connect(actx.destination); o.start(t0+k*0.12); o.stop(t0+k*0.12+0.12); } }catch(e){} }
+function phoneOpts(head, opts){ dlgOpen=true; optsOpen=true; dlgQ=[]; dlgDone=null; $('#dlg').style.display='flex'; $('#dBar').style.display='none'; showLine({who:'you', t:head});
+  const o=$('#dOpts'); o.innerHTML=''; opts.forEach(([t,f],k)=>{ const b=document.createElement('button'); b.textContent=t; b.dataset.phone=k?'no':'yes'; b.onclick=()=>{ optsOpen=false; o.innerHTML=''; endDlg(); f(); }; o.appendChild(b); }); }
+function phoneRing(){ const C=LV.call, who=C.who, cw=CALL[who]||CALL.tie, n=++C.n; ringSound(); const next=()=>{ C.t = n===1 ? 25 : 25; C.dig=false; };
+  if(n>=3){ phoneOpts(`（手機響）📱 ${cname(who)} 來電……（第 3 通）\n（不敢接。手指自己按掉了。）`, [['……（按掉）',()=>{ C.left=60; bubble('you','（完了……）',true); }]]); return; }   // 第三通：直接按掉，開始倒數
+  const head=`（手機響）📱 ${cname(who)} 來電……（第 ${n} 通）`+(C.dig ? '\n（……他知道了。）' : '');
+  if(n===1) phoneOpts(head, [['接聽，找個藉口',()=>{ const k=Math.floor(Math.random()*EXCUSE.length); say([{who, t:C.dig ? CALL_DIG() : '{P}，你人呢？'}, {who:'you', t:EXCUSE[k]}, {who, t:C.dig ? '……給我上來。' : cw.ok, mood:'mad'}].map(l=>Object.assign(l,{t:fill(l.t)})), next); }], ['拒接',next]]);
+  else phoneOpts(head, [['接聽',()=>say([{who, t:fill(C.dig ? CALL_DIG() : cw.two), mood:'mad'}, {who:'you', t:'……'}, {who, t:'……（嘆氣）', mood:'mad'}], next)], ['拒接',next]]); }
+
 // ===================== 遊戲流程 =====================
 let L=null, li=0, cur=0, score=100, ncr=0, placed=new Set(), t0=Date.now(), done=false, carry=null, spotArmed=true;
 const stepOf = id => L.steps.find(x=>x.id===id);
@@ -2214,7 +2302,8 @@ function hoistGo(){ const H=LV.hoist; H.pendRun=true; ayiSay('幾樓？……四
 function climbIn(sx,sz,kind){ const me=LV.actors.you, H=LV.hoist; LV.hoisting=true; H.run=false; H.pendRun=false; H.arrived=false; H.exiting=false; H.want={w:0,s:0}; H.open={w:0,s:0}; H.t=0; H.cage.position.y=H.Y; me.liftY=undefined;   // 四樓那一關進場：在地面走到施工電梯，搭上四樓
   me.x = sx===undefined ? L.cx-7.0 : sx; me.z = sz===undefined ? 21.0 : sz; me.g.position.set(me.x, gyAt(me.x,me.z), me.z); me.g.visible=true;   /* 模型也馬上搬過去，不然會在原地閃一格 */                                                      // 沒有座駕：從前面的大門走進來
   const pts=entryPath(kind||'walk').slice(1), go=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go : ()=>{ if(LV.escort){ H.board=true; H.bt=0; } else hoistGo(); }; }; go(); }   /* 有小弟：等他們走進電梯再開 */      // 站在樓板上就是樓板的高度
-function clampXZ(x,z,from){ x=Math.min(L.cx+4.2,Math.max(L.cx-4.2,x)); if(insideOK() && (from ? from.z : z)<0.35) x=Math.max(0.05,x);   /* 人在室內側：往左走到邊就停，不會被丟到牆外（原本會直接穿牆出去） */
+function clampXZ(x,z,from){ if(LV.down){ const A=OUT(); return {x:Math.min(A.x1,Math.max(A.x0,x)), z:Math.min(A.z1,Math.max(A.z0,z))}; }   /* 在外面：乙種圍籬裡面都能走 */
+  x=Math.min(L.cx+4.2,Math.max(L.cx-4.2,x)); if(insideOK() && (from ? from.z : z)<0.35) x=Math.max(0.05,x);   /* 人在室內側：往左走到邊就停，不會被丟到牆外（原本會直接穿牆出去） */
   const zmin = L.office ? -2.4 : insideOK() && x>=0.05 ? -1.9 : 0.85; z=Math.min(6.6,Math.max(zmin,z));
   if(insideOK() && (x<2.75 || x>4.5) && z<0.85 && z>-0.15){                                // 牆的位置不能站，也不能穿過去；要進室內只能繞牆的右端
     if(from && from.x>=2.7 && from.x<=4.55 && from.z<0.85 && from.z>-0.15) x = x<2.75 ? 2.75 : 4.5;              // 鍵盤：人在牆右端的通道裡，往牆走就停在通道邊
@@ -2239,20 +2328,23 @@ function pickHomes(n){                                                          
   return out; }
 // 路線規劃：先看能不能直直走過去；不行就把場地切成小格子，找一條繞過棧板、牆、同事的最短路（A* 搜尋），再把路線拉直
 const NAV=0.15;
-function walkable(x,z,pad,dodge){ const c=clampXZ(x,z); if(Math.abs(c.x-x)>0.005 || Math.abs(c.z-z)>0.005 || blocked(x,z,pad)) return false;
+function walkable(x,z,pad,dodge){ const c=clampXZ(x,z); if(Math.abs(c.x-x)>0.005 || Math.abs(c.z-z)>0.005 || (LV.down ? occBlocked(x,z,pad) : blocked(x,z,pad))) return false;
   if(dodge) for(const a of dodge) if(Math.hypot(a.x-x,a.z-z)<0.66) return false; return true; }
 function clearLine(a,b,dodge){ const d=Math.hypot(b.x-a.x,b.z-a.z), n=Math.ceil(d/0.08); for(let i=1;i<=n;i++){ const k=i/n; if(!walkable(a.x+(b.x-a.x)*k, a.z+(b.z-a.z)*k, k*d<0.35 ? -0.03 : 0, dodge)) return false; } return true; }   // 起步那一小段放寬：人本來就可能貼著東西
 function plan(p,t){ const dodge = p.who==='you' ? Object.values(LV.actors).filter(a=>a!==p && !a.follower && !a.dest && Math.hypot(a.x-p.x,a.z-p.z)>0.7 && Math.hypot(a.x-t.x,a.z-t.z)>0.7) : null;   // 你自己走的時候，順便繞過站著的同事
   if(clearLine(p,t,dodge)) return [t];
-  const x0=L.cx-4.2, z0=L.office?-2.4:-1.9, W=Math.round(8.4/NAV)+1, H=Math.round((6.6-z0)/NAV)+1, N=W*H, pos=n=>({x:x0+(n%W)*NAV, z:z0+Math.floor(n/W)*NAV});
+  const A=LV.down ? OUT() : null, NV=A ? 0.3 : NAV;   /* 在外面：範圍大，格子放大到 50 公分 */
+  const x0=A ? A.x0 : L.cx-4.2, z0=A ? A.z0 : L.office?-2.4:-1.9, W=Math.round((A ? A.x1-A.x0 : 8.4)/NV)+1, H=Math.round(((A ? A.z1 : 6.6)-z0)/NV)+1, N=W*H, pos=n=>({x:x0+(n%W)*NV, z:z0+Math.floor(n/W)*NV});
   const ok=new Int8Array(N).fill(-1), free=n=>{ if(ok[n]<0){ const q=pos(n); ok[n]=walkable(q.x,q.z,0.03,dodge)?1:0; } return ok[n]; };
-  const near=q=>{ const ci=Math.round((q.x-x0)/NAV), cj=Math.round((q.z-z0)/NAV); let best=-1, bd=1e9; for(let r=0;r<=5 && best<0;r++) for(let j=cj-r;j<=cj+r;j++) for(let i=ci-r;i<=ci+r;i++){ if(i<0||j<0||i>=W||j>=H) continue;
+  const near=q=>{ const ci=Math.round((q.x-x0)/NV), cj=Math.round((q.z-z0)/NV); let best=-1, bd=1e9; for(let r=0;r<=5 && best<0;r++) for(let j=cj-r;j<=cj+r;j++) for(let i=ci-r;i<=ci+r;i++){ if(i<0||j<0||i>=W||j>=H) continue;
       const n=j*W+i; if(!free(n)) continue; const c=pos(n), d=Math.hypot(c.x-q.x,c.z-q.z); if(d<bd){ bd=d; best=n; } } return best; };
   const sN=near(p), gN=near(t); if(sN<0 || gN<0) return [t];
-  const G=pos(gN), gs=new Float32Array(N).fill(1e9), fs=new Float32Array(N).fill(1e9), from=new Int32Array(N).fill(-1), shut=new Uint8Array(N), open=[sN], hf=n=>{ const c=pos(n); return Math.hypot(c.x-G.x,c.z-G.z); }; gs[sN]=0; fs[sN]=hf(sN);
-  while(open.length){ let bi=0; for(let k=1;k<open.length;k++) if(fs[open[k]]<fs[open[bi]]) bi=k; const n=open.splice(bi,1)[0]; if(n===gN) break; if(shut[n]) continue; shut[n]=1; const i=n%W, j=Math.floor(n/W);
+  const G=pos(gN), gs=new Float32Array(N).fill(1e9), fs=new Float32Array(N).fill(1e9), from=new Int32Array(N).fill(-1), shut=new Uint8Array(N), hf=n=>{ const c=pos(n); return Math.hypot(c.x-G.x,c.z-G.z); }; gs[sN]=0; fs[sN]=hf(sN);
+  const open=[sN], push=v=>{ open.push(v); let i=open.length-1; while(i>0){ const pi=(i-1)>>1; if(fs[open[pi]]<=fs[v]) break; open[i]=open[pi]; i=pi; } open[i]=v; },   /* 二元堆積：每次直接拿出估計最短的那一格（外面範圍大，逐一比較太慢） */
+    pop=()=>{ const top=open[0], last=open.pop(); if(open.length){ let i=0; for(;;){ const l=2*i+1, r=l+1; let m=i, mv=last; if(l<open.length && fs[open[l]]<fs[mv]){ m=l; mv=open[l]; } if(r<open.length && fs[open[r]]<fs[mv]){ m=r; } if(m===i) break; open[i]=open[m]; i=m; } open[i]=last; } return top; };
+  while(open.length){ const n=pop(); if(n===gN) break; if(shut[n]) continue; shut[n]=1; const i=n%W, j=Math.floor(n/W);
     for(let dj=-1;dj<=1;dj++) for(let di=-1;di<=1;di++){ const a=i+di, b=j+dj; if((!di&&!dj) || a<0 || b<0 || a>=W || b>=H) continue; const m=b*W+a; if(shut[m] || !free(m) || (di && dj && (!free(j*W+a) || !free(b*W+i)))) continue;
-      const c=gs[n]+(di&&dj?1.4142:1)*NAV; if(c<gs[m]){ gs[m]=c; fs[m]=c+hf(m); from[m]=n; open.push(m); } } }
+      const c=gs[n]+(di&&dj?1.4142:1)*NV; if(c<gs[m]){ gs[m]=c; fs[m]=c+hf(m); from[m]=n; push(m); } } }
   if(gN!==sN && from[gN]<0) return [t];                                                                           // 真的沒有路：照舊直走，走不到會自己停
   const cells=[walkable(t.x,t.z,0,dodge) ? t : G]; for(let n=gN; n!==sN; n=from[n]) cells.unshift(pos(n));
   const out=[]; let cur=p, k=0; while(k<cells.length){ let far=k; for(let m=cells.length-1;m>k;m--) if(clearLine(cur,cells[m],dodge)){ far=m; break; } out.push(cells[far]); cur=cells[far]; k=far+1; } return out; }   // 拉直：能直達的中間點都省掉
@@ -2265,7 +2357,7 @@ function standNear(tx,tz,r,o){ const p=LV.actors.you, a0=Math.atan2(p.x-tx,p.z-t
 // 來亂的東西：不是施工用的。可以拿起來、放回去；拿著去碰同事，任務直接失敗
 const PRANK={ bat:{ tag:'球棒（不是施工用的）', why:'你拿球棒敲了同事。', say:{tie:'欸欸欸，球棒放下。這裡是工地，不是球場。', lin:'你拿那個要幹嘛？我的筆已經拿出來了。', an:'等一下，你冷靜。', kun:'……放下。'} },
   drink:{ tag:'保力達 B 套伯朗（下班再喝）', why:'你在工地喝酒。' } };
-let prank=null;
+let prank=null, drinkHeld=false;   // drinkHeld＝左手藏著一瓶保力達 B（可以跟右手的球棒一起拿）
 function prankItem(id){ const g=new THREE.Group(); if(id==='bat'){ const m=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.022,0.85,10), std(0xc79a5b)); m.castShadow=true; g.add(m); g.add(cyl(0.03,0.03,'y',0,-0.43,0,mat.dark,10)); }
   else { g.add(bottle(-0.07)); g.add(cyl(0.036,0.12,'y',0.08,-0.04,0,std(0xb98a4e),14)); g.add(cyl(0.037,0.012,'y',0.08,0.024,0,mat.steel,14)); } return g; }   // 一瓶保力達 B＋一罐伯朗咖啡
 function bottle(x){ const g=new THREE.Group(), br=std(0x5a3418); g.add(cyl(0.045,0.2,'y',0,0,0,br,14)); g.add(cyl(0.018,0.07,'y',0,0.135,0,br,10)); g.add(cyl(0.022,0.02,'y',0,0.18,0,mat.mark,10)); g.add(cyl(0.0465,0.09,'y',0,-0.01,0,mat.white,14)); g.position.x=x; return g; }
@@ -2277,15 +2369,25 @@ function goPrank(id){ const q=LV.pranks[id], t=standNear(q.x,q.z,0.7,q.obs); mov
 const THINK={ bat:[['……一支球棒。','我真的要這麼幹嗎？拿起來，朝誰的頭狠狠地打下去……？'],['……球棒耶。','工地主任就在旁邊。我在想什麼？'],['……手好癢。','不行，打下去就不用上班了。（好像也不錯？）']],
   batOff:[['……辦公室怎麼會有球棒？','我真的要這麼幹嗎？朝誰的頭狠狠地打下去……？'],['……這支球棒是誰的？','施工圖還沒畫完。冷靜。']],
   drink:[['……保力達 B 套伯朗。','上班真的可以喝酒嗎……？喝了會不會被琳姊開單？'],['……一瓶保力達 B。','工地前輩都這樣喝的吧？……吧？'],['……好想喝一口。','可是等一下要爬鷹架耶。']] };
-const THINK_OPT={ bat:['……拿起來（後果自負）','算了，我是來上班的'], drink:['……喝一口就好（後果自負）','下班再說']};
+const THINK_OPT={ bat:[['……拿起來（後果自負）','yes'],['算了，我是來上班的','no']], drink:[['……喝一口就好（後果自負）','yes'],['……先帶著（等一下請師父喝）','carry'],['下班再說','no']]};
 let thinkOff={};   // 想過一次（選算了）就先不再想，要走開 1.6 公尺以上才重新算
-function thinkPrank(id){ if(done||dlgOpen||failed||carry||prank) return; const th=pickOne(THINK[id==='bat' && L.office ? 'batOff' : id]), op=THINK_OPT[id]; thinkOff[id]=true;
+function thinkPrank(id){ if(done||dlgOpen||failed||carry || (id==='bat' ? prank==='bat' : drinkHeld)) return; const th=pickOne(THINK[id==='bat' && L.office ? 'batOff' : id]), op=THINK_OPT[id]; thinkOff[id]=true;
   dlgOpen=true; optsOpen=true; dlgQ=[]; dlgDone=null; $('#dlg').style.display='flex'; $('#dBar').style.display='none'; showLine({who:'you', t:'（內心 OS）'+th[0]+'\n'+th[1]});
-  const o=$('#dOpts'); o.innerHTML=''; op.forEach((t,k)=>{ const b=document.createElement('button'); b.textContent=t; b.dataset.think=k?'no':'yes'; b.onclick=()=>{ optsOpen=false; o.innerHTML=''; endDlg(); if(!k) togglePrank(id); }; o.appendChild(b); }); }
+  const o=$('#dOpts'); o.innerHTML=''; op.forEach(([t,k])=>{ const b=document.createElement('button'); b.textContent=t; b.dataset.think=k; b.onclick=()=>{ optsOpen=false; o.innerHTML=''; endDlg(); if(k==='yes') togglePrank(id); else if(k==='carry') holdDrink(); }; o.appendChild(b); }); }
+function holdDrink(){ const me=LV.actors.you, q=LV.pranks.drink; if(!q || drinkHeld) return; const b=bottle(0); q.item.visible=false; b.position.set(0,-0.3,0.07); b.rotation.x=1.1; me.g.userData.armL.userData.elbow.add(b); me.drinkMesh=b; drinkHeld=true; award('misc.prank'); bubble('you','（先藏著……）',true); }   // 左手拿著
+function putDrink(){ const me=LV.actors.you, q=LV.pranks.drink; if(me.drinkMesh && me.drinkMesh.parent) me.drinkMesh.parent.remove(me.drinkMesh); me.drinkMesh=null; drinkHeld=false; if(q) q.item.visible=true; }
+// 拿著來亂的東西站在人旁邊按動作鍵：只有球棒＝揮；只有保力達＝請他喝；兩樣都有＝問你要幹嘛。t＝同事，或是 {crew:一樓的工人}
+function actOn(t){ if(prank==='bat' && drinkHeld){ dlgOpen=true; optsOpen=true; dlgQ=[]; dlgDone=null; $('#dlg').style.display='flex'; $('#dBar').style.display='none'; showLine({who:'you', t:'（內心 OS）右手球棒，左手保力達……\n我到底想幹嘛？'});
+    const o=$('#dOpts'); o.innerHTML=''; [['揮下去',()=>hitIt(t)],['請他喝一瓶保力達',()=>giveDrink(t)],['……算了',()=>{}]].forEach(([tx,f],k)=>{ const b=document.createElement('button'); b.textContent=tx; b.dataset.act=k; b.onclick=()=>{ optsOpen=false; o.innerHTML=''; endDlg(); f(); }; o.appendChild(b); }); return; }
+  if(prank==='bat') hitIt(t); else if(drinkHeld) giveDrink(t); }
+function hitIt(t){ if(t.crew) smashSwing(t.crew); else prankHit(t); }
+function giveDrink(t){ const me=LV.actors.you, boss=LV.actors[L.boss], tx=t.crew ? t.crew.x : t.x, tz=t.crew ? t.crew.z : t.z; me.dest=null; me.onArrive=null; me.face=Math.atan2(tx-me.x,tz-me.z); me.g.userData.armL.rotation.x=-1.3;   // 伸手遞過去
+  WHY.treat='你在上班時間拿保力達 B 請'+(t.crew ? '師父' : cname(t.who))+'喝。'; award('misc.drink');
+  if(t.crew){ bubble(L.boss, '誰在一樓請師父喝酒！？', true); failMission(boss,'treat'); } else { bubble(t.who, '……保力達？上班時間？你是要害我被開單嗎？', true); failMission(t,'treat'); } }
 function prankNear(){ if(!L || L.bench || !LV.pranks) return; const p=LV.actors.you; if(!p) return;
-  for(const id in LV.pranks){ const d=rectDist(LV.pranks[id].obs,p.x,p.z).d; if(d>1.6) thinkOff[id]=false; else if(d<0.75 && !thinkOff[id] && prank!==id && !(p.dest && !p.onArrive)) thinkPrank(id); } }   /* 走過去路過不算：要停下來或是點它走過去才算 */
+  for(const id in LV.pranks){ const d=rectDist(LV.pranks[id].obs,p.x,p.z).d; if(d>1.6) thinkOff[id]=false; else if(d<0.75 && !thinkOff[id] && (id==='bat' ? prank!=='bat' : !drinkHeld) && !p.dest) thinkPrank(id); } }   /* 走過去路過不算：要停在旁邊才算（點它走過去的，到了由 goPrank 觸發） */
 function togglePrank(id){ if(done||dlgOpen) return; const me=LV.actors.you, hold=me.g.userData.hold, q=LV.pranks[id]; if(me.swing) return;
-  if(id==='drink'){ if(carry||prank){ say([{who:L.boss, t:'手上的先放好。'}]); return; } const boss=LV.actors[L.boss], b=bottle(0); q.item.visible=false; b.position.set(0,-0.32,0.05); b.rotation.x=0.9; me.g.userData.armR.userData.elbow.add(b); me.dest=null; me.onArrive=null;   // 拿起來就喝
+  if(id==='drink'){ if(carry){ say([{who:L.boss, t:'手上的先放好。'}]); return; } const boss=LV.actors[L.boss], b=bottle(0); q.item.visible=false; b.position.set(0,-0.32,0.05); b.rotation.x=0.9; me.g.userData.armR.userData.elbow.add(b); me.dest=null; me.onArrive=null;   // 拿起來就喝
     me.swing={t:0, id:'drink', target:boss, done:()=>{ WHY.drink=PRANK.drink.why; award('misc.drink'); failMission(boss,'drink'); }}; return; }
   if(prank===id){ if(me.prankMesh && me.prankMesh.parent) me.prankMesh.parent.remove(me.prankMesh); me.prankMesh=null; q.item.visible=true; prank=null; me.carry=null; return; }   // 放回去
   if(carry||prank){ say([{who:L.boss, t:'手上的先放好，再拿別的。'}]); return; }
@@ -2307,7 +2409,7 @@ let spotCam=null;
 function spotOff(th,ph,d){ const c=spotCam||(spotCam=camera.clone()); c.copy(camera); c.position.set(target.x+d*Math.sin(ph)*Math.sin(th), target.y+d*Math.cos(ph), target.z+d*Math.sin(ph)*Math.cos(th)); c.lookAt(target); c.updateMatrixWorld(true);   // 用這個角度看，藍圈在不在畫面裡（不能壓在上面的資訊框、右邊的按鈕、下面的對話框底下）
   const v=new THREE.Vector3(spot.position.x,spot.position.y+0.1,spot.position.z).project(c), px=(v.x+1)/2*vw(), py=(1-v.y)/2*vh(), top=(vw()<=700 ? $('#side').getBoundingClientRect().bottom : $('header').offsetHeight)+12;
   return v.z>1 || px<24 || px>vw()-(TOUCH?66:24) || py<top || py>vh()-70; }
-function ensureSpotVisible(){ if(!spot.visible || !L || L.bench || L.office) return; const cur=camGoal||{theta,phi,dist}, off = !camGoal && spotOff(theta,phi,dist);
+function ensureSpotVisible(){ if(!spot.visible || !L || L.bench || L.office || LV.down || LV.ride) return;   /* 人在一樓、搭電梯：不要把鏡頭拉回四樓找藍圈 */ const cur=camGoal||{theta,phi,dist}, off = !camGoal && spotOff(theta,phi,dist);
   const st=need(), base = st && st.in ? {theta:2.7, phi:0.95, dist:9.5} : camHome ? {theta:camHome.theta, phi:camHome.phi, dist:camHome.dist} : cur, lo=LV.orbit?LV.orbit[0]:-1e9, hi=LV.orbit?LV.orbit[1]:1e9; let tries;
   if(off){ const me=LV.actors.you; if(me && !TOUCH) target.set((me.x+spot.position.x)/2, target.y, (me.z+spot.position.z)/2);   // 藍圈不在畫面裡：畫面移到角色和藍圈的中間，兩個都看得到
     tries = [{theta:cur.theta, phi:cur.phi, dist:Math.min(cur.dist, base.dist*1.3)}, base]; }
@@ -2426,7 +2528,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
   if(typeof touchHud==='function') touchHud();
   $('#lvTitle').textContent=L.name; $('#stepN').textContent=L.steps.length; hideDayEnd(); $('#menu').style.display='none';
   clearBubbles(); nextIdle=performance.now()+9000; lastAct=performance.now();
-  cut=null; prank=null; multiN=0; patience=100; failed=false; warned=false; $('#fail').style.display='none'; $('#patWrap').style.display=L.bench?'none':''; patUI();
+  cut=null; prank=null; drinkHeld=false; { const cb=document.getElementById('cdBox'); if(cb) cb.style.display='none'; } multiN=0; patience=100; failed=false; warned=false; $('#fail').style.display='none'; $('#patWrap').style.display=L.bench?'none':''; patUI();
   stats(); buildTray(); setGoal(); if(quiet) return;
   if(!L.bench && !L.office && !L.indoor){ const rd=skinState().ride, heli=rd==='r_heli';                    // 要進場的關卡：一開始就把人藏起來、鏡頭放在進場的位置，字卡淡出時不會先看到人站在工作區
     if(rd!=='r_walk'){ LV.actors.you.g.visible=false; camGoal=null; target.set(heli || L.yard!==undefined ? L.cx-8 : L.cx-4.5, yardY()+(heli?3.2:1.3), 2.5); theta = L.yard!==undefined ? -0.25 : 0.1; phi=1.05; dist=22; }
@@ -2441,14 +2543,16 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
 
 // ===================== 點擊與鍵盤 =====================
 const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(), gplane=new THREE.Plane(new THREE.Vector3(0,1,0),0), hitPt=new THREE.Vector3();
-function onClick(e){ if(dlgOpen){ advance(); return; } if(!L||L.bench) return; if(cut && cut.stage<2) return;
+function onClick(e){ if(dlgOpen){ advance(); return; } if(!L||L.bench) return; if(cut && cut.stage<2) return; if(LV.ride) return;
   const r=cvs.getBoundingClientRect(); ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); ray.setFromCamera(ndc,camera);
   for(const h of ray.intersectObjects(LV.pick,false)){ const p=h.object.userData.pick; if(!p) continue;
     if(p.kind==='pallet'){ if(done||placed.has(p.id)) continue; goPallet(p.id); return; }
     if(p.kind==='spot'){ if(!spot.visible) continue; goSpot(); return; }
     if(p.kind==='prank'){ if(!done) goPrank(p.id); return; }
+    if(p.kind==='hoist'){ if(!done) goHoist(); return; }
     if(p.kind==='npc'){ if(prank){ const a=LV.actors[p.who]; moveTo(a.x,a.z,null); LV.actors.you.hitWho=p.who; } else goNpc(p.who); return; } }   // 拿著來亂的東西點同事＝故意走過去敲他
-  gplane.constant=-L.gy; if(ray.ray.intersectPlane(gplane,hitPt)){ const c=clampXZ(hitPt.x,hitPt.z); moveTo(c.x,c.z,null); ping.position.set(c.x,L.gy+0.02,c.z); ping.visible=true; pingLife=1; } }
+  const fy=LV.down ? yardY() : L.gy; gplane.constant=-fy; if(ray.ray.intersectPlane(gplane,hitPt) && L.plant && !LV.down && !inWork(hitPt.x,hitPt.z,-0.4) && hitPt.z>0.85 && !done){ const A=OUT(); askOut({x:Math.min(A.x1,Math.max(A.x0,hitPt.x)), z:Math.min(A.z1,Math.max(A.z0,hitPt.z))}); return; }   /* 週五：點工作區外面＝問要不要出去 */
+  if(ray.ray.intersectPlane(gplane,hitPt)){ const c=clampXZ(hitPt.x,hitPt.z); moveTo(c.x,c.z,null); ping.position.set(c.x,fy+0.02,c.z); ping.visible=true; pingLife=1; } }
 const keys={};
 // 搖桿：手指按在圓裡拖，圓鈕跟著走；往哪推人就往哪走（跟鍵盤 WASD 一樣照鏡頭方向）
 const joy={x:0, y:0, on:false, id:null}; { const J=document.getElementById('joy'), K=document.getElementById('joyKnob'), R=44;
@@ -2460,8 +2564,9 @@ const joy={x:0, y:0, on:false, id:null}; { const J=document.getElementById('joy'
 addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; const k=e.key.toLowerCase(); keys[k]=true;
   if((k===' '||k==='enter') && dlgOpen){ e.preventDefault(); advance(); }
   if(k==='e' && !dlgOpen && L && !L.bench && !done){ const p=LV.actors.you; if(carry && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1){ spotArmed=true; tryInstall(); return; }
-    if(prank){ const near=Object.values(LV.actors).filter(a=>a!==p && Math.hypot(a.x-p.x,a.z-p.z)<0.95).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0]; if(near){ prankHit(near); return; } }   // 拿著來亂的東西，在同事旁邊按 E＝敲下去
-    const pk=Object.keys(LV.pranks).find(id=>rectDist(LV.pranks[id].obs,p.x,p.z).d<0.7); if(pk){ if(prank===pk) togglePrank(pk); else thinkPrank(pk); return; }
+    if(LV.down && (prank==='bat' || drinkHeld)){ const sm=nearSmash(); if(sm && sm.kind==='person'){ actOn({crew:sm}); return; } if(sm && prank==='bat'){ smashSwing(sm); return; } }   // 在外面：旁邊是工人＝揮棒／請喝；車、怪手、工務所＝砸下去
+    if(prank || drinkHeld){ const near=Object.values(LV.actors).filter(a=>a!==p && Math.hypot(a.x-p.x,a.z-p.z)<0.95).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0]; if(near){ actOn(near); return; } }   // 拿著來亂的東西，在同事旁邊按 E＝敲下去／請喝
+    const pk=Object.keys(LV.pranks).find(id=>rectDist(LV.pranks[id].obs,p.x,p.z).d<0.7); if(pk){ if(pk==='drink' && drinkHeld) putDrink(); else if(pk==='bat' && prank==='bat') togglePrank(pk); else thinkPrank(pk); return; }
     let bestId=null, bd=1.0; Object.entries(LV.pallets).forEach(([id,q])=>{ const d=rectDist(q.obs,p.x,p.z).d; if(d<bd && !placed.has(id)){ bd=d; bestId=id; } }); if(bestId) tryPick(bestId); } });
 addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
 addEventListener('keydown',e=>{ if(e.target.tagName!=='INPUT' && e.key.toLowerCase()==='c' && !(cut && cut.stage<2)) camReset(); });
@@ -2473,8 +2578,10 @@ if(TOUCH) $('#camBtns').style.display='flex';
 // 動作鍵：跟電腦的 E 鍵一樣（走到棧板旁＝拿料、拿著料在藍圈＝安裝、來亂的東西＝拿起來／放回去）
 function actInfo(){ if(!L || L.bench || done || dlgOpen || failed || (cut && cut.stage<2)) return null; const p=LV.actors.you; if(!p) return null;
   if(carry && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1) return '安裝';
-  if(prank && Object.values(LV.actors).some(o=>o!==p && Math.hypot(o.x-p.x,o.z-p.z)<0.95)) return prank==='bat' ? '揮棒' : '動手';   // 跟 E 鍵一樣：拿著來亂的東西站在同事旁邊＝動手（後果自負）
-  const pk=Object.keys(LV.pranks).find(id=>rectDist(LV.pranks[id].obs,p.x,p.z).d<0.7); if(pk && prank===pk) return '放回去';   // 隱藏功能：沒拿的時候不顯示「拿起來」
+  const hb=prank==='bat', hd=drinkHeld, lab = hb && hd ? '動手' : hb ? '揮棒' : '請喝';
+  if((hb||hd) && Object.values(LV.actors).some(o=>o!==p && Math.hypot(o.x-p.x,o.z-p.z)<0.95)) return lab;
+  if(LV.down && (hb||hd)){ const sm=nearSmash(); if(sm && sm.kind==='person') return lab; if(sm && hb) return '揮棒'; }   // 跟 E 鍵一樣：拿著來亂的東西站在同事旁邊＝動手（後果自負）
+  const pk=Object.keys(LV.pranks).find(id=>rectDist(LV.pranks[id].obs,p.x,p.z).d<0.7); if(pk && (pk==='bat' ? prank==='bat' : drinkHeld)) return '放回去';   // 隱藏功能：沒拿的時候不顯示「拿起來」
   if(carry || prank) return null;
   let best=null, bd=1.0; Object.entries(LV.pallets).forEach(([id,q])=>{ const d=rectDist(q.obs,p.x,p.z).d; if(d<bd && !placed.has(id)){ bd=d; best=id; } }); if(!best) return null; const nm=plain(stepOf(best).pal||stepOf(best).name); return ITEM[L.id+'.'+best] ? '拿「'+nm+'」' : '來'+nm; }   // 材料＝拿「預埋件」；工作（立牌）＝來放樣、來聯絡灌漿廠
 const pressE=()=>{ dispatchEvent(new KeyboardEvent('keydown',{key:'e'})); dispatchEvent(new KeyboardEvent('keyup',{key:'e'})); };
@@ -2527,7 +2634,7 @@ function hurt(cost,a,why){ if(done||failed) return; patience=Math.max(0,patience
   if(patience<=0){ failMission(a,why); return; }
   if(patience<=28 && !warned){ warned=true; setTimeout(()=>{ if(!failed) bubble(L.boss, FINAL[L.boss], true); }, 1000); } }
 function failMission(a,why){ failed=true; done=true; const p=LV.actors.you; if(p){ p.dest=null; p.onArrive=null; } award('misc.fail');
-  setTimeout(()=>{ failSound(); $('#failWhy').textContent=(why==='drink'?'工地禁止飲酒。':'不准騷擾友軍。')+WHY[why]+'人資已收到通知。'; drawFace($('#failFace'), a.who, 'mad');
+  setTimeout(()=>{ failSound(); $('#failWhy').textContent=({drink:'工地禁止飲酒。', treat:'工地禁止飲酒。', phone:'上班時間失聯。', car:'不准破壞別人的財物。', office:'不准破壞公物。'}[why]||'不准騷擾友軍。')+WHY[why]+'人資已收到通知。'; drawFace($('#failFace'), a.who, 'mad');
     $('#failLine').textContent='「'+fill(KICK[a.who]||'學長……為什麼……')+'」'; $('#failWho').textContent='—— '+cname(a.who)+'，'+CAST[a.who].role; $('#fail').style.display='flex'; }, 800); }
 function bump(a){ a.bumps++; bumpTotal++; a.wob=1; lastAct=performance.now(); nextIdle=Math.max(nextIdle, lastAct+8000); award('misc.bump');
   const me=LV.actors.you, long = me.carry==='upright'||me.carry==='across'||me.carry==='overhead', tier = a.bumps<=1 ? 0 : a.bumps<=3 ? 1 : 2;
@@ -2598,13 +2705,15 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
     const kw=keys.w||keys.arrowup, ks=keys.s||keys.arrowdown, kd=keys.d||keys.arrowright, ka=keys.a||keys.arrowleft, jm=Math.hypot(joy.x,joy.y), jOn=jm>0.18;   // 搖桿推超過一點點才算
     if(!(kw||ks||kd||ka||jOn) || (TOUCH && jOn)) keyTheta=theta;   /* 手機搖桿：方向一直照現在的畫面（推上＝往畫面上方走） */
     if(TOUCH && jOn && camGoal && !(cut && cut.stage<2)) camGoal=null;   /* 推著搖桿的時候，鏡頭不自己轉 */                                         // 放開按鍵才跟上鏡頭的新角度：鏡頭自己轉的時候，按住的方向不會跟著歪掉
-    if(!dlgOpen && !failed && !p.swing && !(cut && cut.stage<2)){ let fx=0,fz=0; const sn=Math.sin(keyTheta), cs=Math.cos(keyTheta); if(kw){ fx-=sn; fz-=cs; } if(ks){ fx+=sn; fz+=cs; }
+    if(!dlgOpen && !failed && !p.swing && !LV.ride && !(cut && cut.stage<2)){ let fx=0,fz=0; const sn=Math.sin(keyTheta), cs=Math.cos(keyTheta); if(kw){ fx-=sn; fz-=cs; } if(ks){ fx+=sn; fz+=cs; }
       if(kd){ fx+=cs; fz-=sn; } if(ka){ fx-=cs; fz+=sn; }
       if(jOn){ fx+=cs*joy.x+sn*joy.y; fz+=-sn*joy.x+cs*joy.y; }   /* 搖桿：往上推＝往前（離開鏡頭），往右推＝往右 */
       if(jOn && !prank){ const m0=Math.hypot(fx,fz)||1; fx/=m0; fz/=m0;                                    // 搖桿快碰到站著的同事：往他那邊的分量拿掉，貼著他滑過去（不會硬撞上去被扣分）
         for(const k in LV.actors){ const a=LV.actors[k]; if(a===p || a.follower || a.dest || !a.g.visible) continue; const dx=a.x-p.x, dz=a.z-p.z, d=Math.hypot(dx,dz); if(d>1.0 || d<0.001) continue;
           const nx=dx/d, nz=dz/d, into=fx*nx+fz*nz; if(into>0){ const w=Math.min(1,(1.0-d)/0.35); fx-=nx*into*w; fz-=nz*into*w; } } }
-      const m=Math.hypot(fx,fz); if(m>0.05){ p.dest=clampXZ(p.x+fx/m*0.5, p.z+fz/m*0.5, p); p.onArrive=null; lastAct=now; } else if(jOn) p.dest=null; }
+      const m=Math.hypot(fx,fz); if(m>0.05){ p.dest=clampXZ(p.x+fx/m*0.5, p.z+fz/m*0.5, p); p.onArrive=null; lastAct=now;
+        if(L.plant && !LV.down){ const ux=p.x+fx/m*0.5, uz=p.z+fz/m*0.5, out=Math.abs(ux-p.dest.x)>0.2 || uz-p.dest.z>0.2; LV.edgeP = out ? (LV.edgeP||0)+dt : 0; if(out) LV.edgeDir={x:fx/m, z:fz/m}; } }   /* 週五：一直往工作區外面推＝想出去（往廠房那邊推不算） */
+      else { if(jOn) p.dest=null; LV.edgeP=0; } }
     Object.values(LV.actors).forEach(a=>{ if(a.who==='you' && dlgOpen) { const d=a.dest; a.dest=null; stepActor(a,dt,t); a.dest=d; } else stepActor(a,dt,t); });
     /* 手機：鏡頭一直跟著角色（一指轉視角、兩指縮放都是繞著角色轉，不會把角色甩出畫面）；電腦：角色在走才跟，你正在拖鏡頭的時候不跟 */
     if(p && (p.dest || TOUCH) && p.g.visible && !dlgOpen && !(talkCam && !TOUCH) && !(cut && cut.stage<2) && !LV.hoisting && (TOUCH || performance.now()-userCamT>350)){   /* 進場座駕停在場邊時 cut 還在（stage 2），那時要照樣跟 */ const q=Math.min(1,dt*(p.dest?2.4:1.2)); target.x+=(p.x-target.x)*q; target.z+=(p.z-target.z)*q; target.y+=(p.g.position.y+1.1-target.y)*q;   /* 鏡頭跟著角色走（你正在拖鏡頭的時候不跟） */
