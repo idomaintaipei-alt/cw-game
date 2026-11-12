@@ -1873,7 +1873,9 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
   if(f.ponytail){ g.add(ball(0.06,mat.red,0,1.66,-0.2)); const pt=new THREE.Group(); pt.position.set(0,1.66,-0.22); pt.rotation.x=0.35;   // 高馬尾：紅色髮圈綁在後腦上方，馬尾往下垂到肩膀
     pt.add(ball(0.075,hm,0,-0.02,-0.04,1,1,1)); pt.add(ball(0.07,hm,0,-0.16,-0.06,1,1.8,0.9)); pt.add(ball(0.05,hm,0,-0.3,-0.05,1,1.5,0.85)); g.add(pt); }
   if(f.bangs){ const bg=new THREE.Mesh(new THREE.SphereGeometry(0.219,22,8,Math.PI*0.1,Math.PI*0.8,0.45,0.73), hm); bg.position.set(0,1.585,0.012); g.add(bg);   // 瀏海：蓋在額頭上，到眼鏡上面
-    [-1,1].forEach(sd=>{ const lk=box(0.07, f.bob?0.2:0.36, 0.09, sd*0.19, f.bob?1.5:1.42, 0.05, hm); lk.rotation.z=sd*0.08; g.add(lk); }); }   // 兩側垂下來的頭髮：長髮垂到肩膀（鮑伯頭只到下巴）
+    if(f.bob) [-1,1].forEach(sd=>{ const lk=box(0.07,0.2,0.09, sd*0.19,1.5,0.05, hm); lk.rotation.z=sd*0.08; g.add(lk); }); }   // 鮑伯頭：兩側到下巴
+  if(f.ponytail){ const nape=new THREE.Mesh(new THREE.SphereGeometry(0.222,22,8,Math.PI-0.35,Math.PI+0.7,1.42,0.98), hm); nape.position.set(0,1.585,0.01); nape.scale.set(1,1.08,1.04); g.add(nape);   /* 綁馬尾：頭髮往後梳，後腦到後頸包一圈（戴安全帽從側面、背面看也有頭髮） */
+    [-1,1].forEach(sd=>{ const lk=ball(0.03,hm, sd*0.19,1.535,0.07, 0.55,2.2,0.8); lk.rotation.z=sd*0.12; g.add(lk); }); }   // 耳朵前面各一小撮細髮，垂到下巴（不再是兩塊長板）
   if(f.stubble){ const sb=new THREE.Mesh(new THREE.SphereGeometry(0.203,20,10,0,Math.PI*2,1.85,0.75), new THREE.MeshBasicMaterial({color:0x5a4a40, transparent:true, opacity:.3})); sb.position.set(0,1.57,0.01); g.add(sb); }
   if(f.towel){ const tw=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.04,8,22),mat.white); tw.rotation.x=Math.PI/2; tw.position.y=1.4; g.add(tw); g.add(box(0.07,0.18,0.03,0.1,1.3,0.15,mat.white)); }
   // 造型配件
