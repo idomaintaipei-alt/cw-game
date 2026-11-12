@@ -37,7 +37,7 @@
   @media (max-height:500px) and (orientation:landscape){ body.joyon #camBtns { left:auto; right:8px; top:58%; } #joy { width:108px; height:108px; bottom:calc(12px + var(--lift,0px)); } #joy::before { inset:26px; } }   /* 打橫：三顆鏡頭按鈕回到右邊，左下給搖桿 */
   #help.fadeout { opacity:0; transition:opacity .8s; pointer-events:none; }
   body.incut #side, body.incut #ticker, body.incut #help, body.incut #camBtns, body.incut #testTag { display:none !important; }   /* 過場動畫：資訊框先收起來，不蓋住畫面 */
-  #sub { position:fixed; left:50%; bottom:calc(16px + var(--lift,0px)); transform:translateX(-50%); z-index:5; display:none; max-width:calc(100% - 24px); padding:6px 14px; border-radius:6px; background:rgba(10,12,15,.78); color:#fff; font-size:14px; line-height:1.5; text-align:center; pointer-events:none; }   /* 過場時的字幕 */
+  #sub { position:fixed; left:12px; right:12px; margin:0 auto; width:fit-content; bottom:calc(16px + var(--lift,0px)); z-index:5; display:none; max-width:calc(100% - 24px); padding:6px 14px; border-radius:6px; background:rgba(10,12,15,.78); color:#fff; font-size:14px; line-height:1.5; text-align:center; pointer-events:none; }   /* 過場時的字幕 */
   #sub b { color:#ffd166; margin-right:6px; }
   button.primary { background:#1d4f86; border-color:#4da3ff; }
   button.done { opacity:.35; cursor:default; }
@@ -127,8 +127,10 @@
   .lkRow button.lock { opacity:.45; cursor:default; }
   #card { position:fixed; inset:0; z-index:11; display:none; flex-direction:column; align-items:center; justify-content:center; background:#0b0d10; color:#eef2f7; opacity:0; transition:opacity .5s; cursor:pointer; text-align:center; padding:24px; }
   #card.on { opacity:1; }
-  #cardTxt div { font-size:20px; line-height:2; animation:cardIn .7s ease-out; }
-  #cardTxt div.big { font-size:34px; font-weight:900; letter-spacing:6px; margin-bottom:10px; color:#ffd166; }
+  #cardTxt { max-width:min(640px, 100%); }
+  #cardTxt div { font-size:clamp(15px, 4.6vw, 20px); line-height:2; animation:cardIn .7s ease-out; text-wrap:balance; word-break:keep-all; }   /* 字照螢幕寬度縮 */
+  #cardTxt .ph, #sub .ph { display:inline-block; }   /* 旁白、過場字幕 */   /* 一小句一整塊：只在標點後面換行，不會把「漏埋」拆成「漏／埋」 */
+  #cardTxt div.big { font-size:clamp(26px, 8vw, 34px); font-weight:900; letter-spacing:6px; margin-bottom:10px; color:#ffd166; }
   #cardHint { position:absolute; bottom:22px; font-size:12px; color:#7d8794; }
   @keyframes cardIn { from { opacity:0; transform:translateY(8px); } }
   #ticker { position:fixed; left:12px; top:96px; max-width:min(560px, calc(100vw - 320px)); font-size:12px; color:#e8ecf1; background:var(--panel); border:1px solid var(--line); border-left:3px solid #ffb020; padding:6px 10px; border-radius:6px; z-index:2; }
@@ -221,7 +223,7 @@
   <p class="sub" style="margin-top:-6px">本遊戲純屬虛構。如有雷同，你也辛苦了。</p>
   <p class="sub" id="rotHint" style="display:none; color:#ffb020">手機橫著拿，畫面比較大、比較好玩。</p>
   <div id="lvList"></div>
-  <div class="row"><button id="mLocker">置物櫃</button><button id="mCast">人物介紹</button><button id="mTroph">獎盃</button><button id="mName">改名字</button></div>
+  <div class="row"><button id="mLocker">置物櫃</button><button id="mCast">人物</button><button id="mTroph">獎盃</button><button id="mName">改名字</button></div>
 </div></div>
 <div id="cast" class="overlay"><div class="box"><h2>人物介紹</h2><div id="castList"></div><div class="row"><button class="closeOv primary">關閉</button></div></div></div>
 <div id="troph" class="overlay"><div class="box"><h2>獎盃</h2><p class="sub" id="trSub"></p><div id="trList"></div><div class="row"><button class="closeOv primary">關閉</button></div></div></div>
@@ -331,6 +333,7 @@ const FAN = {
   cheer:['學長好強！','不愧是學長！','學長我要抄筆記！','學長太神啦！'],
   comfort:['學、學長，沒事的啦……','琳姊剛剛其實有偷笑啦。','學長只是示範錯的給我們看，我懂！'],
   sorry:['學長對不起！是我擋路！','啊！學長借過！','學長撞我是我的榮幸！'],
+  help:['學長，這邊我扶著！','扶好了，學長鎖！','我幫學長看水平！','學長慢慢來，我顧著！','這支我扶，學長放心！'],
   ride:['學長的座駕！！','學長太狂了！！','學長下次載我！'],
 };
 const GREET_GOOD = { tie:'昨天零異常，有在用心。今天繼續保持。', lin:'昨天你一張單都沒讓我開。我有點無聊，但很好。', an:'聽說你昨天零異常？設計部出頭天了！', kun:'……昨天，不錯。' };
@@ -735,7 +738,7 @@ function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas')
 const LV = { group:null, parts:{}, refs:{}, pallets:{}, pick:[], actors:{} };
 const anims = [];
 function resetGroup(){ if(LV.group){ scene.remove(LV.group); LV.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; if(typeof occOn!=='undefined') occOn.clear(); LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
+  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
 function part(id){ return LV.parts[id] || (LV.parts[id]={meshes:[],ghosts:[]}); }
 function ghostOf(id, mesh){ if(mesh.isSprite) return; const gh=new THREE.Mesh(mesh.geometry, mat.ghost); gh.position.copy(mesh.position); gh.rotation.copy(mesh.rotation); gh.visible=false; (LV.host||LV.group).add(gh); part(id).ghosts.push(gh); }
 function add(id, mesh){ mesh.visible=false; mesh.userData.home=mesh.position.clone(); (LV.host||LV.group).add(mesh); part(id).meshes.push(mesh); ghostOf(id,mesh); return mesh; }
@@ -772,7 +775,7 @@ function cornerWall(put, staged, fm){   // staged＝從板筋階段開始（樓�
     for(let z=-0.15; z>-10.75; z-=0.3) rb.add(cyl(0.014,16.5,'x', 4.8,-0.12,z, rm,6)); for(let x=-3.35; x<13.05; x+=0.3) rb.add(cyl(0.014,10.7,'z', x,-0.092,-5.4, rm,6));
     rb.add(label('板筋綁紮中，還沒灌漿','#9a5230', 1.1,0.42,-1.2,0.26)); stat(rb); LV.refs.rebar=rb; }
   else stat(slab);
-  const MX=[0,1.2,2.4], TY=[0.9,2.7], WZ=0.22, MW=0.065, MD=0.15, TOP=3.2, BOT=-0.2;
+  const MX=[0,1.2,2.4], TY=[0.9,3.16], WZ=0.22, MW=0.065, MD=0.15, TOP=3.2, BOT=-0.2;   // 上面那支橫料就在牆頂收頭（上面沒有樓板，不留一條半片玻璃）
   // 工地那一關：整道牆一起做。XS＝每一支直料的位置（轉角這一跨排最前面，其他由近到遠）；BAYS＝每一跨。2.4～4.8 是通往平台的出入口，不裝東西
   const XS = staged ? [0,1.2,2.4, 4.8,6,7.2,8.4,9.6,10.8,12,13, -1.2,-2.4,-3.4] : MX,
         BAYS = staged ? [[0,1.2],[1.2,2.4],[4.8,6],[6,7.2],[7.2,8.4],[8.4,9.6],[9.6,10.8],[10.8,12],[12,13],[-1.2,0],[-2.4,-1.2],[-3.4,-2.4]] : [[0,1.2],[1.2,2.4]];
@@ -785,7 +788,7 @@ function cornerWall(put, staged, fm){   // staged＝從板筋階段開始（樓�
   [1.0,2.6].forEach(y=>put('bracket', box(0.1,0.12,0.03, -0.05,y,0.12, mat.steel)));
   XS.forEach(x=>put('mullion', box(MW,TOP-BOT,MD, x,(TOP+BOT)/2,WZ, mat.alu)));
   BAYS.forEach(([a,b])=>TY.forEach(y=>put('transom', box(b-a-MW,0.08,MD*0.85, (a+b)/2,y,WZ, mat.alu2))));
-  if(staged){ put('transom', box(2.4-MW,0.08,MD*0.85, 3.6,TY[1],WZ, mat.alu2)); put('transom', board(['出入口'], 3.6,2.5,WZ+0.08,0,0.7,'#1f7a3d','#ffffff')); }   // 牌子掛在這支橫料下面，跟橫料一起出現   // 出入口：只有上面一支橫料
+  if(staged){ put('transom', box(2.4-MW,0.08,MD*0.85, 3.6,TY[1],WZ, mat.alu2)); put('transom', board(['出入口'], 3.6,TY[1]-0.22,WZ+0.08,0,0.7,'#1f7a3d','#ffffff')); }   // 牌子掛在這支橫料下面，跟橫料一起出現   // 出入口：只有上面一支橫料
   const TD=MD*0.85, jt=(x,e,y)=>{ put('joint', box(0.012,0.006,TD, x+e*(MW/2+0.006),y+0.043,WZ, mat.seal)); put('joint', box(0.01,0.092,0.005, x+e*(MW/2+0.005),y,WZ+TD/2+0.0025, mat.seal)); };   // 接頭防水：橫料兩端跟直料交接的地方，上面一道、正面一道膠
   BAYS.forEach(([a,b])=>TY.forEach(y=>{ jt(a,1,y); jt(b,-1,y); })); if(staged){ jt(2.4,1,TY[1]); jt(4.8,-1,TY[1]); }
   const SH=TY[0]-BOT-0.2, SM=(TY[0]+BOT)/2+0.02;                                                         // 窗間牆這一段的高度與中心
@@ -798,8 +801,7 @@ function cornerWall(put, staged, fm){   // staged＝從板筋階段開始（樓�
     put('fcoat', box(w, 0.016, 0.125, cx, -0.006, 0.064, mat.fire));                                       // 防火阻煙膠：塗在岩棉上面
     put('glass', box(w,TY[1]-TY[0]-0.1,0.012, cx,(TY[0]+TY[1])/2,WZ+0.05, mat.glass));
     put('glass', box(w,TY[0]-BOT-0.1,0.012, cx,(TY[0]+BOT)/2+0.02,WZ+0.05, mat.glass));
-    put('glass', box(w,TOP-TY[1]-0.1,0.012, cx,(TOP+TY[1])/2,WZ+0.05, mat.glass)); });
-  if(staged) put('glass', box(2.4-MW-0.02,TOP-TY[1]-0.1,0.012, 3.6,(TOP+TY[1])/2,WZ+0.05, mat.glass));                                  // 出入口上面那一片
+  });
   XS.forEach(x=>[-1,1].forEach(e=>put('sealant', box(0.012,TOP-BOT,0.012, x+e*(MW/2+0.006),(TOP+BOT)/2,WZ+0.065, mat.seal))));
   BAYS.forEach(([a,b])=>TY.forEach(y=>[-1,1].forEach(e=>put('sealant', box(b-a-MW,0.012,0.012, (a+b)/2,y+e*0.046,WZ+0.065, mat.seal)))));
 }
@@ -1712,7 +1714,8 @@ function prankHit(a){ const me=LV.actors.you, id=prank; if(me.swing) return; me.
   me.swing={t:0, id, target:a, done:()=>{ prank=null; WHY.prank=PRANK[id].why; award('misc.'+id); failMission(a,'prank'); }}; }
 // 藍圈看不看得到：從鏡頭往藍圈拉三條線（中間、左、右），兩條以上被不透明的東西擋住＝被擋；或是藍圈跑到畫面外、壓在上面的資訊框底下
 const spotRay=new THREE.Raycaster(); let inCut=false, subT=null, spotOcc=[], userCamT=0, spotChk=0;
-function subtitle(who,text){ const el=$('#sub'); el.textContent=''; const b=document.createElement('b'); b.textContent=cname(who); el.append(b, text); el.style.display='block'; clearTimeout(subT); subT=setTimeout(()=>{ el.style.display='none'; }, 4200); }   // 過場時的台詞：放在畫面下面當字幕，不蓋住動畫
+function phrases(el,text){ text.split(/(?<=[，。：；！？　])/).forEach(t=>{ const sp=document.createElement('span'); sp.className='ph'; sp.textContent=t; el.append(sp); }); }   // 一小句一整塊（只在標點後面換行）
+function subtitle(who,text){ const el=$('#sub'); el.textContent=''; const b=document.createElement('b'); b.textContent=cname(who); el.append(b); phrases(el, text); el.style.display='block'; clearTimeout(subT); subT=setTimeout(()=>{ el.style.display='none'; }, 4200); }   // 過場時的台詞：放在畫面下面當字幕，不蓋住動畫
 function buildSpotOcc(){ const skip=new Set(); Object.values(LV.actors).forEach(a=>a.g.traverse(o=>skip.add(o))); spotOcc=[];
   LV.group.traverse(o=>{ if(!o.isMesh || skip.has(o) || o.userData.blob) return; const m0=Array.isArray(o.material)?o.material[0]:o.material; if(m0.transparent || m0===mat.ghost) return; let q=o, v=true; while(q){ if(!q.visible) v=false; q=q.parent; } if(v) spotOcc.push(o); }); LV.group.updateMatrixWorld(true); }
 function spotBlocked(th,ph,d){ const cp=new THREE.Vector3(target.x+d*Math.sin(ph)*Math.sin(th), target.y+d*Math.cos(ph), target.z+d*Math.sin(ph)*Math.cos(th)); let n=0;
@@ -1804,7 +1807,7 @@ const CARD = {
 const cardSeen=new Set(); let cardNext=null;
 function showCard(lines, then){ const el=$('#card'), tx=$('#cardTxt'); tx.innerHTML=''; el.style.display='flex'; requestAnimationFrame(()=>el.classList.add('on')); let i=0, timer=null, closing=false;
   const finish=()=>{ if(closing) return; closing=true; clearTimeout(timer); cardNext=null; el.classList.remove('on'); setTimeout(()=>{ el.style.display='none'; then(); }, 500); };
-  const step=()=>{ clearTimeout(timer); if(i>=lines.length){ finish(); return; } const d=document.createElement('div'); d.textContent=fill(lines[i]); if(i===0) d.className='big'; tx.append(d); i++; timer=setTimeout(step, i>=lines.length ? 2200 : 1500); };
+  const step=()=>{ clearTimeout(timer); if(i>=lines.length){ finish(); return; } const d=document.createElement('div'); phrases(d, fill(lines[i])); if(i===0) d.className='big'; tx.append(d); i++; timer=setTimeout(step, i>=lines.length ? 2200 : 1500); };
   cardNext=step; step(); }
 function nameRoast(){ const n=cname('you'), U=n.toUpperCase(), has=a=>a.some(k=>U.includes(k));
   if(Object.keys(CAST).some(k=>k!=='you' && CAST[k].name===n)) return [{who:'tie', t:`你也叫「${n}」？這裡已經有一個了。以後叫你「二號」。`, mood:'mad'}, {who:'you', t:'（……早知道不要亂取。）'}];
@@ -1828,8 +1831,8 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
       ps.forEach(q=>{ x+=q.obs.hx; q.x=q.obs.x=x; q.g.position.x=x; x+=q.obs.hx+GAP; }); });   // 兩排拉開、錯開半格，長料才不會頭尾相接
     if(!L.office){ makePrank('bat', L.cx-3.7, 6.35); makePrank('drink', L.cx+3.9, 6.35); }
     makeActor('you', L.cx, L.office ? 2.9 : 2.2);
-    const slots = L.office ? [[L.cx+2.98,1.2],[L.cx+2.98,3.4],[L.cx-2.98,2.6]] : pickHomes(L.npcs.length); /* 椅子拉近桌子，手才搆得到鍵盤 */ L.npcs.forEach((w,k)=>{ const a=makeActor(w, slots[k][0], slots[k][1]); if(L.office) seat(a); });   // 辦公室：坐在自己的工位
-    for(let k=0, nf=fanCount(); k<nf; k++){ const f=makeActor(k?'hao':'di', L.cx+(k?0.9:-0.9), 2.5); f.follower=true; f.g.scale.setScalar(0.86); }
+    const slots = L.office ? [[L.cx+2.98,1.2],[L.cx+2.98,3.4],[L.cx-2.98,2.6]] : pickHomes(L.npcs.length+fanCount());   /* 多挑的位置給小弟待命 */ /* 椅子拉近桌子，手才搆得到鍵盤 */ L.npcs.forEach((w,k)=>{ const a=makeActor(w, slots[k][0], slots[k][1]); if(L.office) seat(a); });   // 辦公室：坐在自己的工位
+    for(let k=0, nf=fanCount(); k<nf; k++){ const f=makeActor(k?'hao':'di', L.cx+(k?0.9:-0.9), 2.5); f.follower=true; f.g.scale.setScalar(0.86); const h=slots[L.npcs.length+k]; f.post = h ? {x:h[0], z:h[1]} : {x:L.cx+(k?0.9:-0.9), z:2.5}; }   // post＝沒事做的時候站的地方（不擋料、不擋路）
     if(L.plant) plantWorld(); else if(!L.office && !L.indoor){ siteSigns(); siteWorld(); }
     LV.pick.push(spot.userData.disc);
     if(L.view){ target.set(...L.view.t); theta=L.view.theta; phi=L.view.phi; dist=L.view.dist; } else { target.set(L.cx, L.gy+1.3, 2.5); theta=0.5; phi=1.08; dist=12; }
@@ -1951,10 +1954,21 @@ function bump(a){ a.bumps++; bumpTotal++; a.wob=1; lastAct=performance.now(); ne
     else { score=Math.max(0,score-5); pen='−5 分'; } stats(); }
   bubble(a.who,text,tier>0,pen);
   hurt([8,14,22][tier]*(a.who===L.boss?1.5:1)*(long?1.6:1), a, long?'long':'bump'); }
+// 小弟扶料的位置：藍圈旁邊 0.9～1.2 公尺、在你走過來那條路的側邊（不擋你、不擋同事、不在牆上），兩個人一左一右
+var hsCache=null;   // var：換關卡的程式可能比這裡先跑
+function helpSlots(){ const sp=spot.position, key=sp.x.toFixed(2)+','+sp.z.toFixed(2); if(hsCache && hsCache.key===key) return hsCache;
+  const me=LV.actors.you, ux0=me.x-sp.x, uz0=me.z-sp.z, U=Math.hypot(ux0,uz0)||1, ux=ux0/U, uz=uz0/U, cs=[];
+  for(let a=0;a<360;a+=15) for(const r of [0.95,1.2]){ const x=sp.x+r*Math.cos(a*Math.PI/180), z=sp.z+r*Math.sin(a*Math.PI/180), c=clampXZ(x,z);
+    if(Math.hypot(c.x-x,c.z-z)>0.01 || blocked(x,z,0.1) || Object.values(LV.actors).some(o=>!o.follower && o.who!=='you' && Math.hypot(o.x-x,o.z-z)<0.8)) continue;
+    const dot=((x-sp.x)*ux+(z-sp.z)*uz)/r; cs.push({x,z,sc:Math.abs(dot)+(dot>0.35?3:0)+(r>1?0.15:0)}); }   // 分數越低越好：在你來的方向的側邊，不要擋在你和藍圈中間
+  cs.sort((a,b)=>a.sc-b.sc); const out=[]; for(const c of cs){ if(out.every(o=>Math.hypot(o.x-c.x,o.z-c.z)>0.9)) out.push(c); if(out.length>=2) break; }
+  out.key=key; hsCache=out; return out; }
 function crowd(dt,now){ const p=LV.actors.you; if(!p) return;
   if(!done && patience<100){ patience=Math.min(100,patience+dt*0.6); if(Math.abs(patience-patShown)>=1) patUI(); }
   if(!dlgOpen && !failed){ const moving=!!p.dest;
-    let fi=0; for(const k in LV.actors){ const f=LV.actors[k]; if(!f.follower) continue; const sd=fi++ ? 0.6 : -0.6, tx=p.x-Math.sin(p.face)*1.15+Math.cos(p.face)*sd, tz=p.z-Math.cos(p.face)*1.15-Math.sin(p.face)*sd;
+    const hs = carry && spot.visible && !L.bench ? helpSlots() : null; let fi=0;   // 小弟的工作：你拿著料＝去藍圈旁邊扶料；沒拿料＝回待命位置
+    for(const k in LV.actors){ const f=LV.actors[k]; if(!f.follower) continue; const job = hs ? hs[fi] : f.post; fi++; if(!job) continue; const tx=job.x, tz=job.z;
+      if(hs && !f.helping && Math.hypot(f.x-tx,f.z-tz)<0.3){ f.helping=hs.key; if(Math.random()<0.7) bubble(f.who,pickOne(FAN.help)); } if(f.helping && (!hs || f.helping!==hs.key)) f.helping=null;   // 走到扶料的位置：講一句
       if(blocked(tx,tz) || now/1000<(f.restUntil||0)) f.dest=null;
       else if(Math.hypot(f.x-tx,f.z-tz)>0.45){ const w=plan(f, clampXZ(tx,tz))[0]; if(!f.dest || Math.hypot(f.dest.x-w.x,f.dest.z-w.z)>0.3) f.dest=w; }
       for(const k2 in LV.actors){ const o=LV.actors[k2]; if(o===f||o===p) continue; const dx=f.x-o.x, dz=f.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ f.x+=dx/d*(0.55-d); f.z+=dz/d*(0.55-d); } } const fc=clampXZ(f.x,f.z); f.x=fc.x; f.z=fc.z; pushOut(f); }   // 被擠開之後再確認一次：不出界、不站在牆上、不進障礙物
@@ -1973,7 +1987,7 @@ function crowd(dt,now){ const p=LV.actors.you; if(!p) return;
 // ===================== 主迴圈 =====================
 let lastT=performance.now();
 function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/1000; lastT=now; { const ic=!!(cut && (cut.kind==='pour' || cut.stage<2)); if(ic!==inCut){ inCut=ic; document.body.classList.toggle('incut',ic); } }
-  spotChk+=dt; if(spotChk>0.5){ spotChk=0; if(carry && spot.visible && !pd && !touches.size && !camGoal && !(cut && cut.stage<2) && !dlgOpen && !talkCam && performance.now()-userCamT>1200) ensureSpotVisible(); }   /* 拿著料：藍圈看不到就自動調鏡頭（你剛動過鏡頭的話先不搶） */   /* 過場動畫中：收起資訊框 */
+  spotChk+=dt; if(spotChk>0.5){ spotChk=0; if(carry && spot.visible && !pd && !touches.size && !joy.on && !camGoal && !(cut && cut.stage<2) && !dlgOpen && !talkCam && performance.now()-userCamT>1200) ensureSpotVisible(); }   /* 拿著料：藍圈看不到就自動調鏡頭（你剛動過鏡頭的話先不搶） */   /* 過場動畫中：收起資訊框 */
     // 時間不會倒著走
   for(let i=anims.length-1;i>=0;i--){ const a=anims[i]; a.m.visible=performance.now()>=a.t0; if(!a.m.visible) continue; const k=Math.min(1,Math.max(0,(performance.now()-a.t0)/450)); const e=1-Math.pow(1-k,3); a.m.position.y=a.from+(a.to-a.from)*e; if(k>=1) anims.splice(i,1); }
   if(camGoal){ theta=camGoal.theta+Math.atan2(Math.sin(theta-camGoal.theta),Math.cos(theta-camGoal.theta)); theta+=(camGoal.theta-theta)*0.08; phi+=(camGoal.phi-phi)*0.08; dist+=(camGoal.dist-dist)*0.08; if(Math.abs(camGoal.theta-theta)<1e-3&&Math.abs(camGoal.phi-phi)<1e-3) camGoal=null; }
@@ -1987,11 +2001,15 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
       if(Math.hypot(target.x-k.t[0],target.z-k.t[2])<0.03 && (keepD || Math.abs(dist-k.dist)<0.03)) talkCam=null; } }
   if(L && !L.bench){ const p=LV.actors.you;
     const kw=keys.w||keys.arrowup, ks=keys.s||keys.arrowdown, kd=keys.d||keys.arrowright, ka=keys.a||keys.arrowleft, jm=Math.hypot(joy.x,joy.y), jOn=jm>0.18;   // 搖桿推超過一點點才算
-    if(!(kw||ks||kd||ka||jOn)) keyTheta=theta;                                         // 放開按鍵才跟上鏡頭的新角度：鏡頭自己轉的時候，按住的方向不會跟著歪掉
+    if(!(kw||ks||kd||ka||jOn) || (TOUCH && jOn)) keyTheta=theta;   /* 手機搖桿：方向一直照現在的畫面（推上＝往畫面上方走） */
+    if(TOUCH && jOn && camGoal && !(cut && cut.stage<2)) camGoal=null;   /* 推著搖桿的時候，鏡頭不自己轉 */                                         // 放開按鍵才跟上鏡頭的新角度：鏡頭自己轉的時候，按住的方向不會跟著歪掉
     if(!dlgOpen && !failed && !p.swing && !(cut && cut.stage<2)){ let fx=0,fz=0; const sn=Math.sin(keyTheta), cs=Math.cos(keyTheta); if(kw){ fx-=sn; fz-=cs; } if(ks){ fx+=sn; fz+=cs; }
       if(kd){ fx+=cs; fz-=sn; } if(ka){ fx-=cs; fz+=sn; }
       if(jOn){ fx+=cs*joy.x+sn*joy.y; fz+=-sn*joy.x+cs*joy.y; }   /* 搖桿：往上推＝往前（離開鏡頭），往右推＝往右 */
-      const m=Math.hypot(fx,fz); if(m>0){ p.dest=clampXZ(p.x+fx/m*0.5, p.z+fz/m*0.5, p); p.onArrive=null; lastAct=now; } }
+      if(jOn && !prank){ const m0=Math.hypot(fx,fz)||1; fx/=m0; fz/=m0;                                    // 搖桿快碰到站著的同事：往他那邊的分量拿掉，貼著他滑過去（不會硬撞上去被扣分）
+        for(const k in LV.actors){ const a=LV.actors[k]; if(a===p || a.follower || a.dest || !a.g.visible) continue; const dx=a.x-p.x, dz=a.z-p.z, d=Math.hypot(dx,dz); if(d>1.0 || d<0.001) continue;
+          const nx=dx/d, nz=dz/d, into=fx*nx+fz*nz; if(into>0){ const w=Math.min(1,(1.0-d)/0.35); fx-=nx*into*w; fz-=nz*into*w; } } }
+      const m=Math.hypot(fx,fz); if(m>0.05){ p.dest=clampXZ(p.x+fx/m*0.5, p.z+fz/m*0.5, p); p.onArrive=null; lastAct=now; } else if(jOn) p.dest=null; }
     Object.values(LV.actors).forEach(a=>{ if(a.who==='you' && dlgOpen) { const d=a.dest; a.dest=null; stepActor(a,dt,t); a.dest=d; } else stepActor(a,dt,t); });
     /* 手機：鏡頭一直跟著角色（一指轉視角、兩指縮放都是繞著角色轉，不會把角色甩出畫面）；電腦：角色在走才跟，你正在拖鏡頭的時候不跟 */
     if(p && (p.dest || TOUCH) && p.g.visible && !dlgOpen && !(talkCam && !TOUCH) && !(cut && cut.stage<2) && !LV.hoisting && (TOUCH || performance.now()-userCamT>350)){   /* 進場座駕停在場邊時 cut 還在（stage 2），那時要照樣跟 */ const q=Math.min(1,dt*(p.dest?2.4:1.2)); target.x+=(p.x-target.x)*q; target.z+=(p.z-target.z)*q;   /* 鏡頭跟著角色走（你正在拖鏡頭的時候不跟） */
