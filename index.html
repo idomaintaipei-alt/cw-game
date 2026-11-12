@@ -848,22 +848,22 @@ function plantWorld(){ const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShad
     ['工地主任','鐵叔（兩個工地輪流跑）'],['專任工程人員','在週二那個工地'],['職業安全衛生','琳姊（兩個工地一起管）'],['開工日期','115 年 5 月 1 日'],['預定完工','今天（據說可以準時下班）'],['陳情專線','（響了也沒人敢接）']]);   // 工程告示牌
   scissorLift(10.71+0.15+0.6, y0, -4.2);   // 廠房東側牆外面：高空作業車貼著牆（平台離牆 15 公分），在鎖牆頂的收邊
   parkingLot(y0, [[cx-1.8,11.5,15.3],[cx+0.8,11.5,15.3],[cx+3.4,11.5,15.3],[cx+6.0,11.5,15.3],[cx+8.6,11.5,15.3],[cx-8.6,11.3,15.1],[cx-11.2,11.3,15.1],[cx-13.8,11.3,15.1],[cx-14.6,12.4,14.8],[cx-19.0,12.4,14.8]],
-    [['hatch',cx-12.5,13.2],['sedan',cx-0.5,13.4,0x2f4a66],['pickup',cx+2.1,13.4,0x3f7fc1],['sedan',cx+4.7,13.4,0x2f5d50],['hatch',cx+7.3,13.4,0xc9a46a]], [['plainB',cx-15.0,13.6],['plainA',cx-15.9,13.6],['plainC',cx-16.8,13.6],['plainA',cx-17.7,13.6],['plainB',cx-18.6,13.6]]);   /* 同事開的都是普通車 */   // 停車區：北邊圍牆內側（直升機降落區北邊）
+    [['hatch',cx-12.7,13.2],['sedan',cx-0.5,13.4,0x2f4a66],['pickup',cx+2.1,13.4,0x3f7fc1],['sedan',cx+4.7,13.4,0x2f5d50],['hatch',cx+7.3,13.4,0xc9a46a]], [['plainB',cx-15.0,13.6],['plainA',cx-15.9,13.6],['plainC',cx-16.8,13.6],['plainA',cx-17.7,13.6],['plainB',cx-18.6,13.6]]);   /* 同事開的都是普通車 */   // 停車區：北邊圍牆內側（直升機降落區北邊）
   const fk=new THREE.Group(), or=std(0xf08a1c); fk.position.set(cx+12.2,y0,3.6); fk.rotation.y=-0.5; fk.add(box(1.1,0.7,1.9, 0,0.6,0, or)); fk.add(box(1.0,0.9,0.9, 0,1.4,-0.3, dk)); [[-0.5,0.6],[0.5,0.6],[-0.5,-0.6],[0.5,-0.6]].forEach(([a,b])=>fk.add(cyl(0.28,0.22,'x', a,0.28,b, mat.tire,14)));
   [-0.3,0.3].forEach(a=>{ fk.add(box(0.08,2.2,0.08, a,1.2,1.0, dk)); fk.add(box(0.1,0.05,1.1, a,0.5,1.55, mat.steel)); }); fk.add(box(0.95,0.5,0.9, 0,0.85,1.6, wh)); S(fk);                                // 堆高機，叉著一捆板
   [[13.5,8.5,4],[15.2,8.8,3],[14.0,-2.5,5]].forEach(([a,z,n])=>{ for(let k=0;k<n;k++) S(box(1.0,0.12,3.2, cx+a,y0+0.14+k*0.13,z, k%2?mat.face:wh)); S(box(1.0,0.01,3.2, cx+a,y0+0.085+n*0.13,z, mat.film)); [-1,1].forEach(e=>S(box(1.1,0.08,0.1, cx+a,y0+0.04,z+e*1.1, mat.wood))); });   // 成捆的三明治板
   const tk=new THREE.Group(); tk.position.set(cx+16.5,y0,3.0); tk.add(box(2.3,2.3,2.2, 0,1.6,3.4, wh)); tk.add(box(2.3,0.3,6.2, 0,1.0,-0.8, dk)); [[-1.05,3.3],[1.05,3.3],[-1.05,-1.2],[1.05,-1.2],[-1.05,-2.6],[1.05,-2.6]].forEach(([a,b])=>tk.add(cyl(0.48,0.3,'x', a,0.48,b, mat.tire,16)));
   for(let k=0;k<4;k++) tk.add(box(1.0,0.12,3.2, 0,1.22+k*0.13,-1.0, k%2?mat.face:wh)); S(tk);                                                                     // 載板的貨車
-  const wl=std(0xb9bdc2), wall=(x0,z0,x1,z1)=>{ const len=Math.hypot(x1-x0,z1-z0), b=box(len,2.2,0.2, (x0+x1)/2,y0+1.1,(z0+z1)/2, wl); b.rotation.y=Math.atan2(z0-z1,x1-x0); S(b); };
+  const wl=std(0xb9bdc2), wall=(x0,z0,x1,z1)=>{ const len=Math.hypot(x1-x0,z1-z0), b=box(len,2.2,0.2, (x0+x1)/2,y0+1.1,(z0+z1)/2, wl); b.rotation.y=Math.atan2(z0-z1,x1-x0); b.userData.noFade=true; S(b); };   /* 圍牆擋到主角也不變透明（原本鏡頭在牆外時整段消失） */
   wall(cx-24,-22, cx-9.3,-22); wall(cx-4.7,-22, cx+27,-22); wall(cx-24,-22, cx-24,17); wall(cx+27,-22, cx+27,17); wall(cx-24,17, cx-9.3,17); wall(cx-4.7,17, cx+27,17);                // 圍牆；車道頭尾留門
   { const gp=std(0x6b6f75), al=std(0xc9ced4,{metalness:.4, roughness:.4}), Z=17;                                                       // 南邊大門：門柱、伸縮門、警衛室、公司招牌
     S(box(0.6,2.8,0.7, cx-9.58,y0+1.4,Z, gp)); S(box(1.4,3.0,0.7, cx-4.02,y0+1.5,Z, gp));                                             // 石材門柱（包住圍牆的端頭，開口 4.56 公尺）
     S(board(['爆肝科技股份有限公司','第二工廠'], cx-4.02,y0+2.0,Z+0.36,0,1.3,'#2b2f36','#e2c48f'));                                     // 公司招牌（門柱外側）
     S(box(0.7,1.5,0.4, cx-8.92,y0+0.85,Z, al)); for(let k=0;k<6;k++) S(box(0.03,1.45,0.42, cx-9.2+k*0.11,y0+0.85,Z, mat.steelDark));   // 電動伸縮門：收在左邊門柱旁
     S(box(0.5,0.35,0.45, cx-8.92,y0+1.78,Z, std(0xf2b01e))); S(box(4.56,0.02,0.08, cx-7.0,y0+0.01,Z, mat.steelDark));                 // 馬達頭（黃色）、地上的軌道
-    const bx=cx-11.3, bz=15.95; S(box(1.6,2.4,1.4, bx,y0+1.2,bz, std(0xe9edf0))); S(box(1.9,0.12,1.7, bx,y0+2.46,bz, std(0x5f7f9c)));  // 警衛室：牆、屋頂
-    S(box(0.03,0.8,1.0, bx+0.815,y0+1.45,bz, std(0x9fd0f0,{emissive:0x24465a}))); S(box(0.03,0.08,1.1, bx+0.83,y0+1.02,bz, std(0x3a4350)));   // 朝大門的窗、窗台
-    const sg=board(['警衛室','訪客請換證・加班免登記'], bx+0.82,y0+2.08,bz,Math.PI/2,1.2,'#f6efe0','#1b1e24'); S(sg); }
+    const bx=cx-2.4, bz=15.95;   /* 大門右邊（左邊是你的停車格，大車停進去會壓到） */ S(box(1.6,2.4,1.4, bx,y0+1.2,bz, std(0xe9edf0))); S(box(1.9,0.12,1.7, bx,y0+2.46,bz, std(0x5f7f9c)));  // 警衛室：牆、屋頂
+    S(box(0.03,0.8,1.0, bx-0.815,y0+1.45,bz, std(0x9fd0f0,{emissive:0x24465a}))); S(box(0.03,0.08,1.1, bx-0.83,y0+1.02,bz, std(0x3a4350)));   // 朝大門的窗、窗台
+    const sg=board(['警衛室','訪客請換證・加班免登記'], bx-0.82,y0+2.08,bz,-Math.PI/2,1.2,'#f6efe0','#1b1e24'); S(sg); }
   standBoard(['廠區限速 10 公里','（堆高機例外）'], cx+6.2,3.4,-0.7,2.3,'#f2cf1d','#1b1e24');
   bgCrew([ {kind:'haul', a:{x:cx+10.6,z:6.4}, b:{x:cx+14.0,z:6.4}, y:y0, vest:0xff7a1a},   // 廠區的工人：一箱一箱搬貨、在板夾上點數、進出廠房
     {kind:'write', x:cx+12.6, y:y0, z:-2.5, ry:Math.PI/2, vest:0x7b8794},   /* 站在廠房外面那捆板旁邊點數（原本站進廠房裡面） */ {kind:'walk', a:{x:cx-20.5,z:0.4}, b:{x:cx-13.5,z:0.4}, y:y0, vest:0xd9e021} ], S);
@@ -1645,7 +1645,7 @@ function stepCut(dt){ if(cut.kind==='pour'){ stepPour(cut,dt); return; }
   if(c.stage<2 && !LV.hoisting){ const follow = c.stage===0 && !heli, tx = follow ? g.position.x : c.stage===0 ? L.cx-8 : (LV.actors.you.x+L.cx)/2, ty = (c.stage===0 ? yardY() : L.gy)+(c.stage===0 && heli ? 3.2 : 1.3), q=Math.min(1,dt*3); target.x+=(tx-target.x)*q; target.y+=(ty-target.y)*q; if(follow) target.z+=(g.position.z-target.z)*q; else if(c.stage===1) target.z+=(LV.actors.you.z-target.z)*q; }   /* 開車、騎車：鏡頭跟著車子走（停車格在北門附近，不跟會跑出畫面） */
   if(heli){ const e=1-Math.pow(1-k,2), sp = c.stage ? Math.max(2,30-(c.t-dur)*6) : 34; g.position.set(L.cx-13.5, yardY()+(1-e)*14, 7.5); /* 降在車道旁邊的空地，不停在路中間 */ g.rotation.y=2.75+(1-e)*2.2; g.rotation.z = c.stage ? 0 : Math.sin(c.t*2.2)*0.05;
     u.rotor.rotation.y+=dt*sp; u.tail.rotation.z+=dt*30; u.disc.material.opacity=Math.min(0.16, sp/34*0.16)*(sp>8?1:0); u.strobe.visible=(c.t*2.5)%1<0.2; }
-  else { const e=1-Math.pow(1-k,3); const ps=parkSpot(), P=q=>{ const v=Math.max(0,Math.min(1,(q-0.82)/0.18)); return {x:L.cx-6.4-ps.turn*v*v*(3-2*v), z:ps.z-(1-q)*(ps.z-ps.z0)}; }   /* 沿著便道開進來，最後一段往左彎進停車區的空格 */, pa=P(e), pb=P(Math.min(1,e+0.004));   /* 路線：最後一段往左彎進車道旁的空地 */
+  else { const e=1-Math.pow(1-k,3); const ps=parkSpot(), P=q=>{ const v=Math.max(0,Math.min(1,(q-0.82)/0.18)); return {x:L.cx+ps.rx-ps.turn*v*v*(3-2*v), z:ps.z-(1-q)*(ps.z-ps.z0)}; }   /* 沿著便道開進來，最後一段往左彎進停車區的空格 */, pa=P(e), pb=P(Math.min(1,e+0.004));   /* 路線：最後一段往左彎進車道旁的空地 */
     g.position.set(pa.x, yardY()+(c.stage?0:Math.abs(Math.sin(c.t*14))*0.03*(1-k)), pa.z); g.rotation.y = e<0.995 ? Math.atan2(pb.z-pa.z, pa.x-pb.x) : Math.PI/2;   /* 車頭照行進方向轉，不是橫著平移 */ if(!c.stage) u.wheels.forEach(w=>w.rotation.z+=dt*22*(1-k*k));
     if(c.stage && u.doors) u.doors.forEach((d,i)=>{ d.rotation.x+=((i?-1:1)*1.75-d.rotation.x)*Math.min(1,dt*4); });
     if(u.bike && c.stage===0) rideOn(g); }
@@ -1972,7 +1972,7 @@ const STAIR={x:10.95, z0:4.6, z1:7.2};                                          
 const gyAt = (x,z) => (L.yard!==undefined && LV.hoist && Math.abs(x-LV.hoist.x)<LV.hoist.hw+0.2 && Math.abs(z-LV.hoist.z)<LV.hoist.hd+0.2) ? L.yard+(Math.abs(x-LV.hoist.x)<LV.hoist.hw && Math.abs(z-LV.hoist.z)<LV.hoist.hd && LV.hoist.cage.position.y<L.yard+0.01 ? 0.02 : 0) :   /* 車廂在一樓時，踩在 2 公分的車廂地板上；底座只是畫在地上的圖案 */ (L.yard!==undefined && (x<-3.5 || x>13.1 || z>8.5 || z<-10.8)) ? L.yard : (insideOK() && x>-3.5 && x<13.1 && z<0 && z>-10.8) ? 0 : (L.yard!==undefined && x>10.3 && x<11.6 && z>STAIR.z0 && z<7.4) ? L.gy-(z-STAIR.z0)*(1.8/2.6) : L.gy;
 // 進場路線：起點（下車的地方或大門）→ 一路走到工作區（四樓那一關經過施工電梯）
 // 你的停車格：週二在北門內側的停車區、週五在北邊圍牆內側（z0＝車子開進來的起點）
-const parkSpot = () => L.yard!==undefined ? {x:L.cx-11.2, z:15.5, turn:4.8, z0:-25.5} : {x:L.cx-9.9, z:13.2, turn:3.5, z0:-18.4};
+const parkSpot = () => L.yard!==undefined ? {x:L.cx-11.2, z:15.5, turn:4.4, z0:-25.5, rx:-6.8} : {x:L.cx-9.9, z:13.2, turn:3.5, z0:28, rx:-6.4};   /* rx＝便道上開的那條線（離 cx 多遠）；週二往左一點，大車才不會擦到大樓邊的東西和後門門板 */   /* 週五：從南邊大門（z 17）開進來，進門就左轉進停車格 */
 function entryPath(kind){ const H=LV.hoist, ps=parkSpot(), door = kind==='walk' ? {x:L.cx-7.0, z:21.0} : kind==='heli' ? {x:L.cx-13.5+1.7, z:7.9} : {x:ps.x+1.7, z:ps.z+0.4};
   return L.yard!==undefined ? (kind==='heli' ? [door,{x:H.x-H.hw-0.5,z:H.z},{x:H.x-0.3,z:H.z}] : [door,{x:-4.6,z:10.4},{x:H.x-H.hw-0.5,z:H.z},{x:H.x-0.3,z:H.z}]) : [door,{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}]; }   /* 直升機：從機門直直走到電梯門口（紅地毯是一整條，不轉彎） */
 // 小弟在一樓迎接：站在路的兩邊等，主角走到面前就鞠躬，然後跟在後面（四樓那一關一起搭電梯）。直升機另外有拱門、紅地毯、彩帶
