@@ -371,6 +371,17 @@ const GREET_OUTFIT = {
   sequin:{ tie:'亮片西裝？你是來尾牙表演的喔？', lin:'反光背心有規定顏色。你這件……太反光了。', an:'你今天好閃，我眼睛要瞎了！', kun:'……刺眼。' },
   halo:{ tie:'頭上那圈是什麼？神明也要戴安全帽！', lin:'……那個光圈，有經過檢驗嗎？', an:'哇，神明降臨！拜一下！', kun:'……（雙手合十）' },
 };
+// 開豪車、搭直升機來：主角講話變囂張，程度照驚訝程度由高到低（直升機＞大G＝X6＞特斯拉）；機車、走路、換衣服都不會
+const HELI_BRAG=['停機坪的事，我已經請秘書跟你們老闆說過了。','風大？那是你們沒見過世面。','不好意思，私人飛機在保養，今天只好先開這台。','別叫我菜鳥，以後叫我董仔就好。','料在哪？我裝完還要趕下一個行程。','我時間很貴，今天的進度我包了。','停車費？我直接把這塊地買下來比較快。'];
+const HELI_BACK={ tie:'……你再囂張一句試試看。去拿料！', lin:'態度，我也記下來了。', an:'……你今天真的很欠揍欸。', kun:'……（繼續鎖螺絲）' };
+const CAR_BRAG=['車停那邊應該可以吧？擋到再跟我說。','這台？還好啦，週末代步而已。','今天塞車，還好這台馬力夠。','鑰匙先放你這？……開玩笑的，別碰。'];
+const CAR_BACK={ tie:'……停好一點，不要擋到混凝土車。', lin:'車停哪我管不著，安全帽給我戴好。', an:'哇……好啦好啦，快去拿料。', kun:'……（看了一眼車，又低頭鎖螺絲）' };
+const EV_BRAG=['我開電動車，比較環保一點啦。','自動駕駛開過來的，路上我都在看圖。','充電樁在哪？……沒有喔？好吧。'];
+// 開場主角自己講的那句：開豪車／搭直升機來，換成有氣勢的版本（[特斯拉, 大G＝X6, 直升機]，由低到高）
+const SWAG_LV={ ev:1, benz:2, bmw:2, heli:3 };
+const SWAG={ '（吞口水）……好。':['好啊。這種的我看圖就會了。','轉角而已嘛。我昨天看一眼就懂了，今天裝給你看。','一面轉角牆？我還以為今天要我把整棟包下來。開始吧，我趕時間。'],
+  '（鐵叔比較兇，還是琳姊比較可怕……）':['一支錨栓而已，SGS 要拉就讓他拉。','補救的事交給我，拉拔報告我順便幫你們寫好。','植一支？我還以為要我把整層重灌。行，我示範一次，你們看好。'],
+  '（就、就這樣？）':['了解，第一片我來，不會歪。','第一片歪？我的字典裡沒有「歪」。','師父放心，我連直升機都停得正，板子怎麼可能歪。'] };
 const RIDE_LV = { heli:3, benz:2, bmw:2, ev:1, jet:1, bws:1, cygnus:1, smax:1, gogoro:1 }, OUTFIT_LV = { robe:2, cape:2, sequin:1, halo:1 };   // 驚訝程度
 const RIDEB = { benz:'……大 G？', bmw:'方向燈咧？！', ev:'……怎麼沒聲音？', heli:'風很大欸！！', jet:'嗯，能吃苦。', bws:'工地神車！', cygnus:'能吃苦的年輕人。', smax:'坐很舒服喔？', gogoro:'……沒聲音？' };
 const RIDEB_KUN = { benz:'……（看了一眼）', bmw:'……方向燈。', ev:'……沒聲音。', heli:'……（按住安全帽）', jet:'……嗯。', bws:'……BWS。', cygnus:'……嗯，能吃苦。', smax:'……坐墊，軟。', gogoro:'……沒聲音。' };   // 阿坤師帶班：落地那一下的反應也照他的個性，話少、不大聲
@@ -1599,13 +1610,18 @@ function greet(){ const b=store.get('cwstory_best',{}), prev = li>0 ? b[LEVELS[l
   if(prev){ if(prev.n===0) lines.push({who, t:GREET_GOOD[who], mood:'smile'}); else if(prev.n>=3) lines.push({who, t:GREET_BAD[who].replace('{N}',prev.n), mood: who==='tie'?'mad':undefined}); }
   const said=t=>Array.isArray(t)?t:[t], rk = !L.bench && !L.office && !L.indoor && sk.ride!=='r_walk' ? sk.ride.slice(2) : null, rLv = rk ? RIDE_LV[rk]||1 : 0;   // 座駕
   const outfit = L.office ? [] : [sk.vest==='v_robe'&&'robe', sk.acc.includes('a_cape')&&'cape', sk.vest==='v_sequin'&&'sequin', sk.acc.includes('a_halo')&&'halo'].filter(Boolean), oLv = outfit.reduce((m,k)=>Math.max(m,OUTFIT_LV[k]),0), top = outfit.filter(k=>OUTFIT_LV[k]===oLv);   // 衣服：辦公室不穿造型，不講
-  if(rk) said(GREET_RIDE[rk][who]).forEach(t=>lines.push({who, t}));                                                    // 帶班的人：先講座駕
+  const brag = rk==='heli' ? HELI_BRAG.slice().sort(()=>Math.random()-0.5) : null;
+  if(rk) said(GREET_RIDE[rk][who]).forEach(t=>lines.push({who, t}));
+  if(brag) lines.push({who:'you', t:brag[0], mood:'smile'});   // 直升機：主角先囂張一句
+  else if(rk==='benz' || rk==='bmw'){ lines.push({who:'you', t:pickOne(CAR_BRAG), mood:'smile'}); lines.push({who, t:CAR_BACK[who]||'……'}); }   // 大G、X6：囂張一句，帶班的人回一句
+  else if(rk==='ev') lines.push({who:'you', t:pickOne(EV_BRAG), mood:'smile'});   // 特斯拉：小小炫耀一句                                                    // 帶班的人：先講座駕
   if(top.length) lines.push({who, t:GREET_OUTFIT[top[0]][who]});                                                         // 再講最誇張的那件衣服
   else { const loud=(sk.helmet!=='h_yellow'?1:0)+(sk.vest!=='v_blue'?1:0)+sk.acc.length;                                // 沒有那四件：照原本的（太花俏、安全帽、發光靴）
     if(!L.office){ if(loud>=3) lines.push({who, t:GREET_LOUD[who]}); else if(sk.helmet!=='h_yellow') lines.push({who, t:GREET_HAT[who]}); if(sk.acc.includes('a_boots')) lines.push({who, t:GREET_BOOT[who]}); } }
   (L.npcs||[]).filter(w=>w!==who).forEach((w,i)=>{                                                                       // 現場其他人：夠誇張才講（座駕 2 以上、衣服 2 以上）
     if(rLv>=2 && GREET_RIDE[rk][w]) said(GREET_RIDE[rk][w]).forEach((t,j)=>{ if(rLv>=3 || j===0) lines.push({who:w, t}); });   // 直升機：講完；大G、X6：講一句
     if(oLv>=2) lines.push({who:w, t:GREET_OUTFIT[top[(i+1)%top.length]][w]}); });                                          // 龍袍、披風：每個人都講（兩件都穿就輪流講）
+  if(brag){ lines.push({who:'you', t:brag[1], mood:'smile'}); lines.push({who, t:HELI_BACK[who]||'……', mood:'mad'}); }   // 大家講完，主角再補一句，帶班的人回嗆
   if(Object.values(LV.actors).some(a=>a.follower)){ if(rLv>=3) lines.push({who:'di', t:'學長是坐直升機來上班的！！我要拍照！', mood:'smile'}); else if(oLv>=2) lines.push({who:'di', t:'學長今天的穿搭，我要抄筆記！', mood:'smile'}); }
   if(Object.values(LV.actors).some(a=>a.follower)){ lines.push({who:'di', t:'學長早！今天也請多多指教！', mood:'smile'}); lines.push({who, t:FANBOSS[who]}); }
   return lines; }
@@ -1900,7 +1916,7 @@ function makePerson0(c){ const off=!!(L && L.office), cf=c.feat||{};            
   if(f.boots) fx.push(t=>{ const h=(t*0.6)%1; bootM.color.setHSL(h,1,0.6); bootM.emissive.setHSL(h,1,0.25); soleM.emissive.setHSL((h+0.33)%1,1,0.55); });
   if(f.halo){ const hg=new THREE.Group(); hg.position.set(0,1.6,-0.24); hg.add(new THREE.Mesh(new THREE.TorusGeometry(0.33,0.025,8,36), mat.gold));
     for(let i=0;i<12;i++){ const a=i/12*Math.PI*2, ray=box(0.036,i%2?0.11:0.18,0.02, Math.sin(a)*0.45, Math.cos(a)*0.45, 0, mat.gold); ray.rotation.z=-a; hg.add(ray); }
-    hg.userData.fly='halo'; g.add(hg); fx.push(t=>{ hg.rotation.z=t*1.2; hg.scale.setScalar(1+0.07*Math.sin(t*5)); }); }
+    hg.userData.fly='halo'; g.add(hg); let hk=1, ht=0; fx.push(t=>{ const dt=Math.min(0.1,Math.max(0,t-ht)), want=(LV.hoisting||LV.ride)?0.45:1, d=want-hk; ht=t; hk+=Math.sign(d)*Math.min(Math.abs(d),dt*2); hg.rotation.z=t*1.2; hg.scale.setScalar(hk*(1+0.07*Math.sin(t*5))); }); }   /* 搭電梯：光圈縮小，不會穿出車廂 */
   if(f.cape){ const cp=new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.42,0.98,16,1,true,Math.PI-1.25,2.5), std(0xd3202e,{side:THREE.DoubleSide})); cp.position.set(0,0.9,0.02); cp.castShadow=true; g.add(cp);
     const col=new THREE.Mesh(new THREE.TorusGeometry(0.17,0.034,8,24), mat.gold); col.rotation.x=Math.PI/2; col.position.y=1.39; g.add(col); fx.push(t=>{ cp.rotation.x=0.1+0.07*Math.sin(t*3); }); }
   if(!off && c.vestKind==='sequin'){ const sp=[]; for(let i=0;i<12;i++){ const a=i*2.4, y=0.88+((i*37)%42)/100, r=rAt(y)+0.004; const d=ball(0.018,mat.shine,Math.sin(a)*r,y,Math.cos(a)*r*0.72); g.add(d); sp.push(d); }
@@ -2188,18 +2204,31 @@ function buildOcc(){ const A=OUT(), n=0.25, W=Math.ceil((A.x1-A.x0)/n)+1, H=Math
   LV.group.traverse(o=>{ if(!o.isMesh || skip.has(o) || o.userData.blob) return; for(let q=o;q;q=q.parent) if(!q.visible) return; const m0=Array.isArray(o.material)?o.material[0]:o.material; if(m0.transparent && m0.opacity<0.6) return;
     const g=o.geometry; if(!g.boundingBox) g.computeBoundingBox(); bb.copy(g.boundingBox).applyMatrix4(o.matrixWorld); if(bb.max.y<y+0.25 || bb.min.y>y+1.7) return;   // 只看腰部高度（25 公分～1.7 公尺）
     if(bb.max.x-bb.min.x>30 && bb.max.z-bb.min.z>30) return; mark(bb.min.x,bb.min.z,bb.max.x,bb.max.z); });
-  if(L.yard!==undefined) mark(-3.6,-10.9,13.2,8.55);   // 週二：主樓的一樓（大廳施工中，不能進去）
+  if(L.yard!==undefined) mark(-3.6,-10.9,13.2,8.55);
+  if(LV.hoist){ const H=LV.hoist; mark(H.x-H.hw-0.05,H.z-H.hd-0.05,H.x+H.hw+0.05,H.z+H.hd+0.05); }   // 電梯車廂：自己走不進去，要在西門口問過才搭   // 週二：主樓的一樓（大廳施工中，不能進去）
   if(L.plant) mark(-3.8,-8.45,10.8,0.15);   // 週五：廠房本體（正在裝的那一跨也不能穿進去）
   LV.occ={A,n,W,H,d}; }
 function occAt(x,z){ const O=LV.occ; if(!O) return 0; const i=Math.round((x-O.A.x0)/O.n), j=Math.round((z-O.A.z0)/O.n); return i<0||j<0||i>=O.W||j>=O.H ? 1 : O.d[j*O.W+i]; }
 function occBlocked(x,z,pad=0.04){ const r=PR+pad; if(occAt(x,z)) return true; for(let k=0;k<8;k++){ const a=k*Math.PI/4; if(occAt(x+Math.cos(a)*r, z+Math.sin(a)*r)) return true; } return false; }
 // 可以砸的東西：車（parkingLot 的車）、自己的座駕、怪手、工務所、在做事的工人
-function buildSmash(){ const out=[], bb=new THREE.Box3(); LV.group.updateMatrixWorld(true);
-  LV.group.traverse(o=>{ const k = o===LV.myRide ? 'mine' : o.userData.smash || (o.userData.crew ? 'person' : null); if(!k || !o.visible) return; bb.setFromObject(o); const c=bb.getCenter(new THREE.Vector3());
-    if(bb.min.y>yardY()+1.5 || bb.max.y<yardY()+0.2) return; out.push({kind:k, o, x:c.x, z:c.z, hx:(bb.max.x-bb.min.x)/2, hz:(bb.max.z-bb.min.z)/2}); });   // 只算站在地面上的
-  LV.smashRects.forEach(r=>out.push(Object.assign({}, r)));
+function buildSmash(){ const out=[], bb=new THREE.Box3(), actors=new Set(Object.values(LV.actors).map(a=>a.g)); LV.group.updateMatrixWorld(true);
+  LV.group.traverse(o=>{ const human = !actors.has(o) && (o.userData.crew || (o.userData.legL && o.userData.armR));   // 人：背景工人，或任何做成人形的（例如電梯阿姨）
+    const k = o===LV.myRide ? 'mine' : o.userData.smash || (human ? 'person' : null); if(!k || !o.visible) return; bb.setFromObject(o); const c=bb.getCenter(new THREE.Vector3());
+    if(bb.min.y>yardY()+1.5 || bb.max.y<yardY()-0.3) return;   // 只算站在地面上的
+    out.push(k==='person' ? {kind:k, o, x:c.x, z:c.z, hx:0.25, hz:0.25} : {kind:k, o, x:c.x, z:c.z, hx:(bb.max.x-bb.min.x)/2, hz:(bb.max.z-bb.min.z)/2}); });
+  for(let k=out.length-1;k>=0;k--){ const q=out[k]; if(q.kind!=='person') continue; let ok=false; for(let a=0;a<8 && !ok;a++){ const x=q.x+Math.cos(a*Math.PI/4)*0.95, z=q.z+Math.sin(a*Math.PI/4)*0.95; if(!occBlocked(x,z,0)) ok=true; } if(!ok) out.splice(k,1); }   // 走不到旁邊的人（在車廂裡、被東西圍住）不算
+  LV.smashRects.forEach(r=>{ const q=Object.assign({}, r), m=new THREE.Mesh(new THREE.BoxGeometry(r.hx*2-0.6,3.0,r.hz*2-0.6), new THREE.MeshBasicMaterial()); m.visible=false; m.position.set(r.x,yardY()+1.5,r.z); LV.group.add(m); q.o=null; q.pickM=m; out.push(q); });   // 工務所／警衛室：放一個看不見的盒子給滑鼠點
+  out.forEach(q=>{ const tg=q.pickM||q.o; if(!tg) return; tg.traverse(m=>{ if(m.isMesh){ m.userData.pick={kind:'smash', s:q}; LV.pick.push(m); } }); });   // 點得到：拿著球棒點車、點人＝走過去動手
   LV.smash=out; }
-function nearSmash(){ if(!LV.smash) return null; const p=LV.actors.you; let best=null, bd=0.9; LV.smash.forEach(s=>{ const d=rectDist(s,p.x,p.z).d; if(d<bd){ bd=d; best=s; } }); return best; }
+function liveXZ(s){ if(s.kind==='person' && s.o){ const v=s.o.getWorldPosition(new THREE.Vector3()); s.x=v.x; s.z=v.z; } return s; }   // 走動中的工人：用現在的位置
+function goSmash(s,tries=0){ const me=LV.actors.you; liveXZ(s); const t=standNear(s.x,s.z,0.7,s);
+  moveTo(t.x,t.z,()=>{ liveXZ(s); if(rectDist(s,me.x,me.z).d>1.1){ if(tries<2) goSmash(s,tries+1); return; }   /* 工人走開了：再追一次 */ me.face=Math.atan2(s.x-me.x,s.z-me.z); if(s.kind==='person' && (prank==='bat' || drinkHeld)) actOn({crew:s}); else if(prank==='bat' && s.kind!=='person') smashSwing(s); else idleTalk(s); }); }
+// 空手點外面的東西：師父回一句、車子／怪手／工務所＝主角的內心 OS（只是聊聊，不會怎樣）
+const OUT_TALK={ person:['設計部的？下來幹嘛？樓上不是在裝料嗎？','便當還沒來啦，別問。','你安全帽有戴好，不錯。','這邊在忙，借過一下。','你們畫的圖喔……算了，我不說。','少年仔，鞋帶綁好。','要抽菸去那邊，這裡不行。','主任剛剛在找人，是不是在找你？'],
+  car:['（這台車好像是主任的……）','（車子擦得好亮。）','（後座堆滿安全帽。）'], mine:['（我的車。分期還沒繳完。）','（停得有點歪。算了。）'], dig:['（怪手好帥。一台要好幾百萬吧。）','（師父在駕駛座吃檳榔。）'], office:['（裡面冷氣好像很涼……）','（門口貼著：閒人勿進。）'] };
+function subSay(name,t){ const el=$('#sub'); el.textContent=''; const b=document.createElement('b'); b.textContent=name; el.append(b); phrases(el,t); el.style.display='block'; clearTimeout(subT); subT=setTimeout(()=>{ el.style.display='none'; }, 3600); }
+function idleTalk(s){ const ln=pickOne(OUT_TALK[s.kind]||OUT_TALK.car); if(s.kind==='person') subSay(s.o && s.o.userData.crew ? '師父' : '路人',ln); else bubble('you',ln,true); }
+function nearSmash(){ if(!LV.smash) return null; const p=LV.actors.you; let best=null, bd=0.9; LV.smash.forEach(s=>{ const d=rectDist(liveXZ(s),p.x,p.z).d; if(d<bd){ bd=d; best=s; } }); return best; }
 function smashSwing(s){ const me=LV.actors.you; if(me.swing) return; me.dest=null; me.onArrive=null; const ex=Math.max(s.x-s.hx,Math.min(s.x+s.hx,me.x)), ez=Math.max(s.z-s.hz,Math.min(s.z+s.hz,me.z)); me.face=Math.atan2(ex-me.x,ez-me.z);
   me.swing={t:0, id:'bat', target:{x:ex, z:ez, smash:s}, done:()=>smashDone(s)}; }
 function smashHit(s){ const o=s.o; if(o){ const x0=o.position.x, z0=o.position.z; let k=0; const f=dt=>{ k+=dt; const e=Math.max(0,1-k/0.5); o.position.x=x0+Math.sin(k*70)*0.05*e; o.position.z=z0+Math.cos(k*61)*0.04*e; if(k>0.5){ o.position.x=x0; o.position.z=z0; LV.fx.splice(LV.fx.indexOf(f),1); } }; LV.fx.push(f); }   // 被砸到的東西抖一下
@@ -2245,7 +2274,7 @@ function outFx(dt){ const me=LV.actors.you, H=LV.hoist; if(!me || done || failed
     if(!inWork(me.x,me.z,0)) LV.wasOut=true; else if(LV.wasOut && inWork(me.x,me.z,0.35)){ setDown(false); return; } }   // 走回工作區＝回來了
   else if(!H) return;
   else if(!LV.down){ const d=Math.hypot(me.x-H.x, me.z-6.4); if(d>1.8) LV.rideArm=true; else if(d<0.75 && LV.rideArm && !dlgOpen && !me.dest && !me.swing) askRide(); return; }   // 四樓：站到電梯口＝問要不要下樓
-  if(H){ const d=Math.hypot(me.x-(H.x-H.hw-0.9), me.z-H.z); if(d>1.8) LV.rideArm=true; else if(d<0.75 && LV.rideArm && !dlgOpen && !me.dest && !me.swing) askRide(); }   // 一樓：站到電梯西門＝問要不要回四樓
+  if(H){ const d=Math.hypot(me.x-(H.x-H.hw-0.9), me.z-H.z); if(d>2.0) LV.rideArm=true; else if(d<1.1 && LV.rideArm && !dlgOpen && !me.dest && !me.swing) askRide(); }   // 一樓：站到電梯西門＝問要不要回四樓
   const C=LV.call; if(!C) return;
   if(C.left!==undefined){ C.left-=dt; cdShow(C.left); if(C.left<=0){ cdShow(null); WHY.phone=(L.yard!==undefined ? '你跑去一樓，' : '你跑出工作區，')+cname(C.who)+'打了三通電話，最後一通你直接按掉。'; failMission(LV.actors[C.who],'phone'); } return; }   // 第三通之後：倒數
   if(dlgOpen || me.swing) return; C.t-=dt; if(C.t<=0) phoneRing(); }
@@ -2553,6 +2582,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
     if(rd!=='r_walk' || L.yard!==undefined) setupEscort(rd); }
   let intro=L.intro; if(li===0){ const r=nameRoast(), k=L.roastAt||1; if(r.length){ intro=L.intro.slice(0,k).concat(r, L.intro.slice(k)); award('misc.name'); } }   // 第一天、鐵叔自我介紹之後開虧
   const gr=greet(); if(gr.length) intro=[intro[0]].concat(gr, intro.slice(1));
+  { const rd=skinState().ride, sl = !L.bench && !L.office && !L.indoor && rd!=='r_walk' ? SWAG_LV[rd.slice(2)]||0 : 0; if(sl) intro=intro.map(l=>l.who==='you' && SWAG[l.t] ? Object.assign({},l,{t:SWAG[l.t][sl-1], mood:'smile'}) : l); }   // 開豪車、搭直升機來：主角講話有氣勢（換衣服不算）
   if(Object.values(LV.actors).some(a=>a.follower)) award('misc.fan');
   const go=()=>{ t0=Date.now(); lastAct=performance.now(); say(intro, ()=>{ fan('hello',1); if(L.zoomIn) camGlide(L.zoomIn); }); }, ride=skinState().ride;
   const begin=()=>{ if(!L.bench && !L.office && !L.indoor && ride!=='r_walk') runEntrance(ride.slice(2), go); else if(L.yard!==undefined){ cut={kind:'walk', t:0, stage:0, then:go}; climbIn(); } else go(); };
@@ -2567,6 +2597,7 @@ function onClick(e){ if(dlgOpen){ advance(); return; } if(!L||L.bench) return; i
     if(p.kind==='spot'){ if(!spot.visible) continue; goSpot(); return; }
     if(p.kind==='prank'){ if(!done) goPrank(p.id); return; }
     if(p.kind==='hoist'){ if(!done) goHoist(); return; }
+    if(p.kind==='smash'){ if(!LV.down) continue; if(!done) goSmash(p.s); return; }
     if(p.kind==='npc'){ if(prank){ const a=LV.actors[p.who]; moveTo(a.x,a.z,null); LV.actors.you.hitWho=p.who; } else goNpc(p.who); return; } }   // 拿著來亂的東西點同事＝故意走過去敲他
   const fy=LV.down ? yardY() : L.gy; gplane.constant=-fy; if(ray.ray.intersectPlane(gplane,hitPt) && L.plant && !LV.down && !inWork(hitPt.x,hitPt.z,-0.4) && hitPt.z>0.85 && !done){ const A=OUT(); askOut({x:Math.min(A.x1,Math.max(A.x0,hitPt.x)), z:Math.min(A.z1,Math.max(A.z0,hitPt.z))}); return; }   /* 週五：點工作區外面＝問要不要出去 */
   if(ray.ray.intersectPlane(gplane,hitPt)){ const c=clampXZ(hitPt.x,hitPt.z); moveTo(c.x,c.z,null); ping.position.set(c.x,fy+0.02,c.z); ping.visible=true; pingLife=1; } }
