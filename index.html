@@ -333,9 +333,9 @@ const FAN_LOOK = { '阿志':{feat:{glasses:true, towel:true}}, '阿志弟':{feat
   '和尚':{feat:{floral:true, belt:true, whiteshoes:true, tattoo:true}},   /* 《艋舺》和尚：1980 年代黑道、滿身刺青、花襯衫（頭髮查不到，用一般黑短髮） */ '蚊子':{feat:{khaki:true, belt:true}, chat:['學長，便當裡的雞腿要顧好。我轉學第一天，雞腿就被搶走了。'], idle:['（護著便當裡的雞腿）']},   /* 《艋舺》蚊子：穿舊學校的制服（顏色電影沒說，用當年常見的卡其色）、雞腿被搶、後來進太子幫（白腰帶） */ '蠍子':{feat:{buzz:true, squint:true, grin:true}} };   // 蠍子：《角頭－大橋頭》的蠍子，平頭、瞇眼露齒的笑
 const FAN_PICK = (()=>{ try{ const v=JSON.parse(localStorage.getItem('cwstory_fans')||'null'); if(Array.isArray(v) && v.length===2 && v[0]!==v[1] && v.every(n=>FAN_LOOK[n])) return v; }catch(e){}   // 第一次抽到的兩個人存起來：一整週都是同一組，重開網頁也不換人
   const a=Object.keys(FAN_LOOK); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } const pk=a.slice(0,2); try{ localStorage.setItem('cwstory_fans', JSON.stringify(pk)); }catch(e){} return pk; })();
-CAST.di = { name:FAN_PICK[0], role:'工地小跟班', helmet:0xffd21f, vest:0x5d7a8c, skin:FAN_LOOK[FAN_PICK[0]].skin||0xf2cfae, feat:Object.assign({},FAN_LOOK[FAN_PICK[0]].feat), bio:'剛來三個月。誰厲害就跟誰。', quote:'「學長！我幫你拿！」（從來沒有真的拿過）',
+CAST.di = { name:FAN_PICK[0], role:'公司新人（跟你同梯）', helmet:0xffd21f, vest:0x5d7a8c, skin:FAN_LOOK[FAN_PICK[0]].skin||0xf2cfae, feat:Object.assign({},FAN_LOOK[FAN_PICK[0]].feat), bio:'剛來三個月。誰厲害就跟誰。', quote:'「學長！我幫你拿！」（從來沒有真的拿過）',
   chat:['學長！你剛剛那個超帥的！','學長，我以後也要像你一樣零異常！','學長，便當我幫你拿！（已經偷吃一口）'] };
-CAST.hao = { name:FAN_PICK[1], role:'工地小跟班', helmet:0xffd21f, vest:0x6b8a5e, skin:FAN_LOOK[FAN_PICK[1]].skin||0xe6bd94, feat:Object.assign({},FAN_LOOK[FAN_PICK[1]].feat), bio:FAN_PICK[0]+'帶來的。筆記抄得很勤，但都抄錯。', quote:'「學長說的都對！」',
+CAST.hao = { name:FAN_PICK[1], role:'公司新人（跟你同梯）', helmet:0xffd21f, vest:0x6b8a5e, skin:FAN_LOOK[FAN_PICK[1]].skin||0xe6bd94, feat:Object.assign({},FAN_LOOK[FAN_PICK[1]].feat), bio:FAN_PICK[0]+'帶來的。筆記抄得很勤，但都抄錯。', quote:'「學長說的都對！」',
   chat:['學長，這句我抄下來了！','學長，鐵叔以前也沒有你厲害吧？（小聲）','學長喝水！'] };
 IDLE.di = ['學長好帥……','（認真看學長的背影）','學長等一下要不要喝涼的？'];
 IDLE.hao = ['（抄筆記）','學長走路都有風……',FAN_PICK[0]+'，學長是我先認的！'];
@@ -1088,7 +1088,7 @@ function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas')
 const LV = { group:null, parts:{}, refs:{}, pallets:{}, pick:[], actors:{} };
 const anims = [];
 function resetGroup(){ if(LV.group){ scene.remove(LV.group); LV.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.down=false; LV.occ=null; LV.smash=null; LV.call=null; LV.ride=null; LV.rideArm=true; LV.myRide=null; LV.smashRects=[]; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
+  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.obs=[]; LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.down=false; LV.occ=null; LV.smash=null; LV.call=null; LV.ride=null; LV.rideArm=true; LV.myRide=null; LV.smashRects=[]; LV.bribed=new Set(); LV.cash=null; LV.cashFx=false; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
 function part(id){ return LV.parts[id] || (LV.parts[id]={meshes:[],ghosts:[]}); }
 function ghostOf(id, mesh){ if(mesh.isSprite) return; const gh=new THREE.Mesh(mesh.geometry, mat.ghost); gh.position.copy(mesh.position); gh.rotation.copy(mesh.rotation); gh.visible=false; (LV.host||LV.group).add(gh); part(id).ghosts.push(gh); }
 function add(id, mesh){ mesh.visible=false; mesh.userData.home=mesh.position.clone(); (LV.host||LV.group).add(mesh); part(id).meshes.push(mesh); ghostOf(id,mesh); return mesh; }
@@ -1454,7 +1454,7 @@ const LEVELS = [
     {who:'tie', t:'先講清楚：平常設計不用下來扛料，現場是工務的事。但是這張圖送出去之後，接下來四天你跟我去工地，自己裝一次。'},
     {who:'tie', t:'你以後也要畫圖。畫圖的人自己裝過，才知道**圖上少一條線，現場要多幾個工**。'},
     {who:'an', t:'對了，旁邊那兩個是'+FAN_PICK[0]+'跟'+FAN_PICK[1]+'，平常跟著鐵叔跑工地，今天回來幫忙整理圖。'},
-    {who:'di', t:'學長好！這禮拜我們跟你一起跑工地！', mood:'smile'},
+    {who:'di', t:'你也是新來的？這禮拜我們也要跑工地，一起加油！', mood:'smile'},
     {who:'an', t:'送出去之前有五件事。少一件，就是把麻煩送給現場。立牌在後面，順序自己想。'} ],
   outroGood:[ {who:'an', t:'五件事都過了，零異常。圖可以送了！', mood:'smile'}, {who:'an', t:'對了，下班時間是六點。……我是說表定。'},
     {who:'tie', t:'照規矩，**風雨試驗**沒過，**工地不准開始安裝**。我們會去風雨試驗室，做一片樣品牆，用風跟水去打，看漏不漏。過了，工廠才正式下料，工地才開始組裝。這個案子上個月過了，所以你逃不掉。', src:SRC.wind}, {who:'an', t:'另外還有一個叫**視覺模型**的：做一小片實體樣品，給建築師和業主確認外觀和顏色。它看的是好不好看；風雨試驗看的是漏不漏。', src:SRC.yj5b}, {who:'tie', t:'明天早上七點，工地見，看圖上畫的東西裝不裝得起來。'}, {who:'you', t:'（吞口水）……好。'} ],
@@ -1498,6 +1498,7 @@ TROPHY['misc.chat']={ name:'搏感情', grade:'bronze', desc:'找同事聊一次
 TROPHY['misc.name']={ name:'人如其名？', grade:'bronze', desc:'名字取太大，開場被鐵叔虧' };
 TROPHY['misc.prank']={ name:'手很癢', grade:'bronze', desc:'拿起不是施工用的東西' };
 TROPHY['misc.bat']={ name:'全壘打', grade:'silver', desc:'拿球棒敲同事。任務失敗，警衛已經在樓下' };
+TROPHY['misc.bribe']={ name:'有錢能使鬼推磨', grade:'silver', desc:'開豪車來上班，拿十萬現金請帶班的人「幫忙看一下」' };
 TROPHY['misc.drink']={ name:'上工先來一杯', grade:'silver', desc:'在工地喝保力達 B 套伯朗。任務失敗，酒測沒過' };
 TROPHY['misc.bump']={ name:'借過不會說', grade:'bronze', desc:'第一次撞到同事' };
 TROPHY['misc.fail']={ name:'友軍誤傷', grade:'bronze', desc:'把同事惹到任務失敗' };
@@ -2168,7 +2169,7 @@ fitView();
 // ===================== 對話 =====================
 let dlgOpen=false, optsOpen=false, dlgQ=[], dlgDone=null, typer=null, typing=false, fullText='', dSegs=[];
 let talkWho=null, talkCam=null;                                                       // 講話時鏡頭帶到說話的人
-function showLine(ln){ talkWho=ln.who; drawFace($('#dFace'), ln.who, ln.mood);
+function showLine(ln){ if(ln.onShow){ const f=ln.onShow; ln.onShow=null; f(); } talkWho=ln.who; drawFace($('#dFace'), ln.who, ln.mood);
   const n=$('#dName'); n.textContent=cname(ln.who); const r=document.createElement('span'); r.textContent=CAST[ln.who].role; n.append(r);
   const s=$('#dSrc'); if(ln.src){ s.style.display='block'; s.textContent='出處：'+ln.src; } else s.style.display='none';
   fullText=fill(ln.t); dSegs=segsOf(fullText); const total=dSegs.reduce((t,q)=>t+q.t.length,0); clearInterval(typer); const el=$('#dText'); el.textContent=''; $('#dGloss').style.display='none'; let i=0; typing=true;
@@ -2185,10 +2186,40 @@ $('#dNext').onclick=advance; $('#dSkip').onclick=()=>{ if(optsOpen) return; dlgQ
 function ask(st, cb){ const by=st.q.by||L.boss; dlgOpen=true; optsOpen=true; dlgQ=[]; dlgDone=null; $('#dlg').style.display='flex'; $('#dBar').style.display='none';
   showLine({who:by, t:st.q.title+'\n'+st.q.body});
   const o=$('#dOpts'); o.innerHTML='';
-  st.q.opts.forEach(op=>{ const b=document.createElement('button'); b.textContent=op.t; b.onclick=()=>{ optsOpen=false; o.innerHTML='';
+  const tip=LV.bribed && LV.bribed.has(st.id);   // 收過錢：正確答案亮起來
+  st.q.opts.forEach(op=>{ const b=document.createElement('button'); b.textContent=(tip && op.ok ? '👉 ' : '')+op.t; if(tip && op.ok){ b.style.outline='2px solid #f2c230'; b.style.background='#4a3f12'; } b.onclick=()=>{ optsOpen=false; o.innerHTML='';
     if(op.ok){ say([{who:by, t:pickOne(PRAISE[by])+' '+op.exp, src:st.q.src, mood:'smile'}].concat(st.after||[]), ()=>cb(true)); }
     else { ncr++; score=Math.max(0,score-20); stats(); award('misc.ncr'); linRun(); fan('comfort',0.8);
-      say([{who:'lin', t:pickOne(NCRBARK)+' '+op.exp, src:st.q.src, mood:'mad'}], ()=>{ linHome(); cb(false); }); } }; o.appendChild(b); }); }
+      say([{who:'lin', t:pickOne(NCRBARK)+' '+op.exp, src:st.q.src, mood:'mad'}], ()=>{ linHome(); cb(false); }); } }; o.appendChild(b); });
+  if(richRide() && !tip && BRIBE[by]){ const b=document.createElement('button'); b.textContent='💰（掏出十萬現金）……幫我看一下哪個對？'; b.dataset.bribe='1'; b.style.color='#f2c230';
+    b.onclick=()=>{ optsOpen=false; o.innerHTML=''; bribe(st,cb,by); }; o.appendChild(b); } }   // 開豪車、搭直升機來才有這個選項
+const richRide = () => { const rd=skinState().ride; return !L.bench && !L.office && !L.indoor && rd!=='r_walk' && (SWAG_LV[rd.slice(2)]||0)>0; };
+// 收錢的反應：照個性（鐵叔先罵、琳姊說要開單、阿坤師不講話），但最後都見錢眼開。throw＝這一句主角把錢撒出去
+const BRIBE={ tie:[{who:'tie', t:'……你這是在幹嘛！工地不准來這套——', mood:'mad'}, {who:'you', t:'（往天上一撒）拿去，不用找。', throw:1}, {who:'tie', t:'（眼睛一直跟著錢飄）……'}, {who:'tie', t:'咳。我什麼都沒看到。答案是「{A}」。快裝，別讓琳姊看到。'}],
+  lin:[{who:'lin', t:'……行賄。這是要開單的。（推眼鏡）', mood:'mad'}, {who:'you', t:'（往天上一撒）那這些呢？', throw:1}, {who:'lin', t:'……（看了很久）'}, {who:'lin', t:'……單子我先放抽屜。正確答案是「{A}」。這次而已。'}],
+  kun:[{who:'kun', t:'……'}, {who:'you', t:'（往天上一撒）師父，買檳榔。', throw:1}, {who:'kun', t:'……（盯著地上的錢）'}, {who:'kun', t:'……「{A}」。'}],
+  an:[{who:'an', t:'哇！你瘋了喔！', mood:'mad'}, {who:'you', t:'（往天上一撒）學姊，請喝咖啡。', throw:1}, {who:'an', t:'……好啦好啦。答案是「{A}」，錢我先幫你「保管」。'}] };
+function bribe(st,cb,by){ const me=LV.actors.you, ans=plain(st.q.opts.find(o=>o.ok).t); LV.bribed.add(st.id); award('misc.bribe');
+  const cash=new THREE.Group(); cash.add(box(0.17,0.06,0.08, 0,0,0, std(0x5b7fc4))); cash.add(box(0.03,0.065,0.085, 0,0,0, std(0xf4f0e0))); cash.position.set(0,-0.33,0.07); cash.rotation.x=1.2; me.g.userData.armR.userData.elbow.add(cash);   // 手上一疊千元鈔（中間一條封條）
+  const lines=[{who:'you', t:'（掏出一疊現金）十萬。幫我看一下哪個對？', mood:'smile'}].concat(BRIBE[by].map(l=>Object.assign({}, l, {t:fill(l.t.replace('{A}',ans))}, l.throw ? {onShow:()=>{ if(cash.parent) cash.parent.remove(cash); throwCash(); }} : {})));
+  say(lines, ()=>ask(st,cb)); }
+// 撒錢：千元鈔從手上飛出去，飄下來平躺在地上；小弟在場就衝去撿（每撿一張彎腰一次），撿完才回去做事
+function throwCash(){ const me=LV.actors.you, hp=me.g.localToWorld(new THREE.Vector3(0.2,1.5,0.2)), mt=std(0x6b8fd6,{side:THREE.DoubleSide}), bills=[];
+  for(let i=0;i<24;i++){ const m=new THREE.Mesh(new THREE.PlaneGeometry(0.16,0.075), mt); m.position.copy(hp); m.rotation.set(Math.random()*6,Math.random()*6,Math.random()*6); m.raycast=()=>{}; LV.group.add(m);
+    const a=Math.random()*Math.PI*2, sp=0.6+Math.random()*1.6; bills.push({m, v:new THREE.Vector3(Math.cos(a)*sp, 2.2+Math.random()*1.8, Math.sin(a)*sp), w:new THREE.Vector3(Math.random()*8-4,Math.random()*8-4,Math.random()*8-4), rest:false, took:false, by:null}); }
+  const fs=Object.values(LV.actors).filter(a=>a.follower); LV.cash={bills, fs, t:0}; fs.forEach(f=>{ f.cashGrab=true; f.dest=null; });
+  if(fs.length) setTimeout(()=>{ try{ bubble(fs[0].who,'錢！！學長灑錢了！！',true); }catch(e){} }, 300);
+  if(!LV.cashFx){ LV.cashFx=true; LV.fx.push(cashFx); } }
+function cashFx(dt){ const C=LV.cash; if(!C) return; C.t+=dt;
+  C.bills.forEach(b=>{ if(b.rest || b.took) return; const m=b.m; b.v.y=Math.max(b.v.y-6*dt,-1.1); b.v.x*=1-dt*0.8; b.v.z*=1-dt*0.8;   // 紙鈔：空氣阻力大，飄下來
+    m.position.x+=(b.v.x+Math.sin(C.t*5+b.w.x)*0.4)*dt; m.position.y+=b.v.y*dt; m.position.z+=(b.v.z+Math.cos(C.t*4+b.w.y)*0.4)*dt; m.rotation.x+=b.w.x*dt; m.rotation.y+=b.w.y*dt; m.rotation.z+=b.w.z*dt;
+    const c=clampXZ(m.position.x,m.position.z); m.position.x=c.x; m.position.z=c.z; const gy=gyAt(c.x,c.z); if(m.position.y<=gy+0.01){ b.rest=true; m.position.y=gy+0.006+Math.random()*0.004; m.rotation.set(-Math.PI/2,0,Math.random()*6); } });   // 落地平躺
+  C.fs.forEach(f=>{ if(!f.cashGrab) return; if(f.bow>0) f.bow=Math.max(0,f.bow-dt); let b=f.cashBill;   /* 彎腰撿：0.5 秒起身 */ if(b && b.took) b=f.cashBill=null;
+    if(!b){ let bd=1e9; C.bills.forEach(q=>{ if(!q.rest || q.took || (q.by && q.by!==f)) return; const d=Math.hypot(q.m.position.x-f.x,q.m.position.z-f.z); if(d<bd){ bd=d; b=q; } }); f.cashBill=b; f.cashT=0; if(b) b.by=f; }
+    if(!b){ if(C.bills.every(q=>q.took || q.rest)){ f.cashGrab=false; f.dest=null; if(!C.said){ C.said=true; bubble(f.who,'學長！！以後我跟你混！！',true); } } return; }   // 撿完了：回去做事
+    f.cashT=(f.cashT||0)+dt; const d=Math.hypot(b.m.position.x-f.x,b.m.position.z-f.z); if(d<0.35 || (f.cashT>2.5 && d<1.6)){ b.took=true; b.m.visible=false; f.bow=0.35;   /* 卡在東西旁邊 2.5 秒：伸手撈一下也算 */ f.dest=null; if(Math.random()<0.12) bubble(f.who,pickOne(['這張是我的！','不要搶！！','學長好帥！！','我的我的我的！']),true); }   // 彎腰撿一張
+    else if(f.cashT>4){ b.by=null; b.took=true; b.m.visible=false; f.cashBill=null; }   /* 真的拿不到（掉在棧板中間）：當作被別人撿走 */
+    else if(!(f.bow>0)) f.dest={x:b.m.position.x, z:b.m.position.z}; }); }
 function linRun(){ const a=LV.actors.lin, p=LV.actors.you; if(a&&p){ a.dest={x:p.x+0.95,z:p.z+0.35}; a.onArrive=null; } }
 function linHome(){ const a=LV.actors.lin; if(a){ a.dest={x:a.home.x,z:a.home.z}; a.onArrive=null; } }
 
@@ -2714,7 +2745,7 @@ function crowd(dt,now){ const p=LV.actors.you; if(!p) return;
     const hs = carry && spot.visible && !L.bench ? helpSlots() : null; let fi=0, said=false;   // 小弟的工作：你拿著料＝先到藍圈旁邊等；你走到藍圈＝過來扶住；沒拿料＝回待命位置
     const near = hs && ITEM[L.id+'.'+carry] && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.8;   /* 放樣、叫灌漿車這種沒有料的工作不用扶 */ if(near) LV.holdKeep={slots:holdSlots(), until:now+1800};   // 你快到藍圈了：小弟伸手扶（裝好之後還扶 1.8 秒）
     const keep = LV.holdKeep && now<LV.holdKeep.until, hk = keep ? LV.holdKeep.slots : hs ? holdSlots() : null;   // 你一拿起料，小弟就先走到藍圈旁邊扶料的位置等
-    for(const k in LV.actors){ const f=LV.actors[k]; if(!f.follower) continue; const hj = hk && hk[fi], job = hj || (hs ? hs[fi] : f.post); fi++; if(!job){ f.holdAim=undefined; continue; } const tx=job.x, tz=job.z;
+    for(const k in LV.actors){ const f=LV.actors[k]; if(!f.follower || f.cashGrab) continue; const hj = hk && hk[fi], job = hj || (hs ? hs[fi] : f.post); fi++; if(!job){ f.holdAim=undefined; continue; } const tx=job.x, tz=job.z;
       const at=Math.hypot(f.x-tx,f.z-tz)<0.25, hold = hj && at && (near || keep); f.holdAim = hold ? hj.aim : undefined; if(hj && at) f.face=hj.face;   // 先站好面向牆；你走過來才伸手
       if(hold){ f.dest=null;   // 扶住：面向要裝的東西，兩手伸出去
         if(f.helping!==hk.key && !said){ said=true; if(Math.random()<0.8) bubble(f.who,pickOne(FAN.help)); } f.helping=hk.key; continue; }
