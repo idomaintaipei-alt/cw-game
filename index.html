@@ -322,8 +322,8 @@ const KICK = { tie:'夠了！{P}，東西收一收，今天不用做了。', lin
 const ANNOY = { tie:'你很閒喔？去做事！', lin:'聊天也算工時嗎？', an:'好啦好啦，先做事啦～', kun:'……（指了指棧板）' };
 const WHY = { bump:'你一直撞同事，被請出工地。', long:'你扛著料撞到人，被請出工地。', chat:'你一直纏著同事聊天，被請出工地。' };
 // 小弟的名字和造型：每次開遊戲隨機抽兩個（不重複）
-const FAN_LOOK = { '阿志':{feat:{glasses:true, towel:true}}, '阿志弟':{feat:{glasses:true, bangs:true}}, '阿豪':{feat:{shades:true, stubble:true}}, '志龍':{feat:{bangs:true}, hair:0xd9a62e},
-  '和尚':{feat:{towel:true}, hair:'skin'}, '蚊子':{feat:{glasses:true, tape:true}}, '蠍子':{feat:{mustache:true, stubble:true}, skin:0xc58c5c} };   // 和尚：光頭（頭髮跟皮膚同色）；蠍子：曬得比較黑
+const FAN_LOOK = { '阿志':{feat:{glasses:true, towel:true}}, '阿志弟':{feat:{glasses:true, bangs:true}}, '阿豪':{feat:{shades:true, stubble:true}}, '志龍':{feat:{mullet:true, floral:true, belt:true, flare:true, whiteshoes:true}},   // 《艋舺》李志龍：狼尾頭、花襯衫、白腰帶、喇叭褲、白布鞋
+  '和尚':{feat:{floral:true, belt:true, whiteshoes:true, tattoo:true}},   /* 《艋舺》和尚：1980 年代黑道、滿身刺青、花襯衫（頭髮查不到，用一般黑短髮） */ '蚊子':{feat:{glasses:true, tape:true}}, '蠍子':{feat:{buzz:true, squint:true, grin:true}} };   // 蠍子：《角頭－大橋頭》的蠍子，平頭、瞇眼露齒的笑
 const FAN_PICK = (()=>{ try{ const v=JSON.parse(localStorage.getItem('cwstory_fans')||'null'); if(Array.isArray(v) && v.length===2 && v[0]!==v[1] && v.every(n=>FAN_LOOK[n])) return v; }catch(e){}   // 第一次抽到的兩個人存起來：一整週都是同一組，重開網頁也不換人
   const a=Object.keys(FAN_LOOK); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } const pk=a.slice(0,2); try{ localStorage.setItem('cwstory_fans', JSON.stringify(pk)); }catch(e){} return pk; })();
 CAST.di = { name:FAN_PICK[0], role:'工地小跟班', helmet:0xffd21f, vest:0x5d7a8c, skin:FAN_LOOK[FAN_PICK[0]].skin||0xf2cfae, feat:Object.assign({},FAN_LOOK[FAN_PICK[0]].feat), bio:'剛來三個月。誰厲害就跟誰。', quote:'「學長！我幫你拿！」（從來沒有真的拿過）',
@@ -1775,19 +1775,30 @@ function stepCut(dt){ if(cut.kind==='pour'){ stepPour(cut,dt); return; }
   else if(c.stage===1 && c.t>=dur+1.9 && !((LV.actors.you.dest || LV.hoisting) && c.t<dur+45)){ c.stage=2; LV.hoisting=false; target.x=L.cx; target.y=L.gy+1.3; const f=c.then; c.then=null; if(f) f(); } }
 
 // ===================== 人物（3D 小人＋頭像） =====================
+// 花襯衫：深藍底、紅黃色的大花（《艋舺》少年的台客打扮）
+let _floral=null;
+function floralMat(){ if(_floral) return _floral; const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'); g.fillStyle='#1f3a6b'; g.fillRect(0,0,128,128);
+  [[20,22,'#e0473a'],[84,30,'#f2c230'],[48,74,'#f2c230'],[108,92,'#e0473a'],[16,106,'#e0473a'],[76,118,'#f2c230']].forEach(([x,y,col])=>{ g.fillStyle=col; for(let k=0;k<5;k++){ const a=k/5*Math.PI*2; g.beginPath(); g.ellipse(x+Math.cos(a)*7,y+Math.sin(a)*7,7,4,a,0,Math.PI*2); g.fill(); } g.fillStyle='#ffffff'; g.beginPath(); g.arc(x,y,3,0,Math.PI*2); g.fill(); });
+  g.fillStyle='#3f8a4f'; [[52,30],[100,58],[30,62],[60,104]].forEach(([x,y])=>{ g.beginPath(); g.ellipse(x,y,9,3.5,0.6,0,Math.PI*2); g.fill(); });
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1.5,1.5); return _floral=std(0xffffff,{map:t}); }
+const _tat={};
+function tattooMat(skin){ if(_tat[skin]) return _tat[skin]; const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'); g.fillStyle='#'+new THREE.Color(skin).getHexString(); g.fillRect(0,0,128,128);   // 刺青：皮膚底、深藍黑的雲紋和鱗片
+  g.strokeStyle='rgba(28,36,60,.85)'; g.lineWidth=4; for(let k=0;k<6;k++){ g.beginPath(); for(let x=0;x<=128;x+=8){ const y=12+k*21+Math.sin(x/12+k)*7; x?g.lineTo(x,y):g.moveTo(x,y); } g.stroke(); }
+  g.fillStyle='rgba(28,36,60,.75)'; for(let k=0;k<14;k++){ g.beginPath(); g.arc((k*37)%128,(k*53)%128,5,0,Math.PI); g.fill(); }
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; return _tat[skin]=std(0xffffff,{map:t}); }
 let _robe=null;
 function robeMat(){ if(_robe) return _robe; const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'); g.fillStyle='#d3152f'; g.fillRect(0,0,128,128); g.strokeStyle='#ffcc2e'; g.lineWidth=3;
   for(let y=0;y<9;y++) for(let x=0;x<9;x++){ g.beginPath(); g.arc(x*16+(y%2?8:0), y*16, 8, 0.15, Math.PI-0.15); g.stroke(); }
   const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(2,2); return _robe=std(0xffffff,{map:t}); }
 // 小人：瘦長、眼神死、有眼袋的上班族。身高約 1.8。臉朝 +z。
 function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};                     // off＝在辦公室：不戴安全帽、不穿背心和工作靴，造型也不顯示
-  const g=new THREE.Group(), f = off ? {mustache:cf.mustache, glasses:cf.glasses, ponytail:cf.ponytail, stubble:cf.stubble, bob:cf.bob, bangs:cf.bangs} : cf, fx=[], skin=std(c.skin), trim=std(c.trim||0xf4f4f4);
-  const vest = off ? std(c.shirt||0xf4f6fa) : c.vestKind==='leopard' ? leopardMat() : c.vestKind==='sequin' ? std(0xffc61f,{emissive:0x3a2600}) : c.vestKind==='robe' ? robeMat() : std(c.vest);
-  const hel=std(c.helmet, c.helmetMetal ? {emissive:0x3a2600} : {}), bootM = off ? std(0x2b2f36) : f.boots ? std(0xff4fd8,{emissive:0x551144}) : mat.boot, soleM = f.boots ? std(0xffffff,{emissive:0x888888}) : mat.dark;
+  const g=new THREE.Group(), f = off ? {mustache:cf.mustache, glasses:cf.glasses, ponytail:cf.ponytail, stubble:cf.stubble, bob:cf.bob, bangs:cf.bangs, buzz:cf.buzz, squint:cf.squint, grin:cf.grin, mullet:cf.mullet, floral:cf.floral, belt:cf.belt, flare:cf.flare, whiteshoes:cf.whiteshoes, tattoo:cf.tattoo} : cf, fx=[], skin=std(c.skin), trim=std(c.trim||0xf4f4f4);
+  const vest = off ? (f.floral ? floralMat() : std(c.shirt||0xf4f6fa)) : c.vestKind==='leopard' ? leopardMat() : c.vestKind==='sequin' ? std(0xffc61f,{emissive:0x3a2600}) : c.vestKind==='robe' ? robeMat() : std(c.vest);
+  const hel=std(c.helmet, c.helmetMetal ? {emissive:0x3a2600} : {}), bootM = off ? std(f.whiteshoes ? 0xf2f2ee : 0x2b2f36) : f.boots ? std(0xff4fd8,{emissive:0x551144}) : mat.boot, soleM = f.boots ? std(0xffffff,{emissive:0x888888}) : mat.dark;
   // 長腿＋鞋
   const mk=sx=>{ const l=new THREE.Group(); l.position.set(sx*0.09,0.8,0); l.add(cyl(0.068,0.36,'y',0,-0.18,0,mat.pants,10));   /* 大腿 */
     const kn=new THREE.Group(); kn.position.y=-0.35; kn.add(ball(0.068,mat.pants,0,0,0)); kn.add(cyl(0.068,0.35,'y',0,-0.175,0,mat.pants,10)); kn.add(ball(0.1,bootM,0,-0.36,0.04,1,0.7,1.5)); kn.add(box(0.17,0.035,0.3,0,-0.43,0.045,soleM)); l.add(kn); l.userData.knee=kn; g.add(l); return l; };   /* 膝蓋以下：小腿、鞋 */
-  const legL=mk(-1), legR=mk(1);
+  const legL=mk(-1), legR=mk(1); if(f.flare) [legL,legR].forEach(l=>{ const sh=l.userData.knee.children[1]; sh.geometry=new THREE.CylinderGeometry(0.068,0.105,0.35,12); });   /* 喇叭褲：小腿往下變寬 */
   // 身體：窄窄的一截
   const torso=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.165,0.6,16), vest); torso.position.y=1.1; torso.scale.z=0.72; torso.castShadow=true; g.add(torso);
   const rAt=y=>0.165+0.035*((y-0.8)/0.6);
@@ -1796,17 +1807,21 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
   // 垂著的長手
   const ma=sx=>{ const a=new THREE.Group(); a.position.set(sx*0.25,1.34,0); a.add(cyl(0.05,0.25,'y',0,-0.125,0,vest,10));   /* 上臂 */
     const el=new THREE.Group(); el.position.y=-0.24; el.add(cyl(0.047,0.24,'y',0,-0.12,0,vest,10)); el.add(ball(0.062,skin,0,-0.26,0)); a.add(el); a.userData.elbow=el; g.add(a); return a; };   /* 手肘以下：前臂、手 */
-  const armL=ma(-1), armR=ma(1);
+  const armL=ma(-1), armR=ma(1); if(off && f.tattoo) [armL,armR].forEach(a=>{ a.userData.elbow.children[0].material=tattooMat(c.skin); });   /* 短袖花襯衫：前臂露出來，有刺青 */
   // 頭：白眼球、往下看的瞳孔、半垂的眼皮、眼袋、一條線的嘴
   g.add(ball(0.2,skin,0,1.57,0.01,1,0.96,0.96));
-  [-1,1].forEach(sd=>{ g.add(ball(0.052,mat.shine,sd*0.078,1.585,0.168,1,1,0.5)); g.add(ball(0.02,mat.eye,sd*0.078,1.572,0.196)); g.add(ball(0.056,skin,sd*0.078,1.612,0.172,1.05,0.6,0.55)); g.add(ball(0.05,mat.bag,sd*0.078,1.544,0.172,1,0.32,0.3)); });
-  if(!f.mustache) g.add(box(0.07,0.012,0.012,0,1.475,0.196,mat.dark));
+  const ey = f.squint ? 0.32 : 1;   // 瞇眼：眼睛壓成一條縫
+  [-1,1].forEach(sd=>{ g.add(ball(0.052,mat.shine,sd*0.078,1.585,0.168,1,ey,0.5)); g.add(ball(0.02,mat.eye,sd*0.078,f.squint?1.58:1.572,0.196,1,ey,1)); g.add(ball(0.056,skin,sd*0.078,1.612,0.172,1.05,0.6,0.55)); g.add(ball(0.05,mat.bag,sd*0.078,1.544,0.172,1,0.32,0.3)); });
+  if(f.grin){ g.add(box(0.09,0.018,0.01,0,1.479,0.193,mat.dark)); g.add(box(0.07,0.008,0.011,0,1.48,0.195,mat.white));   /* 咧嘴笑：一條細縫、只露一點點牙（太大會像爆牙） */ [-1,1].forEach(sd=>{ const cn=box(0.024,0.008,0.012,sd*0.052,1.486,0.19,mat.dark); cn.rotation.z=sd*0.5; g.add(cn); }); }   // 露齒的笑：嘴咧開、一排白牙、嘴角往上
+  else if(!f.mustache) g.add(box(0.07,0.012,0.012,0,1.475,0.196,mat.dark));
   // 安全帽，或辦公室的頭髮
-  if(off){ const hd=new THREE.Mesh(new THREE.SphereGeometry(0.21,24,12,0,Math.PI*2,0,Math.PI*0.5), std(c.hair||0x2a2320)); hd.position.set(0,1.585,0.01); hd.rotation.x=-0.3; hd.castShadow=true; g.add(hd); }
+  if(off){ const hd=new THREE.Mesh(new THREE.SphereGeometry(f.buzz?0.203:0.21,24,12,0,Math.PI*2,0,Math.PI*0.5), std(c.hair||0x2a2320)); hd.position.set(0,1.585,0.01); hd.rotation.x=-0.3; hd.castShadow=true; g.add(hd); }
   else { const DS=1.06, dome=new THREE.Mesh(new THREE.SphereGeometry(0.218,28,14,0,Math.PI*2,0,Math.PI/2),hel); dome.scale.y=DS; dome.position.set(0,1.6,0.01); dome.castShadow=true; g.add(dome);   // 帽殼（稍微高一點）
     [[0,0.014],[-0.065,0.008],[0.065,0.008]].forEach(([xo,t])=>{ const rb=new THREE.Mesh(new THREE.TorusGeometry(Math.sqrt(0.221*0.221-xo*xo),t,6,28,Math.PI),hel); rb.rotation.y=Math.PI/2; rb.scale.y=DS; rb.position.set(xo,1.6,0.01); g.add(rb); });   // 頂上三條加強肋：沿著帽殼彎下來，不會凸出去
     const brim=cyl(0.25,0.018,'y',0,1.605,0.045,hel,32); brim.scale.z=1.12; g.add(brim); { const lip=new THREE.Mesh(new THREE.TorusGeometry(0.25,0.01,6,32),hel); lip.rotation.x=Math.PI/2; lip.scale.y=1.12; lip.position.set(0,1.605,0.045); g.add(lip); }   // 帽簷＋圓角收邊
     { const st=new THREE.Group(), gr=std(0x2fa84f); st.add(cyl(0.034,0.004,'z',0,0,0,mat.white,20)); st.add(box(0.044,0.012,0.004,0,0,0.003,gr)); st.add(box(0.012,0.044,0.004,0,0,0.003,gr)); st.position.set(0,1.72,0.192); st.rotation.x=-0.58; g.add(st); } }   // 正面的工安貼紙：白底綠十字
+  if(f.mullet){ const hm2=std(c.hair||0x2a2320); g.add(box(0.27,0.22,0.06, 0,1.43,-0.17, hm2)); [-1,1].forEach(sd=>{ const t=box(0.07,0.12,0.05, sd*0.1,1.3,-0.165, hm2); t.rotation.z=sd*0.15; g.add(t); }); }   // 狼尾：後腦的頭髮留長，垂到脖子（戴安全帽從後面也看得到）
+  if(f.belt){ const bt=new THREE.Mesh(new THREE.TorusGeometry(0.168,0.022,6,24), std(0xf4f4f0)); bt.rotation.x=Math.PI/2; bt.scale.y=0.74; bt.position.y=0.82; g.add(bt); g.add(box(0.06,0.045,0.02,0,0.82,0.13,mat.chrome)); }   // 白腰帶、皮帶頭
   if(!off && c.helmetFx==='rainbow'){ const led=new THREE.Mesh(new THREE.TorusGeometry(0.222,0.016,8,28), std(0xffffff,{emissive:0xffffff})); led.rotation.x=Math.PI/2; led.position.set(0,1.645,0.01); g.add(led);
     fx.push(t=>{ const h=(t*0.4)%1; hel.color.setHSL(h,1,0.58); hel.emissive.setHSL(h,1,0.22); led.material.emissive.setHSL((h+0.5)%1,1,0.6); }); }
   if(!off && c.crown){ const band=new THREE.Mesh(new THREE.CylinderGeometry(0.168,0.172,0.06,20,1,true), std(0xffc61f,{emissive:0x3a2600, side:THREE.DoubleSide})); band.position.set(0,1.74,0.01); g.add(band);
