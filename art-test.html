@@ -324,7 +324,8 @@ const WHY = { bump:'你一直撞同事，被請出工地。', long:'你扛著料
 // 小弟的名字和造型：每次開遊戲隨機抽兩個（不重複）
 const FAN_LOOK = { '阿志':{feat:{glasses:true, towel:true}}, '阿志弟':{feat:{glasses:true, bangs:true}}, '阿豪':{feat:{shades:true, stubble:true}}, '志龍':{feat:{bangs:true}, hair:0xd9a62e},
   '和尚':{feat:{towel:true}, hair:'skin'}, '蚊子':{feat:{glasses:true, tape:true}}, '蠍子':{feat:{mustache:true, stubble:true}, skin:0xc58c5c} };   // 和尚：光頭（頭髮跟皮膚同色）；蠍子：曬得比較黑
-const FAN_PICK = (()=>{ const a=Object.keys(FAN_LOOK); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a.slice(0,2); })();
+const FAN_PICK = (()=>{ try{ const v=JSON.parse(localStorage.getItem('cwstory_fans')||'null'); if(Array.isArray(v) && v.length===2 && v[0]!==v[1] && v.every(n=>FAN_LOOK[n])) return v; }catch(e){}   // 第一次抽到的兩個人存起來：一整週都是同一組，重開網頁也不換人
+  const a=Object.keys(FAN_LOOK); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } const pk=a.slice(0,2); try{ localStorage.setItem('cwstory_fans', JSON.stringify(pk)); }catch(e){} return pk; })();
 CAST.di = { name:FAN_PICK[0], role:'工地小跟班', helmet:0xffd21f, vest:0x5d7a8c, skin:FAN_LOOK[FAN_PICK[0]].skin||0xf2cfae, feat:Object.assign({},FAN_LOOK[FAN_PICK[0]].feat), bio:'剛來三個月。誰厲害就跟誰。', quote:'「學長！我幫你拿！」（從來沒有真的拿過）',
   chat:['學長！你剛剛那個超帥的！','學長，我以後也要像你一樣零異常！','學長，便當我幫你拿！（已經偷吃一口）'] };
 CAST.hao = { name:FAN_PICK[1], role:'工地小跟班', helmet:0xffd21f, vest:0x6b8a5e, skin:FAN_LOOK[FAN_PICK[1]].skin||0xe6bd94, feat:Object.assign({},FAN_LOOK[FAN_PICK[1]].feat), bio:FAN_PICK[0]+'帶來的。筆記抄得很勤，但都抄錯。', quote:'「學長說的都對！」',
@@ -1100,7 +1101,8 @@ function office(){ const cx=L.cx, y0=L.gy, wall=std(0xf3efe6), desk=std(0xd9b98a
     g.add(box(0.62,0.4,0.04,0,1.08,-0.2,dk)); g.add(box(0.56,0.34,0.02,0,1.08,-0.175,scr)); g.add(box(0.06,0.16,0.06,0,0.85,-0.2,dk)); g.add(box(0.44,0.02,0.16,0,0.79,0.1,mat.white));
     if(!taken){ g.add(box(0.5,0.08,0.5,0,0.48,0.75,chair)); g.add(box(0.5,0.55,0.08,0,0.8,1.0,chair)); g.add(cyl(0.04,0.44,'y',0,0.24,0.75,dk,8)); LV.obs.push({x:x+Math.sin(ry)*0.8, z, hx:0.3, hz:0.3}); }
     LV.obs.push({x, z, hx:0.4, hz:0.78}); LV.group.add(g); };                                                                   // 桌子、空椅子是障礙物
-  [0.4,2.6,4.8].forEach(z=>mkDesk(cx-3.6,z,Math.PI/2,z===2.6)); [1.2,3.4,5.6].forEach(z=>mkDesk(cx+3.6,z,-Math.PI/2,z<4));   // 工位離中間 3.6 公尺，同事就在旁邊
+  [0.4,2.6,4.8].forEach(z=>mkDesk(cx-3.6,z,Math.PI/2,z!==0.4)); [1.2,3.4,5.6].forEach(z=>mkDesk(cx+3.6,z,-Math.PI/2,true));   // 工位離中間 3.6 公尺，同事就在旁邊；六個位子坐滿五個（兩個小弟也坐這裡），左前那個空著是你的（坐人的話會擋到去「預埋圖」立牌的路）
+  stat(board(['新人位'], cx-3.62,y0+0.8,0.55,Math.PI/2,0.34,'#ffffff','#1d4f86'));   // 你的位子：桌上一張小名牌
   [[cx+6.6,-2.7],[cx-6.5,-2.7]].forEach(([x,z])=>{ stat(cyl(0.22,0.4,'y',x,y0+0.2,z,std(0xb5714a),12)); stat(ball(0.5,std(0x4fb86a),x,y0+0.95,z,1,1.2,1)); });
   stat(board(['我們是一家人','（家人不談','加班費）'], cx+4.35,y0+2.5,-3.38,0,1.45,'#f6efe0','#a8261e'));
   stat(board(['本季 KPI','↘','共體時艱'], cx-4.35,y0+2.5,-3.38,0,1.45,'#ffffff','#1b1e24')); }
@@ -1422,6 +1424,8 @@ const LEVELS = [
     {who:'tie', t:'我是鐵叔，這個案子的工地主任。旁邊這位是品管兼勞安的琳姊。圖送出去之前，業務要看**成本**，工廠要看**加工**，工務要看**安裝跟運送**。'},
     {who:'tie', t:'先講清楚：平常設計不用下來扛料，現場是工務的事。但是這張圖送出去之後，接下來四天你跟我去工地，自己裝一次。'},
     {who:'tie', t:'你以後也要畫圖。畫圖的人自己裝過，才知道**圖上少一條線，現場要多幾個工**。'},
+    {who:'an', t:'對了，旁邊那兩個是'+FAN_PICK[0]+'跟'+FAN_PICK[1]+'，平常跟著鐵叔跑工地，今天回來幫忙整理圖。'},
+    {who:'di', t:'學長好！這禮拜我們跟你一起跑工地！', mood:'smile'},
     {who:'an', t:'送出去之前有五件事。少一件，就是把麻煩送給現場。立牌在後面，順序自己想。'} ],
   outroGood:[ {who:'an', t:'五件事都過了，零異常。圖可以送了！', mood:'smile'}, {who:'an', t:'對了，下班時間是六點。……我是說表定。'},
     {who:'tie', t:'照規矩，**風雨試驗**沒過，**工地不准開始安裝**。我們會去風雨試驗室，做一片樣品牆，用風跟水去打，看漏不漏。過了，工廠才正式下料，工地才開始組裝。這個案子上個月過了，所以你逃不掉。', src:SRC.wind}, {who:'an', t:'另外還有一個叫**視覺模型**的：做一小片實體樣品，給建築師和業主確認外觀和顏色。它看的是好不好看；風雨試驗看的是漏不漏。', src:SRC.yj5b}, {who:'tie', t:'明天早上七點，工地見，看圖上畫的東西裝不裝得起來。'}, {who:'you', t:'（吞口水）……好。'} ],
@@ -2318,7 +2322,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
       ps.forEach(q=>{ x+=q.obs.hx; q.x=q.obs.x=x; q.g.position.x=x; x+=q.obs.hx+GAP; }); });   // 兩排拉開、錯開半格，長料才不會頭尾相接
     if(!L.office){ makePrank('bat', L.cx-3.7, 6.35); makePrank('drink', L.cx+3.9, 6.35); }
     makeActor('you', L.cx, L.office ? 2.9 : 2.2);
-    const slots = L.office ? [[L.cx+2.98,1.2],[L.cx+2.98,3.4],[L.cx-2.98,2.6]] : pickHomes(L.npcs.length+fanCount());   /* 多挑的位置給小弟待命 */ /* 椅子拉近桌子，手才搆得到鍵盤 */ L.npcs.forEach((w,k)=>{ const a=makeActor(w, slots[k][0], slots[k][1]); if(L.office) seat(a); });   // 辦公室：坐在自己的工位
+    const slots = L.office ? [[L.cx+2.98,1.2],[L.cx+2.98,3.4],[L.cx-2.98,2.6]] : pickHomes(L.npcs.length+fanCount());   /* 多挑的位置給小弟待命 */ /* 椅子拉近桌子，手才搆得到鍵盤 */ L.npcs.forEach((w,k)=>{ const a=makeActor(w, slots[k][0], slots[k][1]); if(L.office) seat(a); });   /* 辦公室：坐在自己的工位 */ if(L.office) [['di',L.cx-2.98,4.8],['hao',L.cx+2.98,5.6]].forEach(([w,x,z])=>seat(makeActor(w,x,z)));   // 兩個小弟也坐在工位上
     for(let k=0, nf=fanCount(); k<nf; k++){ const f=makeActor(k?'hao':'di', L.cx+(k?0.9:-0.9), 2.5); f.follower=true; f.g.scale.setScalar(0.86); const h=slots[L.npcs.length+k]; f.post = h ? {x:h[0], z:h[1]} : {x:L.cx+(k?0.9:-0.9), z:2.5}; }   // post＝沒事做的時候站的地方（不擋料、不擋路）
     if(L.plant) plantWorld(); else if(!L.office && !L.indoor){ siteSigns(); siteWorld(); }
     LV.pick.push(spot.userData.disc);
