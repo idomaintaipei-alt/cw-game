@@ -486,17 +486,22 @@ function standBoard(lines,x,z,ry,w,bg,fg,yb){ const y0 = yb===undefined ? L.gy :
 // 工地的外圍：都擺在走不到的地方，避開座駕和壓送車走的便道、直升機降落的位置，中間（x -3.5～13.1、z -10.8～8.5）留給週二那棟樓
 const yardY = () => L.yard!==undefined ? L.yard : L.gy;                                                    // 地面的高度
 // 背景的工人：會做事。kind：tie＝彎腰綁鋼筋、hammer＝敲模板、write＝在板夾上寫、walk＝在 a、b 兩點之間來回走（carry：扛東西）
+// 腳底最低點（在人的上一層座標裡）：蹲下、前傾之後用來把人抬到剛好踩在地上
+const _fv=new THREE.Vector3(), _fm=new THREE.Matrix4();
+function footLow(g){ const u=g.userData; g.updateMatrixWorld(true); _fm.copy(g.parent ? g.parent.matrixWorld : new THREE.Matrix4()).invert(); let lo=Infinity;
+  [u.legL,u.legR].forEach(l=>l.traverse(m=>{ if(!m.isMesh) return; const pos=m.geometry.attributes.position; for(let k=0;k<pos.count;k++){ _fv.fromBufferAttribute(pos,k).applyMatrix4(m.matrixWorld).applyMatrix4(_fm); if(_fv.y<lo) lo=_fv.y; } })); return lo; }
 function bgCrew(list, S){ const ups=[];
   list.forEach((w,i)=>{ const g=makePerson({skin:0xd9a577, vest:w.vest||0xff7a1a, helmet:w.helmet||0xffd21f, feat:{}}); g.rotation.order='YXZ'; g.position.set(w.x,w.y,w.z); g.rotation.y=w.ry||0; const u=g.userData, ph=i*1.7;
+    [u.legL,u.legR].forEach(l=>{ const kn=l.userData.knee; if(!kn) return; const an=new THREE.Group(); an.position.y=-0.35; kn.children.slice(2,4).forEach(m=>{ m.position.y+=0.35; an.add(m); }); kn.add(an); l.userData.ankle=an; });   // 腳踝：鞋子掛在小腿底下，可以自己轉
     if(w.carry==='rebar'){ const r=new THREE.Group(); for(let k=0;k<4;k++) r.add(cyl(0.018,2.4,'z', 0.2+(k%2)*0.03,1.48+Math.floor(k/2)*0.03,0.2, mat.rebar,6)); g.add(r); u.armR.rotation.x=-2.7; }
     if(w.carry==='box'){ g.add(box(0.36,0.26,0.3, 0,1.15,0.32, mat.crate)); u.armL.rotation.x=u.armR.rotation.x=-1.25; }
     if(w.kind==='haul'){ const N=5, dx=w.b.x-w.a.x, dz=w.b.z-w.a.z, L0=Math.hypot(dx,dz), ux=dx/L0, uz=dz/L0, mk=(px,pz)=>{ const arr=[]; for(let k=0;k<N;k++){ const b=box(0.36,0.26,0.3, px,w.y+0.13+k*0.27,pz, mat.crate); b.castShadow=false; S(b); arr.push(b); } return arr; };   // 兩疊箱子，在走路路線的兩端外面
-      w.stA=mk(w.a.x-ux*0.55, w.a.z-uz*0.55); w.stB=mk(w.b.x+ux*0.55, w.b.z+uz*0.55); w.held=box(0.36,0.26,0.3, 0,1.15,0.32, mat.crate); g.add(w.held); w.N=N; w.L0=L0; }
+      w.stA=mk(w.a.x-ux*0.95, w.a.z-uz*0.95); w.stB=mk(w.b.x+ux*0.95, w.b.z+uz*0.95);   /* 箱子離腳 95 公分：蹲下時膝蓋、頭碰不到，手伸出去剛好拿到 */ w.held=box(0.36,0.26,0.3, 0,1.15,0.32, mat.crate); g.add(w.held); w.N=N; w.L0=L0; }
     if(w.kind==='write'){ const cb=new THREE.Group(); cb.add(box(0.24,0.32,0.02,0,0,0,mat.dark)); cb.add(box(0.2,0.27,0.006,0,-0.01,0.013,mat.white)); cb.position.set(0.05,-0.28,0.1); cb.rotation.x=-1.25; u.armL.userData.elbow.add(cb); u.armL.rotation.x=-1.15; u.armL.rotation.z=0.3; }
     g.userData.crew=w; S(g); const len = w.b ? Math.hypot(w.b.x-w.a.x, w.b.z-w.a.z) : 0;   // crew＝背景工人（給自動檢查找）
     ups.push(t=>{ const tt=t+ph;
-      if(w.kind==='tie'){ g.rotation.x=0.3; g.position.y=w.y-0.42; u.legL.rotation.x=u.legR.rotation.x=-1.85; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=2.25; }); u.armL.rotation.x=-0.75+Math.sin(tt*9)*0.18; u.armR.rotation.x=-0.75+Math.sin(tt*9+1.4)*0.18; }   // 蹲下來綁：膝蓋彎、屁股往下、上身稍微前傾，手在鋼筋上動（原本整個人直直往前倒）
-      else if(w.kind==='hammer'){ g.rotation.x=0.18; const sw=Math.sin(tt*6); u.armR.rotation.x = sw>0 ? -2.3+sw*1.6 : -2.3; u.armL.rotation.x=-0.9; }
+      if(w.kind==='tie'){ g.rotation.x=0.3; u.legL.rotation.x=u.legR.rotation.x=-1.85; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=2.25; if(l.userData.ankle) l.userData.ankle.rotation.x=-0.7; });   /* 鞋子轉回平的 */ if(w.dy===undefined){ g.position.y=w.y; w.dy=w.y-footLow(g); } g.position.y=w.y+w.dy; u.armL.rotation.x=-0.75+Math.sin(tt*9)*0.18; u.armR.rotation.x=-0.75+Math.sin(tt*9+1.4)*0.18; }   // 蹲下來綁：膝蓋彎、屁股往下、上身稍微前傾，手在鋼筋上動（原本整個人直直往前倒）
+      else if(w.kind==='hammer'){ g.rotation.x=0.18; if(w.dy===undefined){ g.position.y=w.y; w.dy=w.y-footLow(g); } g.position.y=w.y+w.dy; const sw=Math.sin(tt*6); u.armR.rotation.x = sw>0 ? -2.3+sw*1.6 : -2.3; u.armL.rotation.x=-0.9; }
       else if(w.kind==='write'){ u.armR.rotation.x=-1.0+Math.sin(tt*7)*0.1; u.armR.rotation.z=-0.38; }
       else if(w.kind==='haul'){ const N=w.N, WT=w.L0/0.75, BT=0.9, C=2*WT+2*BT, n=Math.floor(tt/C), k=((n%(2*N))+2*N)%(2*N), fw=k<N, j=fw?k:k-N, ph=tt-n*C;   // 一趟：彎腰拿 → 走過去 → 彎腰放 → 空手走回來
         const P=fw?w.a:w.b, Q=fw?w.b:w.a, sP=fw?w.stA:w.stB, sQ=fw?w.stB:w.stA; let nP=N-j, nQ=j, hold=false, x, z, bend=0, face;
@@ -504,8 +509,8 @@ function bgCrew(list, S){ const ups=[];
         else if(ph<BT+WT){ const q=(ph-BT)/WT; x=P.x+(Q.x-P.x)*q; z=P.z+(Q.z-P.z)*q; nP--; hold=true; face=Math.atan2(Q.x-P.x,Q.z-P.z); }                     // 抱著走過去
         else if(ph<2*BT+WT){ const q=(ph-BT-WT)/BT; x=Q.x; z=Q.z; bend=Math.sin(Math.PI*q); nP--; if(q>0.5) nQ++; else hold=true; face=Math.atan2(Q.x-P.x,Q.z-P.z); }   // 在 Q 彎腰放下
         else { const q=(ph-2*BT-WT)/WT; x=Q.x+(P.x-Q.x)*q; z=Q.z+(P.z-Q.z)*q; nP--; nQ++; face=Math.atan2(P.x-Q.x,P.z-Q.z); }                                  // 空手走回來
-        sP.forEach((b,i)=>b.visible=i<nP); sQ.forEach((b,i)=>b.visible=i<nQ); w.held.visible=hold; g.position.x=x; g.position.z=z; g.rotation.y=face; g.rotation.x=bend*0.3; g.position.y=w.y-0.42*bend;   // 蹲下去拿、放：屁股往下、上身稍微前傾
-        const walking = bend===0, sw=walking?Math.sin(tt*8)*0.6:0; u.legL.rotation.x=sw-1.85*bend; u.legR.rotation.x=-sw-1.85*bend; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=2.25*bend; });   /* 膝蓋彎 */ if(hold){ u.armL.rotation.x=u.armR.rotation.x=-1.25; } else { u.armL.rotation.x = bend ? -1.1*bend : -sw*0.5; u.armR.rotation.x = bend ? -1.1*bend : sw*0.5; } }
+        sP.forEach((b,i)=>b.visible=i<nP); sQ.forEach((b,i)=>b.visible=i<nQ); w.held.visible=hold; g.position.x=x; g.position.z=z; g.rotation.y=face; g.rotation.x=bend*0.3; g.position.y=w.y;   // 蹲下去拿、放：屁股往下、上身稍微前傾
+        const walking = bend===0, sw=walking?Math.sin(tt*8)*0.6:0; u.legL.rotation.x=sw-1.85*bend; u.legR.rotation.x=-sw-1.85*bend; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=2.25*bend; if(l.userData.ankle) l.userData.ankle.rotation.x=-0.7*bend; }); if(bend>0) g.position.y+=w.y-footLow(g);   /* 膝蓋彎；量鞋底，剛好踩在地上 */ if(hold){ u.armL.rotation.x=u.armR.rotation.x=-1.25; } else { u.armL.rotation.x = bend ? -1.1*bend : -sw*0.5; u.armR.rotation.x = bend ? -1.1*bend : sw*0.5; } }
       else if(w.kind==='walk'){ const q=((tt*0.7/len)%2+2)%2, k=q<1?q:2-q, dir=q<1?1:-1, x=w.a.x+(w.b.x-w.a.x)*k, z=w.a.z+(w.b.z-w.a.z)*k; g.position.x=x; g.position.z=z; g.rotation.y=Math.atan2((w.b.x-w.a.x)*dir,(w.b.z-w.a.z)*dir);
         const sw=Math.sin(tt*8)*0.6; u.legL.rotation.x=sw; u.legR.rotation.x=-sw; if(!w.carry){ u.armL.rotation.x=-sw*0.5; u.armR.rotation.x=sw*0.5; } } }); });
   LV.fx.push((dt,t)=>ups.forEach(f=>f(t))); }
@@ -549,7 +554,7 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
     bgCrew([ {kind:'tie', x:cx-16.2, y:top, z:-6.0, ry:0.4, vest:0x7b8794}, {kind:'tie', x:cx-13.0, y:top, z:-9.5, ry:2.0},
       {kind:'walk', carry:'rebar', a:{x:cx-16.4,z:-3.4}, b:{x:cx-12.9,z:-3.4}, y:top, vest:0xd9e021},   /* 從鋼筋那捆扛到鋼筋網上，離邊緣至少 1.5 公尺 */
       {kind:'hammer', x:cx-12.0, y:fl(NF-2), z:-2.4, ry:0, vest:0x7b8794},
-      {kind:'walk', a:{x:cx-15.8,z:-1.48}, b:{x:cx-12.2,z:-1.48}, y:sb(3), vest:0xff7a1a},   /* 鷹架踏板上走：不走到卸料平台（x -18.6～-16.2）底下，頭才不會撞進平台的鋼梁 */
+      {kind:'walk', a:{x:cx-15.8,z:-1.43}, b:{x:cx-12.2,z:-1.43}, y:sb(3), vest:0xff7a1a},   /* 鷹架踏板上走：不走到卸料平台（x -18.6～-16.2）底下，頭才不會撞進平台的鋼梁 */
       {kind:'write', x:cx-10.68, y:sb(2), z:-6.0, ry:0, vest:0xd9e021},   /* 側面鷹架上：沿著踏板站著檢查（不面向安全網，手不會穿出去） */
       {kind:'haul', a:{x:cx-15.6,z:1.6}, b:{x:cx-12.4,z:1.6}, y:y0, vest:0x7b8794} ], S); }   /* 搬貨：一箱一箱從左邊那疊搬到右邊那疊 */
   S(box(1.9,0.2,1.9, cx-12.2,y0+0.1,0.2, mat.rc));
@@ -832,7 +837,7 @@ function plantWorld(){ const cx=L.cx, y0=L.gy, S=m=>{ m.traverse(o=>{ o.castShad
   const wl=std(0xb9bdc2), wall=(x0,z0,x1,z1)=>{ const len=Math.hypot(x1-x0,z1-z0), b=box(len,2.2,0.2, (x0+x1)/2,y0+1.1,(z0+z1)/2, wl); b.rotation.y=Math.atan2(z0-z1,x1-x0); S(b); };
   wall(cx-24,-22, cx-9.3,-22); wall(cx-4.7,-22, cx+27,-22); wall(cx-24,-22, cx-24,17); wall(cx+27,-22, cx+27,17); wall(cx-24,17, cx-9.3,17); wall(cx-4.7,17, cx+27,17);                // 圍牆；車道頭尾留門
   standBoard(['廠區限速 10 公里','（堆高機例外）'], cx+6.2,3.4,-0.7,2.3,'#f2cf1d','#1b1e24');
-  bgCrew([ {kind:'haul', a:{x:cx+10.6,z:6.4}, b:{x:cx+14.6,z:6.4}, y:y0, vest:0xff7a1a},   // 廠區的工人：一箱一箱搬貨、在板夾上點數、進出廠房
+  bgCrew([ {kind:'haul', a:{x:cx+10.6,z:6.4}, b:{x:cx+14.0,z:6.4}, y:y0, vest:0xff7a1a},   // 廠區的工人：一箱一箱搬貨、在板夾上點數、進出廠房
     {kind:'write', x:cx+12.6, y:y0, z:-2.5, ry:Math.PI/2, vest:0x7b8794},   /* 站在廠房外面那捆板旁邊點數（原本站進廠房裡面） */ {kind:'walk', a:{x:cx-20.5,z:0.4}, b:{x:cx-13.5,z:0.4}, y:y0, vest:0xd9e021} ], S);
   [[-44,-50,14,12,20],[-20,-56,10,10,28],[2,-52,16,10,15],[24,-58,12,12,24],[48,-44,14,12,19],[58,-10,12,16,22],[-56,-20,12,16,18],[-58,10,14,14,25],[-30,48,16,10,20],[10,52,12,12,26],[40,46,14,12,17]]
     .forEach(([x,z,w,d,h],k)=>{ const b=box(w,h,d, cx+x,y0+h/2,z, mat.far[k%3]); b.receiveShadow=false; S(b); }); }
@@ -887,8 +892,8 @@ function backYard(cx, y0, S){ const st=std(0x59616c), rf=std(0x6f8aa8), wd=mat.w
   { const x0=cx-34.5, z0=-19;                                                                                              // 模板堆：幾疊合板＋角材
     [[0,0,9],[2.6,0.2,6],[0.4,2.8,7]].forEach(([a,b,n])=>{ for(let k=0;k<n;k++) S(box(2.4,0.04,1.2, x0+a+(k%2)*0.04,y0+0.14+k*0.045,z0+b, std(0xb88a4e))); [-0.8,0.8].forEach(e=>S(box(0.1,0.1,1.3, x0+a+e,y0+0.05,z0+b, wd))); });
     for(let k=0;k<14;k++) S(box(3.6,0.09,0.09, x0+1.2,y0+0.05+Math.floor(k/7)*0.095,z0+5.4+(k%7)*0.1, sl)); }   // 角材
-  bgCrew([ {kind:'hammer', x:cx-32.2, y:y0, z:-6.8, ry:Math.PI, vest:0xd9e021},                          // 鋼筋加工棚：在工作台彎鋼筋
-    {kind:'walk', carry:'rebar', a:{x:cx-35.0,z:-12.65}, b:{x:cx-29.0,z:-12.65}, y:y0, vest:0x7b8794},     // 扛鋼筋
+  bgCrew([ {kind:'hammer', x:cx-32.2, y:y0, z:-6.7, ry:Math.PI, vest:0xd9e021},                          // 鋼筋加工棚：在工作台彎鋼筋
+    {kind:'walk', carry:'rebar', a:{x:cx-35.0,z:-12.72}, b:{x:cx-29.0,z:-12.72}, y:y0, vest:0x7b8794},     // 扛鋼筋
     {kind:'write', x:cx-29.0, y:y0, z:-15.5, ry:Math.PI/2, vest:0xff7a1a},                                   // 帷幕牆材料：點料
     {kind:'tie', x:cx-33.2, y:y0, z:-17.6, ry:Math.PI/2, vest:0xd9e021} ], S); }                          // 模板堆旁：整理模板
 // 怪手：履帶、轉台、車身、駕駛室、配重、大臂＋小臂＋挖斗；旁邊一堆土。車身慢慢左右轉、手臂一下一下往下挖
@@ -2344,8 +2349,9 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
   mat.ghost.opacity=0.45+0.4*Math.sin(now/250); camShake=Math.max(0,camShake-dt*1.3);
   if(LV.fx) LV.fx.forEach(f=>f(dt,t));
   if(L && !L.bench && LV.actors.you && !(cut && cut.stage<2)){ const q=Math.min(1,dt*2.5), me=LV.actors.you;
-    if(dlgOpen && talkWho){ const a=LV.actors[talkWho]||me; if(!talkCam) talkCam={t:[target.x,target.y,target.z], dist, free:false};          // 講話：鏡頭移到說話的人（偏向他，你也在畫面裡），拉近一點
+    if(dlgOpen && talkWho){ const a=LV.actors[talkWho]||me; if(!talkCam) talkCam={t:[target.x,target.y,target.z], dist, free:performance.now()-userCamT<1500};   /* 你剛動過鏡頭：這段話不帶鏡頭 */          // 講話：鏡頭移到說話的人（偏向他，你也在畫面裡），拉近一點
       if(!talkCam.free){ const fx = a===me ? me.x : a.x*0.7+me.x*0.3, fz = a===me ? me.z : a.z*0.7+me.z*0.3; target.x+=(fx-target.x)*q; target.z+=(fz-target.z)*q; target.y+=(gyAt(a.x,a.z)+1.2-target.y)*q; dist+=(Math.min(talkCam.dist,7)-dist)*q; } }
+    else if(talkCam && !dlgOpen && (talkCam.endT || (talkCam.endT=performance.now())) && userCamT>talkCam.endT) talkCam=null;   // 講完之後你自己動了鏡頭：不再拉回去
     else if(talkCam && !dlgOpen){ const k=talkCam, keepD = k.zoomed || !!camGoal; if(TOUCH){ k.t[0]=me.x; k.t[2]=me.z; }   // 手機：講完不是回到原本的地方，是回到你身上（你可能已經走開了）
       target.x+=(k.t[0]-target.x)*q; target.y+=(k.t[1]-target.y)*q; target.z+=(k.t[2]-target.z)*q; if(!keepD) dist+=(k.dist-dist)*q;   // 講完：畫面一定移回原本看的地方（講話時你動過鏡頭也一樣，不然畫面會停在說話的人那邊回不來）；遠近也還原，除非你自己縮放過，或有別的鏡頭指令
       if(Math.hypot(target.x-k.t[0],target.z-k.t[2])<0.03 && (keepD || Math.abs(dist-k.dist)<0.03)) talkCam=null; } }
