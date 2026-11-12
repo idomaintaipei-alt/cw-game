@@ -1403,10 +1403,10 @@ const LEVELS = [
     const scr=new THREE.Group(); scr.scale.set(0.98,0.98,0.1); scr.position.set(0.122,0.625,-3.24); LV.group.add(scr); LV.host=scr;   // 以下零件都掛在螢幕上：整面牆壓扁成一張立面圖
     cornerWall((id,m)=>stat(m), false, 'none');
     LV.refs.clash=[0.9,2.7].map(y=>stat(box(0.34,0.34,0.3, 1.2,y,0.3, mat.clash)));                                                 // 紅色方塊：各部門圈出來要改的地方
-    add('cost', label('成本 OK','#15803d', -1.5,2.6,0.5,0.4)); add('fab', label('加工 OK','#15803d', 3.7,2.6,0.5,0.4));
+    add('cost', board(['成本 OK'], -1.5,2.6,0.45,0,1.2,'#15803d','#ffffff')); add('fab', board(['加工 OK'], 3.7,2.6,0.45,0,1.2,'#15803d','#ffffff'));   /* 平的綠色標籤貼在圖上（像蓋章）：轉視角不會插進螢幕 */
     [1.0,2.6].forEach(y=>add('iface', at(new THREE.Mesh(new THREE.TorusGeometry(0.2,0.025,8,28), mat.mark), -0.05,y,0.34)));
     [0.9,2.7].forEach(y=>add('revise', box(0.34,0.34,0.3, 1.2,y,0.3, mat.good)));
-    [0,1.2,2.4].forEach(x=>add('embed', at(new THREE.Mesh(new THREE.TorusGeometry(0.2,0.025,8,28), mat.mark), x,-0.1,0.34))); add('embed', label('預埋圖 OK','#15803d', 3.7,1.2,0.5,0.4)); LV.host=null;
+    [0,1.2,2.4].forEach(x=>add('embed', at(new THREE.Mesh(new THREE.TorusGeometry(0.2,0.025,8,28), mat.mark), x,-0.1,0.34))); add('embed', board(['預埋圖 OK'], 3.7,1.2,0.45,0,1.4,'#15803d','#ffffff')); LV.host=null;
     const PIN={embed:0xe23b3b, cost:0xf2c21b, iface:0x2fa84f, revise:0x2f6fd0, fab:0xf08a1c}, pins={}, ZF=-3.29;   // 圖釘：每一項一個顏色
     LV.fx.push(dt=>{ Object.keys(PIN).forEach(id=>{ const pt=LV.parts[id]; if(!pt || !pt.meshes.length) return;
       if(!pins[id] && pt.meshes[0].visible){ const v=new THREE.Vector3(); pt.meshes[0].getWorldPosition(v); const g=new THREE.Group(); g.add(ball(0.1,std(PIN[id],{roughness:0.35}),0,0,0.16)); g.add(cyl(0.022,0.08,'z',0,0,0.07,std(PIN[id]),8)); g.add(cyl(0.006,0.07,'z',0,0,0.0,mat.chrome,6));   /* 圓頭大一點，平常的鏡頭看得到 */   // 圓頭、頸、針
