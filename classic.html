@@ -1835,6 +1835,15 @@ function robeMat(){ if(_robe) return _robe; const c=document.createElement('canv
 /* 眼鏡腳：從鏡框外緣沿著頭側往後，最後搭在耳朵上緣（不穿進頭裡）。f＝[起點離中線多遠, 起點往前多少] */
 /* 臉上的小零件貼著臉：頭是 (0,1.57,0.01) 的扁球（半徑 0.2，上下前後 ×0.96）。照那一點的臉面算前後位置（背面吃進臉 1 公釐）跟左右轉角（寬的零件兩端一起貼著） */
 function onFace(m,d,w=0){ const x=m.position.x, y=m.position.y, T=Math.max(0.0001,1-x*x/0.04-((y-1.57)/0.192)**2), sag=w*w/(8*0.2), de=Math.max(d,2*sag+0.006); m.scale.z=de/d; m.position.z=0.01+0.192*Math.sqrt(T)-sag-0.001+de/2; m.rotation.y=Math.atan(0.192*x/(0.04*Math.sqrt(T))); return m; }   /* w＝零件寬：臉是圓的，中間吃進去 sag、兩端剛好貼著 */
+/* 光圈旁邊的空間：光圈中心到最近的人（身體和頭，算到帽簷）、背景工人、高的場景物件（牆、柱、門框）有多遠，換成光圈可以放多大（0～1） */
+function haloRoom(hg){ if(!LV.group || !hg.parent) return 1; const c=hg.getWorldPosition(new THREE.Vector3()), R0=0.58*hg.parent.getWorldScale(new THREE.Vector3()).x; let room=1e9, own=null;
+  for(const k in LV.actors){ const a=LV.actors[k]; let mine=false; for(let q=hg;q;q=q.parent) if(q===a.g) mine=true; if(mine || !a.g.visible) continue; if(!a._headM) a.g.traverse(o=>{ if(!a._headM && o.isMesh && o.geometry.type==='SphereGeometry' && Math.abs((o.geometry.parameters.radius||0)-0.2)<1e-4) a._headM=o; });
+    const hp=a._headM ? a._headM.getWorldPosition(new THREE.Vector3()) : null, hr=0.35*(a._headM ? a._headM.getWorldScale(new THREE.Vector3()).x : 1); room=Math.min(room, Math.hypot(a.x-c.x, a.z-c.z)-hr, hp ? hp.distanceTo(c)-hr : 1e9); }   /* 也量頭（小弟鞠躬時頭會往前伸 50 公分）；範圍＝帽簷多大（0.35，美術版頭放大就跟著放大） */
+  if(LV._haloFor!==LV.group){ LV._haloFor=LV.group; const act=new Set(); Object.values(LV.actors).forEach(a=>a.g.traverse(o=>act.add(o))); LV._haloCrew=[]; LV._haloBox=[]; LV.group.updateMatrixWorld(true);
+    LV.group.traverse(o=>{ if(o.userData && o.userData.crew){ LV._haloCrew.push(o); return; } if(!o.isMesh || act.has(o)) return; for(let q=o;q;q=q.parent) if(q.userData && q.userData.crew) return; const m0=Array.isArray(o.material)?o.material[0]:o.material; if(m0.transparent || o.geometry.type==='PlaneGeometry') return; const b=new THREE.Box3().setFromObject(o); if(b.max.y-LV.group.position.y>1.2 && b.max.y-b.min.y>0.25) LV._haloBox.push({b, o}); }); }   /* 高的東西才會碰到光圈（棧板、桌面這種低的不算） */
+  LV._haloCrew.forEach(w=>{ if(!w.visible) return; const p=w.getWorldPosition(new THREE.Vector3()); room=Math.min(room, Math.hypot(p.x-c.x, p.z-c.z)-0.35*hg.parent.getWorldScale(new THREE.Vector3()).x*(w.scale.x||1)); });
+  LV._haloBox.forEach(({b,o})=>{ if(o.visible && b.max.x>c.x-R0 && b.min.x<c.x+R0 && b.max.z>c.z-R0 && b.min.z<c.z+R0) room=Math.min(room, b.distanceToPoint(c)); });
+  return Math.max(0, Math.min(1, room/R0)); }   /* 別人的頭佔到光圈的位置：縮到 0（收起來） */
 function glassTemple(sd,y,f){ const P=[[sd*f[0],y,f[1]],[sd*0.19,(y+1.6)/2,0.11],[sd*0.216,1.6,-0.005]], out=[];
   for(let i=0;i<2;i++){ const a=P[i], b=P[i+1], dx=b[0]-a[0], dy=b[1]-a[1], dz=b[2]-a[2], L=Math.hypot(dx,dy,dz), t=box(0.009,0.009,L+0.008,(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2,mat.dark); t.rotation.order='YXZ'; t.rotation.y=Math.atan2(dx,dz); t.rotation.x=-Math.asin(dy/L); t.userData.temple=true; out.push(t); } return out; }
 function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};                     // off＝在辦公室：不戴安全帽、不穿背心和工作靴，造型也不顯示
@@ -1842,8 +1851,22 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
   const vest = off ? (f.floral ? floralMat() : std(f.khaki ? 0xc8b58a : c.shirt||0xf4f6fa)) : c.vestKind==='leopard' ? leopardMat() : c.vestKind==='sequin' ? std(0xffc61f,{emissive:0x3a2600}) : c.vestKind==='robe' ? robeMat() : std(c.vest);
   const hel=std(c.helmet, c.helmetMetal ? {emissive:0x3a2600} : {}), bootM = off ? std(f.whiteshoes ? 0xf2f2ee : 0x2b2f36) : f.boots ? std(0xff4fd8,{emissive:0x551144}) : mat.boot, soleM = f.boots ? std(0xffffff,{emissive:0x888888}) : mat.dark;
   // 長腿＋鞋
+  const ledMs=[], fancyBoot=kn=>{   /* 七彩發光工作鞋：鋼頭＋亮面護條、包腳踝的短筒＋軟墊筒口、鞋舌＋三段鞋帶、圓後跟、加厚鞋底＋防滑紋、鞋底一圈跑馬燈 LED。鞋底 15 公分寬（兩腿中心差 18 公分，兩隻鞋中間留 3 公分縫，不會併成一塊板）；最下面跟一般鞋一樣在 -0.4475 */
+    const wht=std(0xffffff), chr=std(0xdfe6ee,{metalness:0.8, roughness:0.25});
+    kn.add(ball(0.085,bootM,0,-0.37,0.045,0.95,0.7,1.5));                                 /* 鞋身 */
+    kn.add(ball(0.075,bootM,0,-0.38,0.13,1.0,0.62,0.9));                                  /* 鋼頭（圓圓的鞋頭） */
+    { const tc=new THREE.Mesh(new THREE.TorusGeometry(0.072,0.007,6,20,Math.PI), chr); tc.rotation.x=Math.PI/2; tc.position.set(0,-0.405,0.13); tc.scale.set(1,0.95,1); kn.add(tc); }   /* 鞋頭亮面護條：水平繞在鞋頭前緣（原本轉錯，往下插進地板 4 公分） */
+    kn.add(cyl(0.074,0.13,'y',0,-0.305,-0.01,bootM,16));                                   /* 短筒：包住腳踝 */
+    { const cl=new THREE.Mesh(new THREE.TorusGeometry(0.074,0.013,8,20), wht); cl.rotation.x=Math.PI/2; cl.position.set(0,-0.24,-0.01); kn.add(cl); }   /* 筒口軟墊 */
+    { const tg=box(0.052,0.012,0.11, 0,-0.305,0.07, wht); tg.rotation.x=0.55; kn.add(tg); }   /* 鞋舌 */
+    [0,1,2].forEach(i=>{ const lc=box(0.066,0.009,0.012, 0,-0.29-i*0.022,0.06+i*0.019, wht); lc.rotation.x=0.55; kn.add(lc); });   /* 三段鞋帶 */
+    kn.add(ball(0.06,bootM,0,-0.392,-0.075,1.1,0.8,0.75));                                 /* 圓後跟 */
+    kn.add(box(0.15,0.042,0.32, 0,-0.4265,0.05, soleM));                                   /* 加厚鞋底（下緣 -0.4475） */
+    [-0.07,0.01,0.09,0.17].forEach(z=>kn.add(box(0.13,0.006,0.02, 0,-0.4445,z, mat.dark)));   /* 防滑紋 */
+    const seg=[]; for(let i=0;i<7;i++){ const z=-0.1+i*0.05; seg.push([0.077,z,0.008,0.044]); seg.push([-0.077,z,0.008,0.044]); } seg.push([0,0.212,0.13,0.008]); seg.push([0,-0.112,0.13,0.008]);   /* 燈條：兩側各 7 段＋前後各 1 段 */
+    seg.forEach(([x,z,w,d],i)=>{ const m=new THREE.MeshBasicMaterial({color:0xffffff}); m.userData.k=i/seg.length; ledMs.push(m); kn.add(box(w,0.012,d, x,-0.427,z, m)); }); };
   const mk=sx=>{ const l=new THREE.Group(); l.position.set(sx*0.09,0.8,0); l.add(cyl(0.068,0.36,'y',0,-0.18,0,mat.pants,10));   /* 大腿 */
-    const kn=new THREE.Group(); kn.position.y=-0.35; kn.add(ball(0.068,mat.pants,0,0,0)); kn.add(cyl(0.068,0.35,'y',0,-0.175,0,mat.pants,10)); kn.add(ball(0.1,bootM,0,-0.36,0.04,1,0.7,1.5)); kn.add(box(0.17,0.035,0.3,0,-0.43,0.045,soleM)); l.add(kn); l.userData.knee=kn; g.add(l); return l; };   /* 膝蓋以下：小腿、鞋 */
+    const kn=new THREE.Group(); kn.position.y=-0.35; kn.add(ball(0.068,mat.pants,0,0,0)); kn.add(cyl(0.068,0.35,'y',0,-0.175,0,mat.pants,10)); if(f.boots) fancyBoot(kn); else { kn.add(ball(0.1,bootM,0,-0.36,0.04,1,0.7,1.5)); kn.add(box(0.17,0.035,0.3,0,-0.43,0.045,soleM)); } l.add(kn); l.userData.knee=kn; g.add(l); return l; };   /* 膝蓋以下：小腿、鞋 */
   const legL=mk(-1), legR=mk(1); if(f.flare) [legL,legR].forEach(l=>{ const sh=l.userData.knee.children[1]; sh.geometry=new THREE.CylinderGeometry(0.068,0.105,0.35,12); });   /* 喇叭褲：小腿往下變寬 */
   // 身體：窄窄的一截
   const torso=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.165,0.6,16), vest); torso.position.y=1.1; torso.scale.z=0.72; torso.castShadow=true; g.add(torso);
@@ -1910,10 +1933,10 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
   if(f.shades){ const nS=g.children.length; [-1,1].forEach(sd=>{ const ln=ball(0.064,mat.dark,sd*0.08,1.588,0.197,1.15,0.8,0.25); ln.rotation.y=sd*0.45; g.add(ln); glassTemple(sd,1.6,[0.15,0.165]).forEach(t=>g.add(t)); }); { const bd=box(0.05,0.016,0.016,0,1.598,0.218,mat.dark); bd.userData.glasses=true; g.add(bd); }   /* 鼻樑架：眼鏡本來就架在臉前面 */   /* 鏡片貼在臉外面、順著臉往後彎 */ flyFrom(nS,'shades'); }
   if(f.tape){ g.add(box(0.1,0.1,0.06,0.2,0.86,0.1,mat.anchor)); g.add(ball(0.025,mat.white,0.2,0.86,0.135)); }
   if(f.chain){ const ch=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.034,8,24), mat.gold); ch.rotation.x=Math.PI/2-0.4; ch.position.set(0,1.36,0.04); g.add(ch); g.add(cyl(0.07,0.026,'z',0,1.2,0.165,mat.gold,20)); g.add(cyl(0.04,0.03,'z',0,1.2,0.168,mat.red,16)); }
-  if(f.boots) fx.push(t=>{ const h=(t*0.6)%1; bootM.color.setHSL(h,1,0.6); bootM.emissive.setHSL(h,1,0.25); soleM.emissive.setHSL((h+0.33)%1,1,0.55); });
+  if(f.boots) fx.push(t=>{ const h=(t*0.6)%1; bootM.color.setHSL(h,1,0.6); bootM.emissive.setHSL(h,1,0.25); soleM.emissive.setHSL((h+0.33)%1,1,0.55); ledMs.forEach(m=>m.color.setHSL((h*2+m.userData.k)%1,1,0.55)); });   /* 燈條：每段顏色不一樣，像跑馬燈一樣繞圈 */
   if(f.halo){ const hg=new THREE.Group(); hg.position.set(0,1.6,-0.24); hg.add(new THREE.Mesh(new THREE.TorusGeometry(0.33,0.025,8,36), mat.gold));
     for(let i=0;i<12;i++){ const a=i/12*Math.PI*2, ray=box(0.036,i%2?0.11:0.18,0.02, Math.sin(a)*0.45, Math.cos(a)*0.45, 0, mat.gold); ray.rotation.z=-a; hg.add(ray); }
-    hg.userData.fly='halo'; g.add(hg); let hk=1, ht=0; fx.push(t=>{ const dt=Math.min(0.1,Math.max(0,t-ht)), want=(LV.hoisting||LV.ride)?0.45:1, d=want-hk; ht=t; hk+=Math.sign(d)*Math.min(Math.abs(d),dt*2); hg.rotation.z=t*1.2; hg.scale.setScalar(hk*(1+0.07*Math.sin(t*5))); }); }   /* 搭電梯：光圈縮小，不會穿出車廂 */
+    hg.userData.fly='halo'; g.add(hg); let hk=1, ht=0; const hf=t=>{ if(hg.parent!==g && (!hg.parent || hg.parent.parent!==g)) return;   /* 被敲飛到地上：不再縮放、不再轉 */ const dt=Math.min(0.1,Math.max(0,t-ht)), want=Math.min((LV.hoisting||LV.ride)?0.45:1, haloRoom(hg)); ht=t; hk = want<hk ? want : hk+Math.min(want-hk, dt*2); hg.visible = hk>0.05;   /* 旁邊有人、有牆：每格都量，馬上縮到不碰到；空出來才慢慢變大（小弟走很快，慢慢縮會插到） */ hg.rotation.z=t*1.2; hg.scale.setScalar(hk*(1+0.07*Math.sin(t*5))); }; hf.halo=true; fx.push(hf); }   /* 搭電梯：光圈縮小，不會穿出車廂 */
   if(f.cape){ const cp=new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.42,0.98,16,1,true,Math.PI-1.25,2.5), std(0xd3202e,{side:THREE.DoubleSide})); cp.position.set(0,0.9,0.02); cp.castShadow=true; g.add(cp);
     const col=new THREE.Mesh(new THREE.TorusGeometry(0.17,0.034,8,24), mat.gold); col.rotation.x=Math.PI/2; col.position.y=1.39; g.add(col); fx.push(t=>{ cp.rotation.x=0.1+0.07*Math.sin(t*3); }); }
   if(!off && c.vestKind==='sequin'){ const sp=[]; for(let i=0;i<12;i++){ const a=i*2.4, y=0.88+((i*37)%42)/100, r=rAt(y)+0.004; const d=ball(0.018,mat.shine,Math.sin(a)*r,y,Math.cos(a)*r*0.72); g.add(d); sp.push(d); }
@@ -2828,6 +2851,7 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
         if(L.plant && !LV.down){ const ux=p.x+fx/m*0.5, uz=p.z+fz/m*0.5, out=Math.abs(ux-p.dest.x)>0.2 || uz-p.dest.z>0.2; LV.edgeP = out ? (LV.edgeP||0)+dt : 0; if(out) LV.edgeDir={x:fx/m, z:fz/m}; } }   /* 週五：一直往工作區外面推＝想出去（往廠房那邊推不算） */
       else { if(jOn) p.dest=null; LV.edgeP=0; } }
     Object.values(LV.actors).forEach(a=>{ if(a.who==='you' && dlgOpen) { const d=a.dest; a.dest=null; stepActor(a,dt,t); a.dest=d; } else stepActor(a,dt,t); });
+    Object.values(LV.actors).forEach(a=>{ const fx=a.g.userData.fx; if(fx) fx.forEach(f=>{ if(f.halo) f(t); }); });   /* 大家都走完再量一次光圈（不然小弟走進來那一格光圈慢一格才縮） */
     /* 手機：鏡頭一直跟著角色（一指轉視角、兩指縮放都是繞著角色轉，不會把角色甩出畫面）；電腦：角色在走才跟，你正在拖鏡頭的時候不跟 */
     if(p && (p.dest || TOUCH) && p.g.visible && !dlgOpen && !(talkCam && !TOUCH) && !(cut && cut.stage<2) && !LV.hoisting && (TOUCH || performance.now()-userCamT>350)){   /* 進場座駕停在場邊時 cut 還在（stage 2），那時要照樣跟 */ const q=Math.min(1,dt*(p.dest?2.4:1.2)); target.x+=(p.x-target.x)*q; target.z+=(p.z-target.z)*q; target.y+=(p.g.position.y+1.1-target.y)*q;   /* 鏡頭跟著角色走（你正在拖鏡頭的時候不跟） */
       if(TOUCH){ const ex=target.x-p.x, ez=target.z-p.z, e=Math.hypot(ex,ez), lim=1.2; if(e>lim){ target.x=p.x+ex/e*lim; target.z=p.z+ez/e*lim; } }   /* 手機：畫面中心最多落後角色 1.2 公尺，跑再快也不會跑出畫面 */
