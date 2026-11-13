@@ -1130,6 +1130,9 @@ function logoSign(X,y,Y,ry,w,text){ const c=document.createElement('canvas'); c.
   im.onload=()=>{ g.clearRect(0,0,c.width,c.height); const iw=text?400:460, ih=iw*im.height/im.width; g.drawImage(im,(512-iw)/2,(text?440:480)/2-ih/2+(text?10:0),iw,ih);
     if(text){ g.fillStyle='#1e3fb5'; g.font='bold 96px "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif'; g.textAlign='center'; g.fillText(text,256,590); } t.needsUpdate=true; }; im.src=LOGO_SRC;
   const m=new THREE.Mesh(new THREE.PlaneGeometry(w, w*c.height/512), new THREE.MeshBasicMaterial({map:t, transparent:true, side:THREE.DoubleSide, depthWrite:false})); m.position.set(BB.x(X), L.gy+y, BB.z(Y)); m.rotation.y=ry; m.raycast=()=>{}; m.userData.logo=true; return stat(m); }
+/* 安全帽側面的 LOGO 貼紙：白底＋壹東標誌（所有安全帽共用一張） */
+function helmetLogoMat(){ if(helmetLogoMat.m) return helmetLogoMat.m; const c=document.createElement('canvas'); c.width=c.height=256; const g=c.getContext('2d'), t=new THREE.CanvasTexture(c), im=new Image(); g.fillStyle='#ffffff'; g.fillRect(0,0,256,256);
+  im.onload=()=>{ const w=176, h=w*im.height/im.width; g.drawImage(im,(256-w)/2,(256-h)/2,w,h); t.needsUpdate=true; }; im.src=LOGO_SRC; return (helmetLogoMat.m=new THREE.MeshStandardMaterial({map:t, roughness:0.6})); }
 /* 恰恰（Charcoal）：北辦的黑色豆柴，一歲半。平常的工作＝搗蛋＋睡覺。睡在入口的圓地毯上，醒來到處跑一圈、搗蛋幾下，再回去睡 */
 const DOG_MESS=['（咬走一支筆）','（把拖鞋叼走了）','（對影印機叫）','汪！汪！','（偷聞便當）','（在腳邊繞圈圈）','（盯著你的雞腿）','（把圖紙當成玩具）'];
 function charcoal(X,Y){ const g=new THREE.Group(), u=g.userData, bk=std(0x26221f), tan=std(0xc98a4a), cr=std(0xf2e6d2), body=new THREE.Group(), head=new THREE.Group(); g.add(body); u.dog=true; u.bubY=0.95;
@@ -2036,7 +2039,9 @@ function makePerson(c){ const off=!!(L && L.office), cf=c.feat||{};             
     dome=new THREE.Mesh(new THREE.SphereGeometry(0.218,28,14,0,Math.PI*2,0,Math.PI/2),hel); dome.scale.y=DS; dome.position.set(0,1.6+HY,0.01);   /* 主角的帽子抬高 3 公分：眼睛露出來 */ dome.castShadow=true; g.add(dome);   // 帽殼（稍微高一點）
     [[0,0.014],[-0.065,0.008],[0.065,0.008]].forEach(([xo,t])=>{ const A0=0.75, rb=new THREE.Mesh(new THREE.TorusGeometry(Math.sqrt(0.221*0.221-xo*xo),t,6,28,Math.PI-2*A0),hel); rb.rotation.set(0,Math.PI/2,A0); rb.scale.y=DS;   /* 肋只在帽頂（前後各留 43 度），正面空出來給貼紙 */ rb.position.set(xo,1.6+HY,0.01); g.add(rb); });   // 頂上三條加強肋：沿著帽殼彎下來，不會凸出去
     const brim=cyl(0.25,0.018,'y',0,1.605+HY,0.045,hel,32); brim.scale.z=1.12; g.add(brim); { const lip=new THREE.Mesh(new THREE.TorusGeometry(0.25,0.01,6,32),hel); lip.rotation.x=Math.PI/2; lip.scale.y=1.12; lip.position.set(0,1.605+HY,0.045); g.add(lip); }   // 帽簷＋圓角收邊
-    { const st=new THREE.Group(), gr=std(0x2fa84f); st.add(cyl(0.034,0.004,'z',0,0,0,mat.white,20)); st.add(box(0.044,0.012,0.004,0,0,0.003,gr)); st.add(box(0.012,0.044,0.004,0,0,0.003,gr)); st.position.set(0,1.72+HY,0.2); st.rotation.x=-0.58;   /* 貼在帽殼表面外面一點，不會陷進去 */ g.add(st); } }   // 正面的工安貼紙：白底綠十字
+    { const st=new THREE.Group(), gr=std(0x2fa84f); st.add(cyl(0.034,0.004,'z',0,0,0,mat.white,20)); st.add(box(0.044,0.012,0.004,0,0,0.003,gr)); st.add(box(0.012,0.044,0.004,0,0,0.003,gr)); st.position.set(0,1.72+HY,0.2); st.rotation.x=-0.58;   /* 貼在帽殼表面外面一點，不會陷進去 */ g.add(st); }   /* 正面的工安貼紙：白底綠十字 */
+    [-1,1].forEach(sd=>{ const e=0.5, R=0.218, px=sd*R*Math.cos(e), py=R*DS*Math.sin(e), n=new THREE.Vector3(px/(R*R), py/(R*DS*R*DS), 0).normalize(), m=new THREE.Mesh(new THREE.CircleGeometry(0.046,24), helmetLogoMat());
+      m.position.set(px+n.x*0.003, 1.6+HY+py+n.y*0.003, 0.01); m.lookAt(m.position.x+n.x, m.position.y+n.y, 0.01); m.userData.logo=true; g.add(m); }); }   /* 帽子左右兩側：壹東 LOGO 貼紙，貼著帽殼表面（離表面 3 公釐）；正面留給綠十字 */
   if(!off) flyFrom(nH,'helmet');
   if(f.mullet){ const hm2=std(c.hair||0x2a2320,{side:THREE.DoubleSide}), bk=new THREE.Mesh(new THREE.SphereGeometry(0.214,22,10,Math.PI-0.35,Math.PI+0.7,1.0,1.39), hm2); bk.position.set(0,1.585,0.01); bk.scale.set(1,1.06,1.0);   /* 包到耳朵前面（原本兩側露皮膚） */ g.add(bk);   /* 狼尾上段：貼著後腦往下包，上緣伸進安全帽，下緣停在身體上面 */
     const tl=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.235,0.12,18,1,true,Math.PI-0.85,1.7), hm2); tl.position.set(0,1.36,0); g.add(tl); }   /* 狼尾下段：後頸往外翹的一圈短髮，離背至少 2 公分（原本是一塊平板，美術版放大後像背了一塊木板） */
