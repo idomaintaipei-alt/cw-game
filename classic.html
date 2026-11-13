@@ -1086,7 +1086,7 @@ function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas')
 const LV = { group:null, parts:{}, refs:{}, pallets:{}, pick:[], actors:{} };
 const anims = [];
 function resetGroup(){ if(LV.group){ scene.remove(LV.group); LV.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.talkers=[]; LV.obs=[]; LV.raise=null; LV.cuts=null; LV.dog=null; LV.gates=null;   /* 北辦的台階、收起來的牆、恰恰：換關要清掉，不然別關的地面會在同一個位置被墊高 */ LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.down=false; LV.occ=null; LV.smash=null; LV.call=null; LV.ride=null; LV.rideArm=true; LV.myRide=null; LV.smashRects=[]; LV.bribed=new Set(); LV.cash=null; LV.cashFx=false; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
+  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.talkers=[]; LV.obs=[]; LV.raise=null; LV.cuts=null; LV.dog=null; LV.gates=null; combo=null;   /* 北辦的台階、收起來的牆、恰恰：換關要清掉，不然別關的地面會在同一個位置被墊高 */ LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.down=false; LV.occ=null; LV.smash=null; LV.call=null; LV.ride=null; LV.rideArm=true; LV.myRide=null; LV.smashRects=[]; LV.bribed=new Set(); LV.cash=null; LV.cashFx=false; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
 function part(id){ return LV.parts[id] || (LV.parts[id]={meshes:[],ghosts:[]}); }
 function ghostOf(id, mesh){ if(mesh.isSprite) return; const gh=new THREE.Mesh(mesh.geometry, mat.ghost); gh.position.copy(mesh.position); gh.rotation.copy(mesh.rotation); gh.visible=false; (LV.host||LV.group).add(gh); part(id).ghosts.push(gh); }
 function add(id, mesh){ mesh.visible=false; mesh.userData.home=mesh.position.clone(); (LV.host||LV.group).add(mesh); part(id).meshes.push(mesh); ghostOf(id,mesh); return mesh; }
@@ -1182,19 +1182,19 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
   XW(Bx(0,9.17,0.58,9.75,H,M.conc)); wob(0,9.17,0.58,9.75); Bx(0.58,9.17,0.6,9.5,H,M.wood); Bx(0.25,9.15,0.6,9.17,H,M.wood);   /* 西北角（會議室的角落）：那根柱子在室內是木紋牆包起來的，沒有紅磚（他 11-13 指正；照片 1） */
   /* 辦公區中間那根黑色鋼板柱（CAD 2.25～2.61 × 3.81～4.17）不做：他 11-13 要把這一塊空出來當任務區 */   /* 辦公區中間那根：黑色沖孔鋼板包起來的柱子 */
   /* 外牆：北、東是實牆；南、西臨街是落地窗 */
-  XW(NS(Bx(0,2.38,0.44,8.27,H-2.41,M.frame,2.41))); XW(NS(Bx(0.25,8.27,0.44,9.15,H-2.41,M.frame,2.41)));   /* 從外面看也是黑色的樑（他 11-13 15:00 截圖畫紅框）：整支從外皮做到室內 */   /* 西邊這一排牆的上面是一整支深灰色的樑（跟老闆辦公室那支同色），從南邊的紅磚柱一路到西北角，兩根紅磚柱只到樑底（他 11-13 截圖畫紅線）；窗和大門上面到天花板那一段，外面是水泥 */
+  XW(NS(Bx(0,1.6,0.44,8.27,H-2.41,M.frame,2.41)));   /* 西邊的樑往南延伸到弧形轉角，跟弧形那一段接起來 */ XW(NS(Bx(0.25,8.27,0.44,9.15,H-2.41,M.frame,2.41)));   /* 從外面看也是黑色的樑（他 11-13 15:00 截圖畫紅框）：整支從外皮做到室內 */   /* 西邊這一排牆的上面是一整支深灰色的樑（跟老闆辦公室那支同色），從南邊的紅磚柱一路到西北角，兩根紅磚柱只到樑底（他 11-13 截圖畫紅線）；窗和大門上面到天花板那一段，外面是水泥 */
   XW(Bx(0.58,9.55,4.04,9.75,H,M.conc)); XW(Bx(4.62,9.55,6.97,9.75,H,M.conc)); XW(Bx(7.55,9.55,11.13,9.75,H,M.conc));   /* 北牆 */
   XW(Bx(11.51,0.58,11.71,4.68,H,M.conc)); XW(Bx(11.51,5.26,11.71,9.17,H,M.conc));   /* 東牆 */
-  XW(Bx(0,8.27,0.2,9.17,H,M.conc)); glass(0.05,6.26,0.15,8.27,2.6,0,true);   /* 西牆：會議室臨街的窗 */
-  XW(NS(Bx(0.05,5.26,0.15,6.26,2.6,M.frame))); [[0.15,0.18],[0.02,0.05]].forEach(([a,b])=>NS(Bx(a,5.42,b,5.46,0.9,M.steel,0.7)));
+  XW(Bx(0,8.27,0.2,9.17,H,M.conc)); glass(0.05,6.26,0.15,8.27,2.41,0,true);   /* 西牆：會議室臨街的窗 */
+  XW(NS(Bx(0.05,5.285,0.15,6.235,2.3,M.frame))); XW(NS(Bx(0.08,5.26,0.12,6.26,2.41,std(0x15171b)))); XW(NS(Bx(0.05,5.26,0.15,5.27,2.41,M.frame))); XW(NS(Bx(0.05,6.25,0.15,6.26,2.41,M.frame)));   /* 大門：門片比門洞矮 11 公分、窄 5 公分，四周露出凹進去的深色門框（一條縫），看得出是一道推門（他 11-13） */ [[0.15,0.18],[0.02,0.05]].forEach(([a,b])=>NS(Bx(a,5.42,b,5.46,0.9,M.steel,0.7)));
   NS(Bx(-0.03,4.94,0,5.06,0.2,M.white,1.15)); NS(Bx(-0.034,4.96,-0.03,5.04,0.1,M.frame,1.17)); NS(Bx(-0.034,4.985,-0.03,5.015,0.02,std(0xff3b30,{emissive:0x7a0d08}),1.3)); stat(board(['天威保全'], gx(0)-0.006,y0+1.5,gz(5.0),-Math.PI/2,0.24,'#ffffff','#1f2226'));   /* 門外那根柱子上的保全機器（他 11-13：門外的柱子要有天威保全的機器）：白色的機盒、按鍵、紅燈，上面一張「天威保全」的牌子。機器的實際樣子沒有照片，先做成一般的保全設定器 */   /* 把手在南邊（靠柱子那一側）：CAD 的開門弧線，鉸鏈在北邊靠會議室（他 11-13：門把在另一邊） */   /* 入口大門（ENTRY）：黑色的門（他 11-13；跟鋼板柱同一個深灰），裡外各一支長把手；門上不貼 LOGO（他 11-13：大門不需要） */
-  glass(0.02,2.77,0.12,4.74,2.6,0,true);
+  glass(0.02,2.77,0.12,4.74,2.41,0,true);
   /* 西南角的弧形轉角、南面第一二組桌子後面那一道：都是實牆，不是玻璃（他 11-13 指正；CAD 弧形那一段畫的是牆，照片 5、7 南面是深色的牆、上緣一條木飾板）。
      鏡頭在牆的外面（平常從南邊看進來）時整面收起來、只留牆腳，才看得到裡面；鏡頭轉到裡面看（例如在黑板前面討論）就是整面牆 */
   const cuts=[], camS=()=>camera.position.z>gz(0.08), camW=()=>camera.position.x<gx(0.1);
-  { const R=1.5*K, T=0.2*K, cm=M.conc.clone(); cm.side=THREE.DoubleSide; const seg=r=>{ const c=new THREE.Mesh(new THREE.CylinderGeometry(r,r,H,28,1,true,Math.PI*1.5,Math.PI/2), cm); c.position.set(gx(1.6),y0+H/2,gz(1.6)); return XW(stat(c)); }; seg(R+T/2); seg(R-T/2);
-    { const cap=new THREE.Mesh(new THREE.RingGeometry(R-T/2,R+T/2,28,1,Math.PI,Math.PI/2), cm); cap.rotation.x=-Math.PI/2; cap.position.set(gx(1.6),y0+H,gz(1.6)); XW(stat(cap)); }
-    XW(NS(Bx(1.6,0,2.05,0.2,H,M.conc))); XW(NS(Bx(0,1.6,0.2,2.38,H,M.conc)));   /* 兩端的直牆跟弧牆同厚（20 公分）、外皮都對齊建築物外緣，跟柱子外側的水泥連成一整面，不會一段一段斷開（他 11-13） */   /* 弧形轉角：一直都是整面水泥實牆，有厚度（內外兩片＋頂面），轉視角不會消失（他 11-13 指正；原本鏡頭在外面時會收成牆腳） */
+  { const R=1.5*K, T=0.2*K, cm=M.conc.clone(); cm.side=THREE.DoubleSide; const BH=2.41, seg=(r,m,yb,h)=>{ const c=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,28,1,true,Math.PI*1.5,Math.PI/2), m); c.position.set(gx(1.6),y0+yb+h/2,gz(1.6)); return XW(stat(c)); }; seg(R+T/2,cm,0,BH); seg(R-T/2,cm,0,BH);   /* 弧形牆只到樑底 */
+    { const bm=M.frame.clone(); bm.side=THREE.DoubleSide; const Ri=(1.6-0.44)*K; seg(R+T/2,bm,BH,H-BH); seg(Ri,bm,BH,H-BH); const bot=new THREE.Mesh(new THREE.RingGeometry(Ri,R+T/2,28,1,Math.PI,Math.PI/2), bm); bot.rotation.x=-Math.PI/2; bot.position.set(gx(1.6),y0+BH,gz(1.6)); XW(stat(bot)); }   /* 弧形牆上面也是一支深灰色的樑（他 11-13 截圖），跟西邊那支一樣深 44 公分、從外皮做到室內，沿著弧線轉過去：外面、裡面兩片＋底面 */
+    XW(NS(Bx(1.6,0,2.05,0.2,BH,M.conc))); XW(NS(Bx(0,1.6,0.2,2.38,BH,M.conc))); XW(NS(Bx(1.6,0,2.05,0.44,H-BH,M.frame,BH)));   /* 兩端的直牆也只到樑底；南邊那一小段的樑接到紅磚柱 */   /* 兩端的直牆跟弧牆同厚（20 公分）、外皮都對齊建築物外緣，跟柱子外側的水泥連成一整面，不會一段一段斷開（他 11-13） */   /* 弧形轉角：一直都是整面水泥實牆，有厚度（內外兩片＋頂面），轉視角不會消失（他 11-13 指正；原本鏡頭在外面時會收成牆腳） */
     [NS(Bx(2.63,0,6.97,0.03,H,M.conc)), NS(Bx(2.63,0.03,6.97,0.13,2.3,M.wallD)), NS(Bx(2.63,0.03,6.97,0.42,0.12,M.wood,2.3)), NS(Bx(2.63,0.03,6.97,0.13,H-2.42,M.frame,2.42))].forEach(XW); }   /* 南面這道牆一直都是整面實牆，轉視角不透明也不消失（他 11-13 13:42 指正；原本鏡頭在外面時會收成牆腳）。外皮一層水泥，跟柱子外側的水泥對齊成一面；室內那一面是深色牆 */   /* 牆往南退 12 公分（他 11-13：可以稍微往後退一點）；上緣的木飾板往室內凸出來，跟下面矮櫃的檯面同一個深度，深色牆退在中間（他 11-13：上面的木頭要推出來一點；照片 7） */
   { const top=0.88, kraft=std(0xd9b98a);   /* 牆腳前面一整排木頭矮櫃（他 11-13；照片 7、10），櫃門的分縫、櫃子上幾樣矮矮的雜物：一疊紙、筆筒、桌曆、橘色盒子、小盆栽、藍色盒子、紙箱 */
     Bx(2.65,0.13,6.95,0.4,0.85,M.wood); Bx(2.63,0.13,6.97,0.42,0.03,M.desk,0.85); for(let X=3.25;X<6.9;X+=0.6) NS(Bx(X,0.4,X+0.006,0.403,0.8,M.frame,0.03)); ob(2.63,0.13,6.97,0.42);
@@ -1213,7 +1213,7 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
    [7.09,6.23,8.98,9.55],[8.86,6.53,11.51,9.75],[8.86,5.34,8.98,6.53],[8.86,3.9,8.98,4.56],[8.86,3.9,11.51,4.02],[3.56,9.17,4.04,9.55],[4.62,9.17,6.97,9.55],[0.26,8.2,0.64,9.12]].forEach(r=>wob(...r));
   /* 會議室（預留線路分機號 1831、1832）：木紋牆、6 張椅子、電視、冷氣；南、東兩面是黑框玻璃 */
   XW(Bx(0.58,9.5,3.46,9.55,H,M.wood)); XW(Bx(0.2,8.27,0.25,9.17,H,M.wood)); Bx(3.46,8.27,3.56,9.55,H,M.wood);
-  glass(0.15,6.26,1.28,6.32); glass(2.48,6.26,3.54,6.32); glass(3.48,6.32,3.54,8.27,2.35); Bx(3.46,6.34,3.56,8.27,H-2.35,M.wood,2.35);   /* 會議室跟老闆辦公室中間這片玻璃：上面不留空隙（他 11-13 要頂到天花板）。照片上玻璃框上面是一段木紋板接到天花板，照那樣做 */   /* 中間是木頭拉門（在下面，會動） */ NS(Bx(0.44,6.262,3.46,6.34,H-2.3,M.wood,2.3)); NS(Bx(0.15,6.262,0.44,6.34,0.11,M.wood,2.3)); NS(Bx(0.44,6.17,3.46,6.262,H-2.36,M.wood,2.36)); NS(Bx(0.44,6.17,1.25,6.262,0.06,M.wood,2.3)); NS(Bx(3.46,6.26,3.56,6.34,H-2.3,M.wood,2.3)); NS(Bx(1.25,6.16,3.46,6.262,0.06,M.frame,2.3));   /* 上緣的木飾板從西邊的樑一路到玄關牆，整條同一個面（他 11-13 截圖畫藍線：進出要相同；原本只有門上面那一段凸出來）；東端轉角補一塊，跟隔間上面的木紋板、玄關牆接成一個角（藍圈：原本斷開） */ NS(Bx(1.28,6.26,2.48,6.32,0.05,M.frame,2.25));   /* 玻璃上面的木飾板、拉門上面的門楣都做到天花板（他 11-13：會議室的上端有縫，不合理）；門的上框：門片上方一條黑色軌道，門口上方一支黑色橫框跟兩邊玻璃的上框連成一條（他 11-13：門要有上框） */
+  glass(0.15,6.26,1.28,6.32); glass(2.48,6.26,3.54,6.32); glass(3.48,6.32,3.54,8.27,2.35); Bx(3.46,6.34,3.56,8.27,H-2.35,M.wood,2.35);   /* 會議室跟老闆辦公室中間這片玻璃：上面不留空隙（他 11-13 要頂到天花板）。照片上玻璃框上面是一段木紋板接到天花板，照那樣做 */   /* 中間是木頭拉門（在下面，會動） */ NS(Bx(0.44,6.262,3.46,6.34,H-2.3,M.wood,2.3)); NS(Bx(0.15,6.16,0.44,6.34,0.11,M.frame,2.3)); NS(Bx(0.44,6.17,3.46,6.262,H-2.36,M.wood,2.36)); NS(Bx(3.46,6.26,3.56,6.34,H-2.3,M.wood,2.3)); NS(Bx(0.44,6.16,3.46,6.262,0.06,M.frame,2.3));   /* 黑色那條從西邊的樑一路接到玄關牆，不只在門上面（他 11-13：上面的黑色要接起來，不要斷開） */   /* 上緣的木飾板從西邊的樑一路到玄關牆，整條同一個面（他 11-13 截圖畫藍線：進出要相同；原本只有門上面那一段凸出來）；東端轉角補一塊，跟隔間上面的木紋板、玄關牆接成一個角（藍圈：原本斷開） */ NS(Bx(1.28,6.26,2.48,6.32,0.05,M.frame,2.25));   /* 玻璃上面的木飾板、拉門上面的門楣都做到天花板（他 11-13：會議室的上端有縫，不合理）；門的上框：門片上方一條黑色軌道，門口上方一支黑色橫框跟兩邊玻璃的上框連成一條（他 11-13：門要有上框） */
   Bx(1.36,7.1,2.39,9.5,0.05,M.desk,0.71); [[1.5,7.3],[2.25,7.3],[1.5,9.3],[2.25,9.3]].forEach(([X,Y])=>NS(Bx(X-0.03,Y-0.03,X+0.03,Y+0.03,0.71,M.frame))); ob(1.36,7.1,2.39,9.5);   /* 會議桌 */
   Bx(1.13,9.44,2.62,9.5,0.86,M.frame,0.93); NS(Bx(1.17,9.43,2.58,9.445,0.78,std(0x16263a,{emissive:0x0c1a2c}),0.97)); NS(Bx(1.6,9.43,2.15,9.5,0.07,M.paint,1.82)); NS(Bx(1.18,9.26,2.57,9.5,0.32,M.white,2.2)); NS(Bx(1.24,9.25,2.51,9.262,0.03,M.paint,2.22));   /* 冷氣跟電視差不多寬、掛在電視正上方（他 11-13） */   /* 大電視（約 65 吋）、上面的視訊鏡頭、冷氣 */
   /* 老闆辦公室（植栽那一間；分機 1801、1802、1803）：植栽櫃、主機、兩張桌子；北邊一排高櫃 */
@@ -1285,7 +1285,7 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
   /* 會議室的椅子（3＋3） */
   [7.55,8.3,9.05].forEach(Y=>{ mkChair(0.95,Y,Math.PI/2,true); mkChair(2.8,Y,-Math.PI/2,true); });
   /* 原有廁所（左邊那間）：牆、門、馬桶、洗手台 */
-  Bx(7.09,6.23,7.89,6.31,2.1,M.door); [[gz(6.23),1],[gz(6.31),-1]].forEach(([z,sd])=>{ const x=gx(7.8), y=y0+0.15+1.0; stat(cyl(0.035,0.012,'z',x,y,z+sd*0.006,M.steel,16)); stat(cyl(0.013,0.04,'z',x,y,z+sd*0.03,M.steel,10)); stat(ball(0.034,M.steel,x,y,z+sd*0.062,1,1,0.8)); });   /* 廁所門的喇叭鎖（圓形門把，裡外各一顆；他 11-13）。裝在門的東側，離墊高的地板 1 公尺；現場哪一側沒有照片，先這樣放 */ Bx(7.09,6.23,7.89,6.35,H-2.1,M.conc,2.1); Bx(7.89,6.23,8.86,6.35,H,M.conc); NS(Bx(7.98,6.222,8.04,6.23,0.12,M.white,1.29)); NS(Bx(7.995,6.218,8.025,6.222,0.05,std(0xc9ced6),1.325));   /* 廁所門邊的電燈開關（他 11-13）：門東邊的牆上，離墊高的地板 1.2 公尺 */ XW(Bx(8.86,5.34,8.98,9.55,H,M.paint)); Bx(8.98,6.65,11.51,9.17,H,M.paint); Bx(8.98,9.17,11.13,9.55,H,M.paint);   /* 封起來的這一塊要讓開右上角的柱子：原本疊在柱子上、頂面又一樣高，柱子頂面會一直閃（他 11-13 截圖；T.flickerScan 在查） */   /* 右上角那一塊（右邊的原有廁所、後面走道、後門）平常上班不會去：不建置，整塊封起來（他 11-13 在平面圖上打黃色叉叉） */
+  Bx(7.09,6.23,7.89,6.31,2.1,M.door); [[gz(6.23),1],[gz(6.31),-1]].forEach(([z,sd])=>{ const x=gx(7.8), y=y0+0.15+1.0; stat(cyl(0.035,0.012,'z',x,y,z+sd*0.006,M.steel,16)); stat(cyl(0.013,0.04,'z',x,y,z+sd*0.03,M.steel,10)); stat(ball(0.034,M.steel,x,y,z+sd*0.062,1,1,0.8)); });   /* 廁所門的喇叭鎖（圓形門把，裡外各一顆；他 11-13）。裝在門的東側，離墊高的地板 1 公尺；現場哪一側沒有照片，先這樣放 */ Bx(7.09,6.23,7.89,6.35,H-2.1,M.conc,2.1); Bx(7.89,6.23,8.86,6.35,H,M.conc); NS(Bx(7.965,6.224,8.055,6.23,0.15,std(0x4a4f57),1.28)); NS(Bx(7.972,6.218,8.048,6.224,0.136,M.white,1.287)); [7.98,8.012].forEach(X=>NS(Bx(X,6.212,X+0.028,6.218,0.07,std(0x9aa0a8),1.32))); NS(Bx(8.0,6.21,8.008,6.212,0.008,std(0xff8a1f,{emissive:0xb04a00}),1.4));   /* 加大、深灰外框、兩顆灰色翹板、一顆橘色指示燈（他 11-13：要明顯一點） */   /* 廁所門邊的電燈開關（他 11-13）：門東邊的牆上，離墊高的地板 1.2 公尺 */ XW(Bx(8.86,5.34,8.98,9.55,H,M.paint)); Bx(8.98,6.65,11.51,9.17,H,M.paint); Bx(8.98,9.17,11.13,9.55,H,M.paint);   /* 封起來的這一塊要讓開右上角的柱子：原本疊在柱子上、頂面又一樣高，柱子頂面會一直閃（他 11-13 截圖；T.flickerScan 在查） */   /* 右上角那一塊（右邊的原有廁所、後面走道、後門）平常上班不會去：不建置，整塊封起來（他 11-13 在平面圖上打黃色叉叉） */
   { const W=M.white, Yt=8.64, Yu=7.73;   /* 廁所三件（照 CAD 的位置）：馬桶靠東牆、面向西；小便斗掛在東牆上；洗手台在東南角。他 11-13：馬桶與小便斗太抽象，重建 */
     /* 馬桶：底座、長圓形的桶身、馬桶圈、裡面的水、後面的機身、水箱＋水箱蓋＋沖水鈕、掀起來靠著水箱的馬桶蓋 */
     const t0=(LV.host||LV.group).children.length; stat(cyl(0.11,0.2,'y',gx(8.46),y0+0.1,gz(Yt),W,14)); stat(ball(0.19,W,gx(8.42),y0+0.3,gz(Yt),1.25,0.7,1)); Bx(8.52,Yt-0.12,8.68,Yt+0.12,0.42,W);
@@ -1297,7 +1297,7 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
       NS(Bx(8.845,6.5,8.86,7.02,0.7,M.steel,1.05)); NS(Bx(8.841,6.52,8.845,7.0,0.66,mir,1.07));   /* 1：洗手台上面的鏡子（不鏽鋼框） */
       { const x=gx(8.83), z=gz(9.2); NS(Bx(8.8,9.14,8.86,9.26,0.1,M.steel,0.95)); stat(cyl(0.012,0.95,'y',x,y0+1.05+0.475,z,M.steel,8)); stat(cyl(0.012,0.24,'x',x-0.12,y0+2.0,z,M.steel,8)); stat(cyl(0.075,0.025,'y',x-0.24,y0+1.975,z,M.steel,16)); stat(cyl(0.015,0.05,'y',x-0.24,y0+2.0,z,M.steel,8)); }   /* 2：馬桶北邊牆角的蓮蓬頭（牆上的開關、立管、橫出來的管、朝下的圓盤） */
       NS(Bx(8.845,Yu-0.1,8.86,Yu+0.1,0.26,fr,1.42)); NS(Bx(8.841,Yu-0.085,8.845,Yu+0.085,0.23,W,1.435));   /* 小便斗正上方一幅小小的空白畫框，左右對齊小便斗 */
-      NS(Bx(7.09,7.72,7.105,8.08,0.32,fr,1.35)); NS(Bx(7.105,7.74,7.109,8.06,0.28,W,1.37));   /* 3：對面（西牆）一幅矩形的空白畫框 */
+      NS(Bx(7.09,Yu-0.1,7.105,Yu+0.1,0.26,fr,1.42)); NS(Bx(7.105,Yu-0.085,7.109,Yu+0.085,0.23,W,1.435));   /* 3：對面（西牆）一幅空白畫框，跟小便斗上那幅面對面齊平、一樣大（他 11-13） */
       stat(cyl(0.11,0.28,'y',gx(7.28),y0+0.14,gz(8.98),bin,14)); stat(cyl(0.115,0.02,'y',gx(7.28),y0+0.29,gz(8.98),fr,14)); }   /* 4：西北牆角（柱子旁邊）一個垃圾桶 */
     /* 小便斗：背板、兩片側翼、下面圓圓的斗、上蓋、上面的沖水閥、下面的排水管 */
     Bx(8.8,Yu-0.15,8.86,Yu+0.15,0.63,W,0.42); [-1,1].forEach(sd=>NS(Bx(8.7,Yu+sd*0.15-0.015,8.86,Yu+sd*0.15+0.015,0.58,W,0.47))); stat(ball(0.15,W,gx(8.76),y0+0.5,gz(Yu),1,0.5,1.15)); NS(Bx(8.74,Yu-0.15,8.86,Yu+0.15,0.05,W,1.05));
@@ -1308,21 +1308,48 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
   Bx(7.51,3.9,8.86,6.23,0.15,M.floor); Bx(7.09,5.26,7.51,6.23,0.15,M.floor); Bx(8.98,4.02,11.51,6.53,0.15,M.floor); Bx(8.86,4.56,8.98,5.34,0.15,M.floor);   /* 墊高的地板只鋪在牆裡面＋門口那一小段（原本鋪到牆的外皮，跟牆腳同一個面，會閃） */
   XW(Bx(8.86,3.9,8.98,4.56,H,M.paint)); XW(Bx(8.86,3.9,11.51,4.02,H,M.paint)); XW(Bx(8.98,6.53,11.51,6.65,H,M.paint)); XW(NS(Bx(8.86,4.56,8.98,5.34,H-2.1,M.paint,2.1)));   /* 茶水間的牆：整間統一成灰色，轉視角也不變透明（他 11-13 14:36；原本朝辦公區這面是米色）；牆面乾乾淨淨不貼東西 */
   [[4.52,4.565],[5.335,5.38]].forEach(([a,c])=>Bx(8.84,a,9.0,c,2.1,M.frame)); NS(Bx(8.84,4.565,9.0,5.335,0.06,M.frame,2.04));   /* 茶水間門口：黑色的ㄇ型門框（兩支直料＋一支上橫料；他 11-13） */
-  Bx(9.02,5.88,9.72,6.5,0.8,M.blk,0.15); NS(Bx(9.03,5.874,9.71,5.88,0.012,std(0x6a6f76),0.71)); NS(Bx(9.62,5.862,9.64,5.88,0.16,M.steel,0.75)); NS(Bx(9.62,5.862,9.64,5.88,0.3,M.steel,0.33)); NS(Bx(9.08,5.875,9.2,5.88,0.03,M.white,0.88));   /* 小冰箱（黑色、上下兩個門：上面小的是冷凍、下面是冷藏）：門縫、兩支把手、商標（他 11-13：細節不夠看不出是冰箱；照片 15） */
-  { const yb=0.95, rd=std(0xd94f4f), bl=std(0x2f6fd0); Bx(9.14,5.98,9.6,6.48,0.5,M.steel,yb); NS(Bx(9.16,5.974,9.58,5.98,0.1,M.blk,yb+0.38)); NS(Bx(9.3,5.968,9.44,5.974,0.04,std(0xff3b30,{emissive:0x7a0d08}),yb+0.41)); NS(Bx(9.18,5.974,9.56,5.98,0.26,std(0x2a2d33),yb+0.08));
-    [[9.27,rd],[9.47,bl]].forEach(([X,cl])=>{ NS(Bx(X-0.015,5.94,X+0.015,5.98,0.02,M.steel,yb+0.3)); stat(cyl(0.018,0.07,'y',gx(X),y0+yb+0.275,gz(5.95),M.steel,8)); stat(cyl(0.024,0.022,'y',gx(X),y0+yb+0.33,gz(5.95),cl,10)); });
-    NS(Bx(9.16,5.9,9.58,5.98,0.03,M.blk,yb)); NS(Bx(9.18,5.91,9.56,5.975,0.006,M.steel,yb+0.03)); }   /* 飲水機（不鏽鋼桌上型，放在小冰箱上面）：上面一條黑色面板＋紅色溫度顯示、凹進去的出水口、紅藍兩支出水龍頭（熱水、冰水）、下面的集水盤（他 11-13：原本看起來像微波爐；照片 15） */
-  Bx(9.83,5.93,10.85,6.5,0.84,M.wood,0.15); Bx(9.81,5.91,10.87,6.52,0.04,M.blk,0.99); Bx(9.9,6.05,10.3,6.4,0.02,M.steel,1.02); stat(cyl(0.015,0.12,'y',gx(10.1),y0+1.03+0.06,gz(6.45),M.steel,8)); NS(Bx(8.98,6.15,10.3,6.53,0.7,M.wood,1.75));   /* 吊櫃一路做到西邊的牆（他 11-13：櫃子要做到牆） */   /* 檯面、水槽、上面的高櫃（木紋吊櫃） */
-  NS(Bx(10.3,6.03,10.85,6.53,0.1,M.steel,1.75)); stat(cyl(0.07,H-2.2,'y',gx(10.4),y0+(2.2+H)/2,gz(6.44),M.steel,12)); NS(Bx(10.5,6.1,10.83,6.5,0.34,std(0xd9b98a),1.85)); NS(Bx(10.37,6.3,10.47,6.5,0.35,M.steel,1.85)); NS(Bx(10.38,6.02,10.8,6.38,0.012,std(0x111317),1.03));   /* 吊櫃右邊緊接著抽油煙機（上面放紙箱、排風管往上），下面檯面上是黑色的爐子（照片 14、17） */
-  { const lean=(w,h,d,Xe,Ye,m,a)=>{ const q=box(w,h,d, gx(Xe),y0+0.15+h/2*Math.cos(a),gz(Ye)-h/2*Math.sin(a), m); q.rotation.x=-a; return stat(q); }, bin=std(0xcdbf9f);   /* 檯面盡頭到柱子之間：靠牆的黑色鋁梯、藍色水管捲、米色的分類垃圾桶（照片 14、17） */
-    lean(0.4,1.25,0.04,10.98,6.4,M.frame,0.12); [0.3,0.6,0.9].forEach(h=>NS(Bx(10.9,6.24,11.06,6.4,0.02,M.frame,0.15+h)));
+  const SH=(dX,f)=>{ const par=LV.host||LV.group, n0=par.children.length, o0=LV.obs.length; f(); par.children.slice(n0).forEach(m=>m.position.x+=dX*K); LV.obs.slice(o0).forEach(o=>o.x+=dX*K); };   /* 把一整段東西往東搬 dX（CAD 公尺） */
+  SH(0.42,()=>{   /* 冰箱＋飲水機：往東 42 公分，西邊讓給紙箱雜物（他 11-13：飲水機的左側是塞紙箱雜物） */
+  Bx(9.02,5.88,9.72,6.5,0.8,M.blk,0.15); NS(Bx(9.03,5.874,9.71,5.88,0.012,std(0x3a3f47),0.6)); NS(Bx(9.1,5.84,9.64,5.874,0.035,std(0x8a9099),0.5)); [9.1,9.64].forEach(X=>NS(Bx(X-0.01,5.856,X+0.01,5.88,0.035,std(0x8a9099),0.5))); NS(Bx(9.3,5.836,9.44,5.84,0.012,M.white,0.512));   /* 小冰箱（照片：三洋 SANLUX 黑色雙門）：上下門的門縫、一支橫向的長把手（兩端固定座）、把手上白色的商標 */
+  { const yb=0.95, wh=std(0xf2f2ee), dk=std(0x23262b);   /* 飲水機（照片：BLOCEAN 不鏽鋼桌上型，放在冰箱上面）（他 11-13：三個按鈕，不是只有冷熱） */
+    Bx(9.14,6.05,9.6,6.48,0.58,M.blk,yb); NS(Bx(9.18,6.04,9.56,6.05,0.32,M.steel,yb+0.04));   /* 黑色機身、出水口後面凹進去的不鏽鋼背板 */
+    Bx(9.15,5.9,9.59,6.05,0.035,M.blk,yb); NS(Bx(9.15,5.895,9.59,5.9,0.035,M.steel,yb)); for(let X=9.19;X<9.56;X+=0.045) NS(Bx(X,5.915,X+0.012,6.03,0.004,std(0x3a3f47),yb+0.035)); NS(Bx(9.22,5.891,9.52,5.895,0.018,M.white,yb+0.009));   /* 下面的黑色集水格柵、不鏽鋼前緣、貼在前緣的提醒貼紙 */
+    Bx(9.12,5.93,9.62,6.47,0.24,M.steel,yb+0.36); NS(Bx(9.32,5.926,9.42,5.93,0.022,M.blk,yb+0.53));   /* 上面的不鏽鋼機頭、黑色的品牌牌子 */
+    NS(Bx(9.16,5.926,9.58,5.93,0.075,M.blk,yb+0.395)); NS(Bx(9.345,5.922,9.395,5.926,0.022,std(0xff3b30,{emissive:0x7a0d08}),yb+0.44));   /* 黑色操作面板、紅色溫度顯示（100℃） */
+    [9.27,9.37,9.47].forEach(X=>{ stat(cyl(0.017,0.006,'z',gx(X),y0+yb+0.415,gz(5.926)+0.003,wh,16)); stat(cyl(0.007,0.008,'z',gx(X),y0+yb+0.415,gz(5.926)+0.004,std(0x6a6f76),10)); });   /* 三顆白色圓按鈕（熱水、溫水、冰水） */
+    [[9.19,wh],[9.22,wh],[9.52,dk],[9.55,wh]].forEach(([X,m])=>stat(cyl(0.008,0.006,'z',gx(X),y0+yb+0.415,gz(5.926)+0.003,m,10)));   /* 左右各兩顆小按鍵 */
+    [9.31,9.43].forEach(X=>stat(cyl(0.008,0.03,'y',gx(X),y0+yb+0.345,gz(6.0),M.steel,8)));   /* 機頭下面兩個出水口 */
+    for(let k=0;k<6;k++) NS(Bx(9.6,6.2,9.603,6.42,0.006,std(0x111317),yb+0.08+k*0.025));   /* 側邊散熱孔 */
+    NS(Bx(9.62,5.96,9.623,6.2,0.22,M.white,yb+0.33));   /* 側邊貼一張保養單 */
+    Bx(9.14,6.0,9.33,6.38,0.15,wh,yb+0.6); NS(Bx(9.14,5.997,9.33,6.0,0.05,std(0x6fbf4a),yb+0.66)); }   /* 機頭上面一個白綠色的盒子 */
+  });
+  { const kraft=std(0xc8a06a), wrap=std(0xdfe8ee,{transparent:true,opacity:0.55});   /* 冰箱西邊、靠牆一堆紙箱（照片 726、727、731）：直立的 ASUS 螢幕箱、氣泡布包著的紙箱、攤平靠牆的紙箱、地上白色塑膠袋 */
+    Bx(8.99,5.76,9.03,6.46,1.05,kraft,0.15); Bx(9.04,5.74,9.41,6.0,0.66,kraft,0.15); Bx(9.04,6.02,9.41,6.48,0.6,kraft,0.15); Bx(9.06,6.06,9.39,6.46,0.78,kraft,0.75); NS(Bx(9.06,5.78,9.38,6.0,0.3,wrap,0.81)); NS(Bx(9.1,5.82,9.34,5.98,0.2,kraft,0.84));   /* 西北角（冰箱西邊）：攤平靠牆的紙箱、下面兩個紙箱、上面直立的 ASUS 螢幕箱、氣泡布包著的紙箱 */
+    stat(board(['IN SEARCH OF','INCREDIBLE'], gx(9.225),y0+0.48,gz(5.74)+0.006,0,0.3,'#ffffff','#c8a06a'));   /* 紙箱上的大字（照片） */
+    stat(ball(0.12,std(0xeef0f2),gx(9.12),y0+0.15+0.08,gz(5.66),1.2,0.7,0.8)); ob(8.98,5.6,9.42,6.5);
+    NS(Bx(8.98,5.42,8.985,5.76,0.4,M.white,1.4)); stat(board(['臺北市資源回收','分天分類'], gx(8.985)+0.004,y0+1.64,gz(5.59),Math.PI/2,0.28,'#1b1e24','#ffffff'));   /* 牆上資源回收的海報 */
+    NS(Bx(8.98,5.36,8.99,5.41,0.08,std(0xb9bec4),1.2)); NS(Bx(8.99,5.375,8.994,5.395,0.03,std(0x2a2d33),1.225)); }   /* 門邊的電燈開關 */
+  NS(Bx(9.42,6.515,10.14,6.53,0.8,std(0x111317),0.95)); NS(Bx(10.14,6.515,11.18,6.53,0.72,std(0x111317),1.03));   /* 流理台後面、吊櫃下面這一段牆是黑色的（照片 726～730） */
+  NS(Bx(8.98,6.15,10.63,6.53,0.7,M.wood,1.75));   /* 吊櫃：從西邊的牆接到抽油煙機 */
+  SH(0.33,()=>{   /* 流理台、水槽、抽油煙機、排風管、爐子：往東 33 公分（冰箱東邊） */
+  Bx(9.83,5.93,10.85,6.5,0.84,M.wood,0.15); Bx(9.81,5.91,10.87,6.52,0.04,M.blk,0.99); Bx(9.9,6.05,10.3,6.4,0.02,M.steel,1.02); stat(cyl(0.015,0.12,'y',gx(10.1),y0+1.03+0.06,gz(6.45),M.steel,8));   /* 吊櫃一路做到西邊的牆（他 11-13：櫃子要做到牆） */   /* 檯面、水槽、上面的高櫃（木紋吊櫃） */
+  NS(Bx(10.3,6.03,10.85,6.53,0.1,M.steel,1.75)); NS(Bx(10.31,6.08,10.56,6.5,0.36,std(0xc8a06a),1.85)); NS(Bx(10.58,6.1,10.84,6.5,0.38,std(0xc8a06a),1.85)); stat(board(['hp  Z Workstation'], gx(10.71),y0+2.12,gz(6.1)+0.006,0,0.22,'#2a2d33','#c8a06a'));   /* 抽油煙機上面兩個紙箱，一個是 HP 的（照片 729、730） */
+  { const dm=std(0x6a6f76), R=0.07, X0=10.43, X1=9.02, Yd=6.42, yt=2.72; stat(cyl(R,yt-2.21,'y',gx(X0),y0+(2.21+yt)/2,gz(Yd),dm,12)); stat(ball(R,dm,gx(X0),y0+yt,gz(Yd))); stat(cyl(R,(X0-X1)*K,'x',gx((X0+X1)/2),y0+yt,gz(Yd),dm,12));   /* 伸縮排風管：從紙箱後面往上，再沿著天花板橫過吊櫃上方（照片 728～730） */
+    for(let y=2.28;y<yt-0.05;y+=0.07){ const r=new THREE.Mesh(new THREE.TorusGeometry(R+0.003,0.006,5,14), dm); r.rotation.x=Math.PI/2; r.position.set(gx(X0),y0+y,gz(Yd)); stat(r); } for(let X=X0-0.1;X>X1;X-=0.07){ const r=new THREE.Mesh(new THREE.TorusGeometry(R+0.003,0.006,5,14), dm); r.rotation.y=Math.PI/2; r.position.set(gx(X),y0+yt,gz(Yd)); stat(r); } }   /* 一圈一圈的伸縮紋 */
+  { const t=1.03; const pan=cyl(0.12,0.03,'z',gx(10.5),y0+t+0.14,gz(6.46),M.steel,20); pan.rotation.x=Math.PI/2-0.3; stat(pan); NS(Bx(10.6,6.2,10.82,6.44,0.006,std(0xcfe8dc),t)); stat(cyl(0.03,0.22,'y',gx(10.72),y0+t+0.11,gz(6.4),std(0xcfe3ea,{transparent:true,opacity:0.7}),10)); stat(cyl(0.014,0.03,'y',gx(10.72),y0+t+0.235,gz(6.4),std(0xc9a040),8)); stat(cyl(0.028,0.2,'y',gx(10.8),y0+t+0.1,gz(6.28),M.blk,10)); stat(cyl(0.03,0.08,'y',gx(10.64),y0+t+0.04,gz(6.36),M.white,10)); }   /* 爐子旁邊：靠牆的平底鍋、抹布、玻璃瓶、黑色保溫瓶、紙杯（照片 729、730） */
+ NS(Bx(10.38,6.02,10.8,6.38,0.012,std(0x111317),1.03)); });   /* 吊櫃右邊緊接著抽油煙機（上面放紙箱、排風管往上），下面檯面上是黑色的爐子（照片 14、17） */
+  SH(0.35,()=>{ const lean=(w,h,d,Xe,Ye,m,a)=>{ const q=box(w,h,d, gx(Xe),y0+0.15+h/2*Math.cos(a),gz(Ye)-h/2*Math.sin(a), m); q.rotation.x=-a; return stat(q); }, bin=std(0xcdbf9f);   /* 檯面盡頭到柱子之間：靠牆的黑色鋁梯、藍色水管捲、米色的分類垃圾桶（照片 14、17） */
+    lean(0.3,1.25,0.04,10.98,6.4,M.frame,0.12); [0.3,0.6,0.9].forEach(h=>NS(Bx(10.89,6.24,11.07,6.4,0.02,M.frame,0.15+h)));
     { const reel=cyl(0.14,0.1,'x',gx(11.1),y0+0.15+0.14,gz(6.12),std(0x2f9fd0),16); stat(reel); }
-    Bx(10.92,5.82,11.14,6.08,0.5,bin,0.15); NS(Bx(10.92,5.82,11.14,6.08,0.03,std(0x8a6c50),0.65)); ob(10.87,5.8,11.2,6.52); }
+    Bx(10.92,5.82,11.14,6.08,0.5,bin,0.15); NS(Bx(10.92,5.82,11.14,6.08,0.03,std(0x8a6c50),0.65)); ob(10.87,5.8,11.16,6.52); });
   Bx(9.83,4.03,11.49,4.67,0.84,M.wood,0.15); Bx(9.81,4.02,11.5,4.69,0.04,M.blk,0.99); { const yb=1.03; NS(Bx(10.72,4.14,11.2,4.5,0.28,M.white,yb)); NS(Bx(10.74,4.5,11.05,4.506,0.2,std(0x1b2228),yb+0.04)); NS(Bx(11.045,4.506,11.06,4.52,0.18,M.steel,yb+0.05)); NS(Bx(11.085,4.5,11.185,4.506,0.22,std(0xd9dde2),yb+0.03));
-    [0.19,0.09].forEach(h=>stat(cyl(0.02,0.014,'z',gx(11.135),y0+yb+h,gz(4.513),M.frame,12))); NS(Bx(10.2,4.14,10.55,4.5,0.32,M.white,yb)); NS(Bx(10.2,4.14,10.55,4.5,0.04,std(0x6a6f76),yb+0.32));   /* 微波爐旁邊一台白色小家電（照片 14） */ [[-0.21,-0.15],[0.21,-0.15],[-0.21,0.15],[0.21,0.15]].forEach(([a,b])=>NS(Bx(10.96+a-0.012,4.32+b-0.012,10.96+a+0.012,4.32+b+0.012,0.012,M.frame,yb-0.012+0.012))); }   /* 南邊檯面上的微波爐：深色玻璃門、把手、右邊的面板和兩個旋鈕（他 11-13：細節要多一點；照片 16） */
-  { const band=std(0x1d5fbf), pack=(X0,Y0,X1,Y1,n,tag)=>{ for(let k=0;k<n;k++){ const yb=0.15+k*0.26; NS(Bx(X0,Y0,X1,Y1,0.25,M.white,yb)); NS(Bx(X0-0.003,Y0-0.003,X1+0.003,Y1+0.003,0.07,band,yb+0.09)); } stat(board(['Double A',tag], gx((X0+X1)/2),y0+0.15+(n-1)*0.26+0.125,gz(Y1)-0.012,Math.PI,(X1-X0)*K*0.8,'#ffffff','#1d5fbf')); };
-    pack(9.02,4.05,9.38,4.29,4,'A3'); pack(9.02,4.31,9.38,4.55,3,'A3'); pack(9.44,4.05,9.7,4.24,5,'A4'); pack(9.44,4.26,9.7,4.45,4,'A4'); ob(9.0,4.04,9.72,4.57); }   /* 檯面旁邊那個空位：一疊疊 Double A 的影印紙（A3 七箱、A4 九箱，疊到胸口高），白箱子配藍色腰帶（他 11-13：多放一點，太少看起來很空） */
-  ob(9.83,5.91,10.87,6.52); ob(9.83,4.02,11.5,4.69); ob(8.98,5.85,9.79,6.5);   /* 茶水間走得進去（他 11-13）：只擋檯面和冰箱 */
+    [0.19,0.09].forEach(h=>stat(cyl(0.02,0.014,'z',gx(11.135),y0+yb+h,gz(4.513),M.frame,12))); NS(Bx(10.22,4.16,10.5,4.46,0.4,std(0xeeeae0),yb)); NS(Bx(10.21,4.15,10.51,4.47,0.03,std(0x4a4f57),yb+0.4)); NS(Bx(10.23,4.46,10.49,4.464,0.004,std(0xb9bec4),yb+0.28)); stat(cyl(0.028,0.18,'y',gx(10.05),y0+yb+0.09,gz(4.5),M.blk,10));   /* 微波爐旁邊一台白色、有灰色蓋子的家電，旁邊一支黑色保溫瓶（照片 732） */
+    [11.0,11.17].forEach(X=>{ NS(Bx(X,4.02,X+0.14,4.06,0.16,std(0xe8e8e0),1.5)); NS(Bx(X+0.025,4.06,X+0.115,4.062,0.05,std(0x2a2d33),1.58)); });   /* 牆上兩個電錶（照片 732） */ [[-0.21,-0.15],[0.21,-0.15],[-0.21,0.15],[0.21,0.15]].forEach(([a,b])=>NS(Bx(10.96+a-0.012,4.32+b-0.012,10.96+a+0.012,4.32+b+0.012,0.012,M.frame,yb-0.012+0.012))); }   /* 南邊檯面上的微波爐：深色玻璃門、把手、右邊的面板和兩個旋鈕（他 11-13：細節要多一點；照片 16） */
+  { const blue=std(0x4fb6dd), pack=(X0,Y0,X1,Y1,n,open)=>{ for(let k=0;k<n;k++){ const yb=0.15+k*0.26, last=open && k===n-1; NS(Bx(X0,Y0,X1,Y1,last?0.2:0.25,blue,yb)); NS(Bx(X0-0.003,(Y0+Y1)/2-0.012,X1+0.003,(Y0+Y1)/2+0.012,(last?0.2:0.25)-0.004,M.white,yb)); if(last) NS(Bx(X0+0.02,Y0+0.02,X1-0.02,Y1-0.02,0.003,std(0x2a3f8f),yb+0.15)); stat(board(['Double A'], gx((X0+X1)/2),y0+yb+0.14,gz(Y1)-0.006,Math.PI,(X1-X0)*K*0.7,'#ffffff','#4fb6dd')); } };   /* 藍色的 Double A 紙箱（照片 732），最上面那箱開著、看得到裡面的紙 */
+    pack(9.02,4.05,9.38,4.31,6,false); pack(9.02,4.33,9.38,4.59,5,true);
+    Bx(9.42,4.06,9.8,4.6,0.62,std(0xe8e2c8),0.15); [0.2,0.38].forEach(h=>NS(Bx(9.43,4.6,9.79,4.603,0.006,std(0xb9b39a),0.15+h))); [0.1,0.29,0.48].forEach(h=>NS(Bx(9.53,4.6,9.69,4.608,0.022,M.steel,0.15+h)));   /* 米色三層活動櫃：抽屜縫、三支把手 */
+    NS(Bx(9.48,4.2,9.74,4.48,0.16,std(0xa8826a),0.77)); ob(9.0,4.04,9.82,4.62); }   /* 活動櫃上一個咖啡色的包包；檯面旁邊：活動櫃＋兩疊紙箱（照片 732：紙箱是藍色的，六箱一疊、五箱一疊） */
+  ob(10.16,5.91,11.2,6.52); ob(9.83,4.02,11.5,4.69); ob(9.42,5.85,10.21,6.5);   /* 流理台、南邊檯面、冰箱（照片的順序重排後） */   /* 茶水間走得進去（他 11-13）：只擋檯面和冰箱 */
   LV.raise=[[7.51,3.9,9.3,6.23],[7.09,5.26,7.7,6.23],[8.6,3.9,11.51,6.65],[0,4.74,1.28,6.4]].map(([X0,Y0,X1,Y1])=>({x0:gx(X0), x1:gx(X1), z0:gz(Y1), z1:gz(Y0), h:0.15}));   /* +15 的台階：人踏上去會跟著墊高（三塊互相疊一點，中間不會掉下去） */
   stat(board(['本季 KPI','↘','共體時艱'], gx(0.72),y0+1.55,gz(6.25),0,0.85,'#ffffff','#1b1e24'));   /* 貼在會議室玻璃上（現場真的會在玻璃上寫字） */
   /* 會議室的木頭拉門（他 11-13：木頭質感；人進出拉門要跟著動、手要帶到動作）：平常關著。有人（或恰恰）走到門前 1.5 公尺就往右滑開，停在右邊那片玻璃前面；人都走遠了自己關上。
@@ -1372,15 +1399,15 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
   const lapC=(X,Y,m,dot)=>{ NS(Bx(X-0.1,Y-0.14,X+0.1,Y+0.14,0.016,m,0.76)); NS(Bx(X-0.012,Y-0.012,X+0.012,Y+0.012,0.002,dot,0.776)); };   /* 闔起來的筆電：一片薄板＋上蓋中間的標誌 */
   const desk3=(n,XM,Yc)=>{
     if(n===1820){ lapC(XM-0.33,Yc,std(0xc9ccd1),M.frame); NS(Bx(XM-0.25,Yc+0.22,XM-0.09,Yc+0.4,0.004,std(0xc8433a),0.76)); NS(Bx(XM-0.2,Yc+0.27,XM-0.15,Yc+0.35,0.02,M.frame,0.764)); stat(cyl(0.04,0.09,'y',gx(XM-0.1),y0+0.76+0.045,gz(Yc+0.52),std(0xc8433a),12)); }
-    else if(n===1821){ lapC(XM+0.35,Yc,std(0x23262b),std(0xd92b2b)); NS(Bx(XM-0.03,Yc-0.5,XM+0.03,Yc-0.2,0.02,M.white,0.76)); }   /* 外面的位子：一台闔著的黑色筆電 */
-    else { const X=XM-0.2; NS(Bx(X-0.015,Yc-0.3,X+0.015,Yc+0.3,0.36,M.frame,0.9)); NS(Bx(X-0.02,Yc-0.28,X-0.012,Yc+0.28,0.32,M.scr,0.92)); NS(Bx(X-0.02,Yc-0.025,X+0.02,Yc+0.025,0.14,M.frame,0.772)); NS(Bx(X-0.09,Yc-0.14,X+0.09,Yc+0.14,0.012,M.frame,0.76)); NS(Bx(XM-0.5,Yc-0.18,XM-0.36,Yc+0.18,0.015,M.white,0.765));   /* 靠櫃子的位子：一台桌上型螢幕，螢幕朝自己（朝西）、前面一副鍵盤（他 11-13：筆電在外面那一桌，桌上型螢幕在靠櫃子那一桌） */
+    else if(n===1821){ const X=XM+0.2; NS(Bx(X-0.015,Yc-0.3,X+0.015,Yc+0.3,0.36,M.frame,0.9)); NS(Bx(X+0.012,Yc-0.28,X+0.02,Yc+0.28,0.32,M.scr,0.92)); NS(Bx(X-0.02,Yc-0.025,X+0.02,Yc+0.025,0.14,M.frame,0.772)); NS(Bx(X-0.09,Yc-0.14,X+0.09,Yc+0.14,0.012,M.frame,0.76)); NS(Bx(XM+0.36,Yc-0.18,XM+0.5,Yc+0.18,0.015,M.white,0.765)); NS(Bx(XM-0.03,Yc-0.5,XM+0.03,Yc-0.2,0.02,M.white,0.76)); }   /* 裡面的位子：一台桌上型單螢幕，螢幕朝自己（朝東）、前面一副鍵盤；中間一條延長線（他 11-13 15:17：筆電在外側、單螢幕在裡面） */
+    else { lapC(XM-0.35,Yc,std(0x23262b),std(0xd92b2b));   /* 外側（靠櫃子）的位子：一台闔著的黑色筆電 */
       NS(Bx(XM-0.62,Yc-0.56,XM-0.48,Yc-0.44,0.08,std(0xb58a5a),0.76)); NS(Bx(XM-0.66,Yc+0.4,XM-0.57,Yc+0.54,0.012,M.frame,0.76)); NS(Bx(XM-0.52,Yc+0.44,XM-0.39,Yc+0.49,0.015,M.white,0.76)); } };   /* 小紙盒、計算機、冷氣遙控器 */
   /* 三組四人桌（分機 1811～1822）：木桌面、中間矮隔板、兩端黑色矮櫃、雙螢幕；坐人的位子不放空椅子 */
   const taken=new Set((L.seats||[]).concat((L.fanSeats||[]).map(f=>f.slice(1))).map(q=>q[3]));
   [[1.73,0.64,1811],[5.20,0.64,1815],[8.68,0.23,1819]].forEach(([X0,Y0,n0])=>{ const X1=X0+1.41, Y1=Y0+2.65, XM=X0+0.705;
     Bx(X0,Y0,X1,Y1,0.05,M.desk,0.71); if(n0!==1819) NS(Bx(XM-0.02,Y0+0.05,XM+0.02,Y1-0.05,0.34,M.wood,0.76));   /* 第三組桌子中間沒有隔板（照片 S__210198554） */ NS(Bx(X0+0.004,Y0+1.32,X1-0.004,Y0+1.33,0.052,M.frame,0.71));
     [[X0+0.04,Y0+0.04],[X1-0.04,Y0+0.04],[X0+0.04,Y1-0.04],[X1-0.04,Y1-0.04],[XM,Y0+1.325]].forEach(([X,Y])=>NS(Bx(X-0.03,Y-0.03,X+0.03,Y+0.03,0.71,M.frame)));
-    [[X0+0.12,Y0+0.03],[X1-0.56,Y0+0.03],[X0+0.12,Y1-0.55],[X1-0.56,Y1-0.55]].forEach(([X,Y])=>Bx(X,Y,X+0.44,Y+0.52,0.6,M.blk));   /* 桌子兩端下面的黑色矮櫃 */
+    [[X0+0.12,Y0+0.03],[X1-0.56,Y0+0.03],[X0+0.12,Y1-0.45],[X1-0.56,Y1-0.45]].forEach(([X,Y])=>Bx(X,Y,X+0.44,Y+0.42,0.6,M.blk));   /* 桌子兩端下面的黑色矮櫃（南北 42 公分：原本 52，坐著的人的鞋子會插進去 3.6 公分） */
     [[0,1,0],[1,1,2],[0,0,1],[1,0,3]].forEach(([e,r,k])=>{ const Yc=Y0+0.66+r*1.33, n=n0+k; if(n0===1819 && n!==1822) desk3(n,XM,Yc); else mkMon(XM+(e?0.16:-0.16),Yc,e?1:-1);   /* 第三組桌子：只有最裡面靠窗那個位子（1822）是桌上型雙螢幕，其他位子照照片（他 11-13） */ if(k%2===0) NS(Bx(e?X1-0.4:X0+0.08,Yc+0.3,e?X1-0.08:X0+0.4,Yc+0.55,0.06+k*0.02,M.white,0.76));   /* 一疊圖 */
       if(!taken.has(n)) mkChair(e?X1+0.34:X0-0.34,Yc,e?-Math.PI/2:Math.PI/2,true); });
     ob(X0,Y0,X1,Y1);
@@ -1396,7 +1423,15 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
     [[0.47,0.74],[0.25,0.5]].forEach(([hx,hz])=>[[0,-hz,hx*2+0.03,0.03],[0,hz,hx*2+0.03,0.03],[-hx,0,0.03,hz*2+0.03],[hx,0,0.03,hz*2+0.03]].forEach(([dx,dz,w,d])=>{ const m=box(w,0.004,d, rx+dx,y0+0.014,rz+dz, rb); m.castShadow=false; stat(m); }));
     [[3.05,5.85,1],[2.6,5.95,0.75],[0.55,4.45,0.85]].forEach(([X,Y,k])=>{ stat(cyl(0.2*k,0.36*k,'y',gx(X),y0+0.18*k,gz(Y),M.pot,14)); stat(cyl(0.03*k,1.2*k,'y',gx(X),y0+0.9*k,gz(Y),M.leaf,8)); for(let i=0;i<7;i++){ const a=i/7*Math.PI*2, lf=ball(0.2*k,M.leaf,gx(X)+Math.sin(a)*0.22*k,y0+(0.75+0.28*(i%3))*k,gz(Y)+Math.cos(a)*0.22*k,1,0.25,0.75); lf.rotation.set(0.5*Math.cos(a),a,0.5*Math.sin(a)); stat(lf); } obw(X,Y,0.22*k); });
     Bx(0.15,5.26,1.28,6.26,0.15,M.floor); Bx(0.44,4.74,1.28,5.26,0.15,M.floor);   /* 門口的小台座：比外面高 15 公分。範圍照他 11-13 在截圖上畫的紅框：西邊到大門、北邊到會議室第一片玻璃、東邊到那片玻璃的盡頭、南邊到紅磚柱的南面 */
-    stat(cyl(0.13,0.45,'y',gx(0.6),y0+0.15+0.225,gz(5.0),M.frame,12)); [[0.04,0x2f6fd0],[-0.05,0xe6b422]].forEach(([d,cl])=>{ const um=cyl(0.02,0.7,'y',gx(0.6)+d,y0+0.15+0.5,gz(5.0)+d,std(cl),8); um.rotation.z=d*3; stat(um); }); obw(0.6,5.0,0.13); }   /* 傘桶（藍、黃兩把傘）：緊靠門口那根紅磚柱的東邊、台座上；球棒在它旁邊（他 11-13 在截圖上指定的位置） */
+    { const ux=gx(0.6), uz=gz(5.0), yb=y0+0.15, bd=std(0x3a3f47);   /* 傘桶（他 11-13：精緻一點，目前看不出是傘桶） */
+      stat(cyl(0.135,0.03,'y',ux,yb+0.015,uz,M.frame,24)); stat(cyl(0.12,0.42,'y',ux,yb+0.03+0.21,uz,bd,24)); stat(cyl(0.106,0.006,'y',ux,yb+0.44,uz,std(0x111317),20));   /* 底座、桶身、桶口（深色） */
+      { const rim=new THREE.Mesh(new THREE.TorusGeometry(0.12,0.012,8,28), M.steel); rim.rotation.x=Math.PI/2; rim.position.set(ux,yb+0.45,uz); stat(rim); }   /* 上緣捲邊 */
+      for(let i=0;i<12;i++){ const a=i/12*Math.PI*2, sl=box(0.022,0.26,0.006, ux+Math.sin(a)*0.1215,yb+0.25,uz+Math.cos(a)*0.1215, std(0x15171b)); sl.rotation.y=a; sl.castShadow=false; stat(sl); }   /* 一圈直條鏤空 */
+      [[0.035,0.03,std(0x2f6fd0),0.1,-0.06],[-0.04,0.02,std(0xe6b422),-0.12,0.05],[0.0,-0.045,std(0xe3edf2),0.04,0.1]].forEach(([dx,dz,cm,tz,tx])=>{ const u=new THREE.Group(); u.position.set(ux+dx,yb+0.06,uz+dz); u.rotation.set(tx,0,tz);
+        const cn=new THREE.Mesh(new THREE.ConeGeometry(0.045,0.56,10), cm); cn.rotation.x=Math.PI; cn.position.y=0.28; cn.castShadow=true; u.add(cn);   /* 收起來的傘布：上粗下尖，尖端插在桶裡 */
+        u.add(cyl(0.048,0.025,'y',0,0.47,0,std(0x2a2d33),10)); u.add(cyl(0.007,0.2,'y',0,0.64,0,M.steel,6));   /* 束帶、傘桿 */
+        const hk=new THREE.Mesh(new THREE.TorusGeometry(0.034,0.01,6,14,Math.PI), std(0x3a2a20)); hk.position.set(0.034,0.74,0); u.add(hk); stat(u); });   /* 彎鉤傘柄 */
+      obw(0.6,5.0,0.14); } }   /* 傘桶：緊靠門口那根紅磚柱的東邊、台座上（他 11-13 在截圖上指定的位置）；三把傘：藍、黃、透明 */   /* 傘桶（藍、黃兩把傘）：緊靠門口那根紅磚柱的東邊、台座上；球棒在它旁邊（他 11-13 在截圖上指定的位置） */
   /* 討論用的圖：直接貼在南面那道深色牆上，在矮櫃上方、木飾板下面（他 11-13：不用再做黑板，直接貼在後面那道黑牆上檢討）。答題時鏡頭轉到北邊、同事轉向這面牆。
      原本的活動黑板（鋁框、板面、腳、輪子）拿掉了；LV.boardG／LV.boardGhost 留著空的群組，別的程式還會用到 */
   { const bg=new THREE.Group(), gh=new THREE.Group(); LV.group.add(bg); LV.group.add(gh); LV.boardG=bg; LV.boardGhost=gh; LV.boardLook=false; }
@@ -1771,6 +1806,7 @@ TROPHY['misc.chat']={ name:'搏感情', grade:'bronze', desc:'找同事聊一次
 TROPHY['misc.name']={ name:'人如其名？', grade:'bronze', desc:'名字取太大，開場被鐵叔虧' };
 TROPHY['misc.prank']={ name:'手很癢', grade:'bronze', desc:'拿起不是施工用的東西' };
 TROPHY['misc.bat']={ name:'全壘打', grade:'silver', desc:'拿球棒敲同事。任務失敗，警衛已經在樓下' };
+TROPHY['misc.penta']={ name:'五連殺 PENTAKILL', grade:'gold', desc:'10 秒內用球棒打倒 5 個人。任務失敗，警察已經到場' };   /* 他 11-13：名字借《英雄聯盟》的 PENTAKILL（一次連續擊殺五人） */
 TROPHY['misc.bribe']={ name:'有錢能使鬼推磨', grade:'silver', desc:'開豪車來上班，拿十萬現金請帶班的人「幫忙看一下」' };
 TROPHY['misc.drink']={ name:'上工先來一杯', grade:'silver', desc:'在工地喝保力達 B 套伯朗。任務失敗，酒測沒過' };
 TROPHY['misc.bump']={ name:'借過不會說', grade:'bronze', desc:'第一次撞到同事' };
@@ -2604,6 +2640,7 @@ function crewKnock(s){ const o=s.o, me=LV.actors.you, u=o.userData; u.down=true;
 function smashDone(s){ const boss=LV.actors[L.boss];   /* 砸自己的車、怪手：球棒還拿在手上 */
   if(s.kind==='mine'){ bubble('you','（心在淌血）……自己的車。分期還沒繳完。',true); return; }
   if(s.kind==='dig'){ bubble('you','（怪手：毫髮無傷）',true); if(LV.call && LV.call.left===undefined){ LV.call.dig=true; LV.call.t=Math.min(LV.call.t,0.8); } return; }   // 砸怪手：主任馬上打來
+  if(s.kind==='person'){ WHY.prank=PRANK.bat.why; award('misc.bat'); comboHit(s.o, ()=>failMission(boss,'prank')); return; }   /* 打倒工地的師傅：也算進五連殺 */
   prank=null; WHY.car='你拿球棒砸了別人的車。'; WHY.office=L.plant ? '你拿球棒砸警衛室。' : '你拿球棒砸工務所。'; WHY.prank=PRANK.bat.why; award('misc.bat'); failMission(boss, s.kind==='car' ? 'car' : s.kind==='office' ? 'office' : 'prank'); }
 // 搭施工電梯：四樓走到電梯口（或點電梯）＝問要不要下樓；一樓走到西門＝問要不要回四樓。手上的料一起帶
 function goHoist(){ const H=LV.hoist, me=LV.actors.you; if(!H || LV.ride || done) return; const t = LV.down ? {x:H.x-H.hw-0.9, z:H.z} : {x:H.x, z:6.3}; moveTo(t.x,t.z,()=>askRide()); }
@@ -2810,8 +2847,13 @@ function togglePrank(id){ if(done||dlgOpen) return; const me=LV.actors.you, hold
   prank=id; q.item.visible=false; const it=prankItem(id); while(hold.children.length) hold.remove(hold.children[0]);
   if(id==='bat'){ it.rotation.x=Math.PI-0.5; it.position.set(0,-0.61,0.19); } else { it.rotation.x=1.2; it.position.set(0,-0.33,0.07); }                // 握在右手，垂在身邊：球棒頭朝下朝前
   me.g.userData.armR.userData.elbow.add(it); me.prankMesh=it; me.carry='club'; award('misc.prank'); bubble(L.boss, PRANK[id].say[L.boss], true); }
-function prankHit(a){ const me=LV.actors.you, id=prank; if(me.swing) return; me.dest=null; me.onArrive=null; me.face=Math.atan2(a.x-me.x,a.z-me.z);
-  me.swing={t:0, id, target:a, done:()=>{ prank=null; WHY.prank=PRANK[id].why; award('misc.'+id); failMission(a,'prank'); }}; }
+/* 五連殺：用球棒打倒一個人後先不結算。3 秒內沒打到下一個人（或從第一個算起滿 10 秒）才照原本的失敗畫面；10 秒內打倒 5 個人＝五連殺，換警察出來（他 11-13） */
+var combo=null;
+function comboHit(v,fail){ if(done) return; if(!combo){ combo={n:0, age:0, left:3, seen:new Set()}; const c=combo, f=dt=>{ if(combo!==c){ LV.fx.splice(LV.fx.indexOf(f),1); return; } c.age+=dt; c.left-=dt; if(c.left<=0){ LV.fx.splice(LV.fx.indexOf(f),1); combo=null; if(!done){ prank=null; c.fail(); } } }; LV.fx.push(f); }
+  if(!combo.seen.has(v)){ combo.seen.add(v); combo.n++; } combo.fail=fail; combo.left=Math.min(3, 10-combo.age);
+  if(combo.n>=5){ combo=null; prank=null; award('misc.penta'); failMission(null,'police'); } }
+function prankHit(a){ const me=LV.actors.you, id=prank; if(me.swing || a.knock) return; me.dest=null; me.onArrive=null; me.face=Math.atan2(a.x-me.x,a.z-me.z);   /* 已經倒在地上的人不再打 */
+  me.swing={t:0, id, target:a, done:()=>{ WHY.prank=PRANK[id].why; award('misc.'+id); if(id==='bat') comboHit(a, ()=>failMission(a,'prank')); else { prank=null; failMission(a,'prank'); } }}; }   /* 球棒：還拿在手上，可以接著打下一個 */
 // 藍圈看不看得到：從鏡頭往藍圈拉三條線（中間、左、右），兩條以上被不透明的東西擋住＝被擋；或是藍圈跑到畫面外、壓在上面的資訊框底下
 const spotRay=new THREE.Raycaster(); var carryT=0; let inCut=false, subT=null, spotOcc=[], userCamT=0, spotChk=0;
 function phrases(el,text){ text.split(/(?<=[，。：；！？　])/).forEach(t=>{ const sp=document.createElement('span'); sp.className='ph'; sp.textContent=t; el.append(sp); }); }   // 一小句一整塊（只在標點後面換行）
@@ -3081,7 +3123,9 @@ function hurt(cost,a,why){ if(done||failed) return; patience=Math.max(0,patience
   if(patience<=0){ failMission(a,why); return; }
   if(patience<=28 && !warned){ warned=true; setTimeout(()=>{ if(!failed) bubble(L.boss, FINAL[L.boss], true); }, 1000); } }
 function failMission(a,why){ failed=true; done=true; const p=LV.actors.you; if(p){ p.dest=null; p.onArrive=null; } award('misc.fail');
-  setTimeout(()=>{ failSound(); $('#failWhy').textContent=({drink:'工地禁止飲酒。', treat:'工地禁止飲酒。', phone:'上班時間失聯。', car:'不准破壞別人的財物。', office:'不准破壞公物。'}[why]||'不准騷擾友軍。')+WHY[why]+'人資已收到通知。'; const hit = why==='prank' && WHY.prank && /球棒/.test(WHY.prank), sp = hit ? ['lin','tie','an','kun'].find(k=>k!==a.who && LV.actors[k]) : a.who, cv=$('#failFace'); if(hit) $('#failWhy').textContent='職場霸凌，零容忍！'+WHY[why]+'人資和法務都收到通知了。';   /* 拿球棒敲人：上面那一行也換成重話 */
+  setTimeout(()=>{ if(why==='police'){ failSound(); $('#failWhy').textContent='有人報案：10 秒內 5 個人被球棒打倒。'; const cv=$('#failFace'), g=cv.getContext('2d'); g.clearRect(0,0,cv.width,cv.height); g.font=Math.round(cv.height*0.72)+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('👮',cv.width/2,cv.height*0.54);
+      $('#failLine').textContent='「警察！不要動！有人報案。你是現行犯，依刑事訴訟法第 88 條，現在逮捕你。球棒放下，雙手放在頭上！」'; $('#failWho').textContent='—— 轄區派出所員警'; $('#fail').style.display='flex'; return; }   /* 五連殺：出來講話的是警察（他 11-13） */
+    failSound(); $('#failWhy').textContent=({drink:'工地禁止飲酒。', treat:'工地禁止飲酒。', phone:'上班時間失聯。', car:'不准破壞別人的財物。', office:'不准破壞公物。'}[why]||'不准騷擾友軍。')+WHY[why]+'人資已收到通知。'; const hit = why==='prank' && WHY.prank && /球棒/.test(WHY.prank), sp = hit ? ['lin','tie','an','kun'].find(k=>k!==a.who && LV.actors[k]) : a.who, cv=$('#failFace'); if(hit) $('#failWhy').textContent='職場霸凌，零容忍！'+WHY[why]+'人資和法務都收到通知了。';   /* 拿球棒敲人：上面那一行也換成重話 */
     if(sp) drawFace(cv, sp, 'mad'); else cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
     $('#failLine').textContent='「'+(hit ? fill(sp ? KICK_HIT[sp] : '{V}已經送醫院了。{P}，資遣！公司貸款也要告到底！職場霸凌，零容忍！').replace('{V}',cname(a.who)) : fill(KICK[a.who]||'學長……為什麼……'))+'」'; $('#failWho').textContent='—— '+(sp ? cname(sp)+'，'+CAST[sp].role : '人資'); $('#fail').style.display='flex'; }, 800); }
 function bump(a){ a.bumps++; bumpTotal++; a.wob=1; lastAct=performance.now(); nextIdle=Math.max(nextIdle, lastAct+8000); award('misc.bump');
