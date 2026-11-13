@@ -2548,7 +2548,7 @@ function makePallet(st,x,z){ const g=new THREE.Group(); g.position.set(x,L.gy,z)
     g.add(cyl(0.17,0.03,'y',0,0.015,0,ink,28)); g.add(cyl(0.05,0.02,'y',0,0.04,0,chrome,16)); g.add(cyl(0.016,0.72,'y',0,0.39,0,chrome,12));
     const c=document.createElement('canvas'); c.width=256; c.height=200; const x2=c.getContext('2d'); x2.fillStyle='#f7f8fa'; x2.fillRect(0,0,256,200); x2.fillStyle='#1d4f86'; x2.fillRect(0,0,256,34); x2.fillRect(0,192,256,8);
     x2.fillStyle='#fff'; x2.font='bold 22px "Microsoft JhengHei",sans-serif'; x2.textAlign='center'; x2.textBaseline='middle'; x2.fillText('送 圖 前 檢 討',128,18);
-    x2.font='112px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif'; x2.fillText(({cost:'🧮',fab:'🏭',iface:'🚚',revise:'✏️',embed:'📐'})[st.id]||'📋',128,116);
+    x2.font='112px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif'; x2.fillText(({cost:'🧮',fab:'🏭',iface:'🚚',revise:'✏️',embed:'📐',decoy:'🐟'})[st.id]||'📋',128,116);
     const face=std(0xffffff,{map:new THREE.CanvasTexture(c)}), bd=new THREE.Group(); bd.position.set(0,0.88,0); bd.rotation.x=-0.22;
     const pl=new THREE.Mesh(new THREE.BoxGeometry(0.36,0.3,0.02),[ink,ink,ink,ink,face,ink]); pl.castShadow=true; bd.add(pl); bd.add(box(0.38,0.02,0.03,0,-0.16,0,ink)); g.add(bd);
     g.rotation.y = L.view && L.view.theta!==undefined ? L.view.theta : 0; ly=1.22; }   // 牌面朝鏡頭；標籤放在牌子上面
@@ -2981,7 +2981,7 @@ function ensureSpotVisible(){ if(!spot.visible || !L || L.bench || L.office || L
   else { if(!spotBlocked(cur.theta,cur.phi,cur.dist)) return; tries=[cur, base]; }
   for(const b of tries) for(const kz of [1,1.25,1.5]) for(const dp of [0,-0.22]) for(const dt of [0,0.35,-0.35,0.7,-0.7,1.05,-1.05,1.4,-1.4,1.9,-1.9]){ const th=b.theta+dt, ph=Math.max(0.45,b.phi+dp), d=Math.min(maxD,b.dist*kz); if(th<lo || th>hi) continue;
     if(!spotOff(th,ph,d) && !spotBlocked(th,ph,d)){ camGoal={theta:th, phi:ph, dist:d}; return; } } }   // 先試左右轉，再試從高一點往下看，再試拉遠一點，最後試這一步原本的角度
-function goDecoy(){ const d=LV.decoy; if(!d) return; const s=standNear(d.x,d.z,0.9,d.obs); moveTo(s.x,s.z,()=>bubble('you', pickOne(['（背面用原子筆寫著：「這塊是假的。」……誰放的？）','（結構計算檢討……這不是結構技師的事嗎？我在廁所幹嘛？）','（立牌背面貼著一張便利貼：「上班時間請勿久留。——人資」）']), true)); }   /* 假立牌：走過去才發現被騙；在廁所待太久照樣任務失敗 */
+function goDecoy(){ const d=LV.decoy; if(!d) return; const s=standNear(d.x,d.z,0.9,d.obs); moveTo(s.x,s.z,()=>bubble('you', pickOne(['（背面用原子筆寫著：「這塊是假的。」……誰放的？）','（摸魚計畫檢討……原來摸魚也要開會檢討。好，那我先在這裡檢討一下。）','（立牌背面貼著一張便利貼：「上班時間請勿久留。——人資」）']), true)); }   /* 假立牌：走過去才發現被騙；在廁所待太久照樣任務失敗 */
 function goPallet(id){ const q=LV.pallets[id]; if(!q||placed.has(id)) return; const s=standNear(q.x,q.z,0.9,q.obs); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(rectDist(q.obs,p.x,p.z).d<0.9) tryPick(id); }); }   // 真的走到旁邊才拿
 function goSpot(){ spotArmed=true; moveTo(spot.position.x, spot.position.z, ()=>{ const p=LV.actors.you; if(Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1) tryInstall(); }); }
 function goNpc(who){ const a=LV.actors[who]; const s=standNear(a.x,a.z,1.0); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(dlgOpen||failed||Math.hypot(p.x-a.x,p.z-a.z)>1.9) return; a.chats=(a.chats||0)+1;
@@ -2997,7 +2997,7 @@ function wrongOrder(id){
 function tryPick(id){ if(done||dlgOpen||placed.has(id)) return; if(prank){ say([{who:L.boss, t:'手上那個先放回去。'}]); return; } multiN=0;
   if(carry){ if(carry!==id) say([{who:L.boss, t: L.boss==='kun'?'……手上的，先裝。':'手上的先裝好，再拿別的。'}]); return; }
   if(id!==need().id){ wrongOrder(id); return; }
-  if(L.boardAt){ LV.boardLook=false; camGoal={theta, phi:L.view.phi, dist:L.view.dist}; }   /* 只拉遠、方向不轉回去（他 11-13：一直轉視角會頭暈） */   /* 北辦：拿下一塊立牌，鏡頭轉回平常的方向，同事回去做事 */
+  if(L.boardAt){ const st=need(); if(st.q) ask(st, ok=>{ if(ok){ boardTalk(); doPlace(); } }); else doPlace(); return; }   /* 北辦：點到正確的立牌，直接出題、答對就完成，不用再走到黑板前（他 11-13：多此一舉）；鏡頭也不動 */   /* 北辦：拿下一塊立牌，鏡頭轉回平常的方向，同事回去做事 */
   carry=id; carryT=performance.now(); const spec=ITEM[L.id+'.'+id], me=LV.actors.you, hold=me.g.userData.hold; while(hold.children.length) hold.remove(hold.children[0]);
   if(spec){ const it=makeItem(spec), bb=new THREE.Box3().setFromObject(it.g); me.grip=Math.min(bb.max.x,-bb.min.x); me.gripZ=-bb.min.z;   /* 料的背面離手掌中心多遠（L 型固定片前後不對稱） */   /* 手握的寬度：兩邊比較窄的那邊（矽利康管一頭有尖嘴） */ hold.add(it.g); hold.position.set(...POSE[it.pose]); hold.rotation.set(0, it.pose==='side' ? Math.PI/2 : 0, it.pose==='overhead'||it.pose==='upright' ? Math.PI/2 : 0);   /* 大板立起來夾在身側；直料放倒，跟橫料一樣兩手握兩端 */ me.carry=it.pose; LV.pallets[id].item.visible=false; } else me.carry=null;
   fan('offer',0.4);
@@ -3006,7 +3006,7 @@ function tryPick(id){ if(done||dlgOpen||placed.has(id)) return; if(prank){ say([
 let multiN=0;                                                                         // 要放好幾個位置的步驟（預埋件）：現在放到第幾個
 function tryInstall(){ if(done||dlgOpen||!carry) return; const st=need(), M=st.multi;
   const go=()=>{ if(M){ dropIn(st.id, false, multiN*3, multiN*3+3); multiN++; if(multiN<M.length){ const q=M[multiN]; spot.position.set(q[0], gyAt(q[0],q[1]), q[1]); spotArmed=true; setGoal(); ensureSpotVisible(); return; } } doPlace(); };   // 一個一個放：放好一個，藍圈移到下一個
-  if(L.boardAt){ LV.boardLook=true; camGoal=Object.assign({},L.boardCam); if(LV.boardTurned) camGoal.theta=theta; LV.boardTurned=true; }   /* 第一次才轉向黑板，之後只拉近 */   /* 北辦：走到黑板前面，鏡頭轉到黑板正面，同事看向黑板 */
+  if(L.boardAt){ LV.boardLook=true; if(!LV.boardTurned) camGoal=Object.assign({},L.boardCam); LV.boardTurned=true; }   /* 只有第一次貼黑板，鏡頭自動轉過去；之後都不自己動 */   /* 北辦：走到黑板前面，鏡頭轉到黑板正面，同事看向黑板 */
   if(st.q && !(M && multiN>0)) ask(st, ok=>{ if(ok){ if(L.boardAt) boardTalk(); go(); } else spotArmed=false; }); else go(); }
 /* 答對之後：同事繼續看著黑板討論幾秒，隨機一個人講一句 */
 const DISCUSS=['這樣改比較合理。','嗯，同意。','早該這樣畫了。','記下來，下次別再犯。','這張圖我看了三次才看懂。'];
@@ -3014,11 +3014,11 @@ function boardTalk(){ const until=performance.now()+9000, ws=Object.keys(LV.acto
 function benchPick(id,btn){ if(done||dlgOpen||placed.has(id)) return;
   if(id!==need().id){ btn.classList.add('shake'); setTimeout(()=>btn.classList.remove('shake'),350); wrongOrder(id); return; }
   const st=need(); if(st.q) ask(st, ok=>{ if(ok) doPlace(); }); else doPlace(); }
-function doPlace(){ const st=need(); placed.add(st.id); carry=null; if(L.boardAt && LV.actors.you){ const me=LV.actors.you; me.pinT=performance.now()+1300; me.face=Math.atan2(L.boardAt[0]-me.x, L.boardAt[1]-me.z); }   /* 北辦：轉向牆上的圖，抬手把處理方法釘上去（他 11-13） */ if(st.in) camGoal={theta:0.5, phi:1.08, dist:12}; if(LV.actors.you){ const h=LV.actors.you.g.userData.hold; while(h.children.length) h.remove(h.children[0]); LV.actors.you.carry=null; } spot.visible=false; showGhost(null);
+function doPlace(){ const st=need(); placed.add(st.id); carry=null;  if(st.in) camGoal={theta:0.5, phi:1.08, dist:12}; if(LV.actors.you){ const h=LV.actors.you.g.userData.hold; while(h.children.length) h.remove(h.children[0]); LV.actors.you.carry=null; } spot.visible=false; showGhost(null);
   if(LV.pallets[st.id]) LV.pallets[st.id].lb.visible=false;
   if(L.fx && L.fx[st.id]) L.fx[st.id](); else dropIn(st.id, st.temp, st.multi ? st.multi.length*3 : 0);
   if(L.onPlace&&L.onPlace[st.id]) L.onPlace[st.id](); award(L.id+'.'+st.id); fan('cheer',0.55); cur++; stats(); buildTray();
-  const nx=()=>{ if(L.boardAt) camGoal={theta:L.view.theta, phi:L.view.phi, dist:L.view.dist};   /* 北辦：釘完、講完，鏡頭就轉回平常的方向（等到走路時才轉，鍵盤的方向會偏） */ if(cur>=L.steps.length) finish(); else setGoal(); }; if(st.plain) say([{who:L.boss, t:st.plain}], nx); else nx(); }   // plain＝做對之後，用一句白話說這步在幹嘛
+  const nx=()=>{   /* 北辦：釘完、講完，鏡頭不再自己拉回遠景（他 11-13：拽回去的角度太大會頭暈） */   /* 北辦：釘完、講完，鏡頭就轉回平常的方向（等到走路時才轉，鍵盤的方向會偏） */ if(cur>=L.steps.length) finish(); else setGoal(); }; if(st.plain) say([{who:L.boss, t:st.plain}], nx); else nx(); }   // plain＝做對之後，用一句白話說這步在幹嘛
 function finish(){ done=true; const sec=Math.round((Date.now()-t0)/1000); const best=store.get('cwstory_best',{}); if(!best[L.id]||score>best[L.id].s){ best[L.id]={s:score,n:ncr}; store.set('cwstory_best',best); }
   award(L.id+'#done'); if(ncr===0) award(L.id+'#clean'); if(sec<=90) award('misc.ontime'); checkUnlocks();
   const lines=(ncr===0?L.outroGood:L.outroBad).map(l=>Object.assign({},l,{t:l.t.replace('{N}',ncr)}));
@@ -3081,7 +3081,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
     $('#help').textContent = TOUCH ? '點工具盤＝做那一步　一指拖曳＝轉視角　兩指捏合＝縮放　兩指一起移＝平移　右邊＋－＝放大、縮小' : '點右邊工具盤＝做那一步　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   else { const n=L.tray.length, per=Math.ceil(n/2);
     if(L.office) L.tray.forEach((id,k)=>{ const at=(L.standAt&&L.standAt[id])||L.trayAt[k]; makePallet(stepOf(id), at[0], at[1]); });
-    if(L.office && L.decoyAt){ makePallet({id:'decoy', name:'結構計算檢討'}, L.decoyAt[0], L.decoyAt[1]); const d=LV.decoy=LV.pallets.decoy; delete LV.pallets.decoy; d.g.traverse(o=>{ if(o.userData.pick) o.userData.pick={kind:'decoy'}; }); }   /* 假立牌：長得跟真的一樣，但不在五件事裡 */   /* 北辦：五個立牌分散在辦公室各處（他 11-13：順便認識場景） */                                 // 辦公室：立牌在你面前排成一排，跟螢幕在同一個畫面
+    if(L.office && L.decoyAt){ makePallet({id:'decoy', name:'摸魚計畫檢討'}, L.decoyAt[0], L.decoyAt[1]); const d=LV.decoy=LV.pallets.decoy; delete LV.pallets.decoy; d.g.traverse(o=>{ if(o.userData.pick) o.userData.pick={kind:'decoy'}; }); }   /* 假立牌：長得跟真的一樣，但不在五件事裡 */   /* 北辦：五個立牌分散在辦公室各處（他 11-13：順便認識場景） */                                 // 辦公室：立牌在你面前排成一排，跟螢幕在同一個畫面
     else if(per<=6) L.tray.forEach((id,k)=>{ const row=k<per?0:1, j=row?k-per:k, cnt=row?n-per:per; makePallet(stepOf(id), L.cx+(j-(cnt-1)/2)*1.5+(row && cnt===per ? 0.75 : 0), 3.4+row*1.9); });   // 兩排拉開、錯開半格，長料才不會頭尾相接
     else [L.tray.slice(0,per), L.tray.slice(per)].forEach((ids,row)=>{ ids.forEach(id=>makePallet(stepOf(id), 0, 3.4+row*1.9)); const ps=ids.map(id=>LV.pallets[id]), GAP=0.6, tot=ps.reduce((t,q)=>t+2*q.obs.hx,0)+GAP*(ps.length-1); let x=L.cx-tot/2;   // 一排超過六個：照每個棧板實際的寬度排，中間固定留 60 公分讓人走
       ps.forEach(q=>{ x+=q.obs.hx; q.x=q.obs.x=x; q.g.position.x=x; x+=q.obs.hx+GAP; }); });   // 兩排拉開、錯開半格，長料才不會頭尾相接
