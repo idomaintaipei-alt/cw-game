@@ -1836,6 +1836,9 @@ function robeMat(){ if(_robe) return _robe; const c=document.createElement('canv
   for(let y=0;y<9;y++) for(let x=0;x<9;x++){ g.beginPath(); g.arc(x*16+(y%2?8:0), y*16, 8, 0.15, Math.PI-0.15); g.stroke(); }
   const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(2,2); return _robe=std(0xffffff,{map:t}); }
 // 小人：瘦長、眼神死、有眼袋的上班族。身高約 1.8。臉朝 +z。
+/* 眼鏡腳：從鏡框外緣沿著頭側往後，最後搭在耳朵上緣（不穿進頭裡）。f＝[起點離中線多遠, 起點往前多少] */
+function temple(sd,y,f){ const P=[[sd*f[0],y,f[1]],[sd*0.19,(y+1.6)/2,0.11],[sd*0.216,1.6,-0.005]], out=[];
+  for(let i=0;i<2;i++){ const a=P[i], b=P[i+1], dx=b[0]-a[0], dy=b[1]-a[1], dz=b[2]-a[2], L=Math.hypot(dx,dy,dz), t=box(0.009,0.009,L+0.008,(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2,mat.dark); t.rotation.order='YXZ'; t.rotation.y=Math.atan2(dx,dz); t.rotation.x=-Math.asin(dy/L); t.userData.temple=true; out.push(t); } return out; }
 // 試做 Q 版：原本的人做好以後，把頭部的東西搬進一個「頭」群組，以脖子（y=1.37）為中心放大；身體變圓
 const NECK=1.37, HEAD_K=1.45, BODY_K=1.16;
 function makePerson(c){ const g=makePerson0(c), u=g.userData, keep=new Set([u.legL,u.legR,u.armL,u.armR,u.hold]), head=new THREE.Group(); head.position.y=NECK;
@@ -1869,7 +1872,7 @@ function makePerson0(c){ const off=!!(L && L.office), cf=c.feat||{};            
     const el=new THREE.Group(); el.position.y=-0.24; el.add(cyl(0.047,0.24,'y',0,-0.12,0,vest,10)); el.add(ball(0.062,skin,0,-0.26,0)); a.add(el); a.userData.elbow=el; g.add(a); return a; };   /* 手肘以下：前臂、手 */
   const armL=ma(-1), armR=ma(1); if(off && f.tattoo) [armL,armR].forEach(a=>{ a.userData.elbow.children[0].material=tattooMat(c.skin); });   /* 短袖花襯衫：前臂露出來，有刺青 */
   // 頭：白眼球、往下看的瞳孔、半垂的眼皮、眼袋、一條線的嘴
-  g.add(ball(0.2,skin,0,1.57,0.01,1,0.96,0.96));
+  g.add(ball(0.2,skin,0,1.57,0.01,1,0.96,0.96)); [-1,1].forEach(sd=>g.add(ball(0.04,skin,sd*0.197,1.555,0,0.45,1,0.75)));   /* 耳朵：眼鏡腳搭在上面 */
   if(c.hero){ const iris=new THREE.MeshBasicMaterial({color:0x3b2a20}), wh=new THREE.MeshBasicMaterial({color:0xffffff}),   /* 眼睛不吃光：眼白下半不會變灰，像黑眼圈 */
     brow=std(c.hair||0x3a2a20), blush=std(0xf4a6a6), lf=!!f.lashes;   // 主角：小黑點眼睛、細眉毛、腮紅（其他人維持眼神死的上班族）
     [-1,1].forEach(sd=>{ const x=sd*0.072; g.add(ball(0.022,iris,x,1.585,0.188,1,1.25,0.6));   // 小黑點眼睛
@@ -1902,7 +1905,7 @@ function makePerson0(c){ const off=!!(L && L.office), cf=c.feat||{};            
   flyFrom(nC,'helmet');
   // 人物特徵
   if(f.mustache){ [-1,1].forEach(sd=>g.add(ball(0.04,mat.dark,sd*0.04,1.49,0.192,1.25,0.5,0.5))); }
-  if(f.glasses){ const nG=g.children.length; [-1,1].forEach(sd=>{ const r=new THREE.Mesh(new THREE.TorusGeometry(0.048,0.009,6,18),mat.dark); r.position.set(sd*0.078,1.578,0.2); g.add(r); }); g.add(box(0.066,0.01,0.01,0,1.585,0.206,mat.dark)); flyFrom(nG,'glasses'); }   // 眼鏡：框上緣不超過帽簷
+  if(f.glasses){ const nG=g.children.length; [-1,1].forEach(sd=>{ const r=new THREE.Mesh(new THREE.TorusGeometry(0.048,0.009,6,18),mat.dark); r.position.set(sd*0.078,1.578,0.2); g.add(r); temple(sd,1.585,[0.13,0.2]).forEach(t=>g.add(t)); }); g.add(box(0.066,0.01,0.01,0,1.585,0.206,mat.dark)); flyFrom(nG,'glasses'); }   // 眼鏡：框上緣不超過帽簷
   const hm=std(c.hair||0x2a2320);
   if(f.bob){ const bk=new THREE.Mesh(new THREE.CylinderGeometry(0.212,0.24,0.33,22,1,true,Math.PI/2-0.75,Math.PI+1.5), std(c.hair||0x2a2320,{side:THREE.DoubleSide})); bk.position.set(0,1.455,0.0); bk.castShadow=true; g.add(bk);   // 鮑伯頭：後腦和兩側的頭髮垂到下巴，下緣往外翹一點
     const rim=new THREE.Mesh(new THREE.TorusGeometry(0.235,0.022,6,22,Math.PI+1.5), hm); rim.rotation.x=Math.PI/2; rim.rotation.z=Math.PI-0.75; rim.position.set(0,1.295,0); g.add(rim); }
@@ -1915,7 +1918,7 @@ function makePerson0(c){ const off=!!(L && L.office), cf=c.feat||{};            
   if(f.stubble){ const sb=new THREE.Mesh(new THREE.SphereGeometry(0.203,20,10,0,Math.PI*2,1.85,0.75), new THREE.MeshBasicMaterial({color:0x5a4a40, transparent:true, opacity:.3})); sb.position.set(0,1.57,0.01); g.add(sb); }
   if(f.towel){ const tw=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.04,8,22),mat.white); tw.rotation.x=Math.PI/2; tw.position.y=1.4; g.add(tw); g.add(box(0.07,0.18,0.03,0.1,1.3,0.15,mat.white)); }
   // 造型配件
-  if(f.shades){ const nS=g.children.length; [-1,1].forEach(sd=>g.add(ball(0.064,mat.dark,sd*0.078,1.588,0.176,1.15,0.8,0.5))); g.add(box(0.06,0.018,0.018,0,1.598,0.208,mat.dark)); g.add(box(0.39,0.016,0.016,0,1.6,0.11,mat.dark)); flyFrom(nS,'shades'); }
+  if(f.shades){ const nS=g.children.length; [-1,1].forEach(sd=>{ const ln=ball(0.064,mat.dark,sd*0.08,1.588,0.197,1.15,0.8,0.25); ln.rotation.y=sd*0.45; g.add(ln); temple(sd,1.6,[0.15,0.165]).forEach(t=>g.add(t)); }); g.add(box(0.05,0.016,0.016,0,1.598,0.218,mat.dark));   /* 鏡片貼在臉外面、順著臉往後彎 */ flyFrom(nS,'shades'); }
   if(f.tape){ g.add(box(0.1,0.1,0.06,0.2,0.86,0.1,mat.anchor)); g.add(ball(0.025,mat.white,0.2,0.86,0.135)); }
   if(f.chain){ const ch=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.034,8,24), mat.gold); ch.rotation.x=Math.PI/2-0.4; ch.position.set(0,1.36,0.04); g.add(ch); g.add(cyl(0.07,0.026,'z',0,1.2,0.165,mat.gold,20)); g.add(cyl(0.04,0.03,'z',0,1.2,0.168,mat.red,16)); }
   if(f.boots) fx.push(t=>{ const h=(t*0.6)%1; bootM.color.setHSL(h,1,0.6); bootM.emissive.setHSL(h,1,0.25); soleM.emissive.setHSL((h+0.33)%1,1,0.55); });
@@ -1967,10 +1970,13 @@ function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
   let dr=a.face-a.g.rotation.y; dr=Math.atan2(Math.sin(dr),Math.cos(dr)); a.g.rotation.y+=dr*Math.min(1,dt*12);
   const u=a.g.userData, sw=moving?Math.sin(t*10+a.ph)*0.7:0, k=Math.min(1,dt*14);
   u.legL.rotation.x+=(sw-u.legL.rotation.x)*k; u.legR.rotation.x+=(-sw-u.legR.rotation.x)*k;
-  const c=a.carry, up = false, fa = c==='front'||c==='across' ? -0.32 : c==='upright' ? -1.25 : c==='overhead' ? -0.12 : null, ha = a.holdAim!==undefined && !moving ? a.holdAim : null, tl = ha!==null?ha : up?-2.9 : fa!==null?fa : -sw, tr = ha!==null?ha : up?-2.9 : fa!==null?fa : sw;   /* ha＝小弟扶料：兩手伸向要裝的東西 */   // front＝捧在腰前；club＝拿在手上垂著，手照常擺
-  const gz = c==='overhead' ? -0.42 : c==='front'||c==='across' ? Math.asin(Math.max(-0.6,Math.min(0.5,(0.22-(a.grip||0.15))/0.5))) : 0;                 // 捧著東西：兩手往內（或往外）收到東西的兩側
-  u.armL.rotation.x+=(tl-u.armL.rotation.x)*k; u.armR.rotation.x+=(tr-u.armR.rotation.x)*k; u.armL.rotation.z+=((c==='overhead'?0:gz)-u.armL.rotation.z)*k;   /* 夾板：只有右手往外 */ u.armR.rotation.z+=(-gz-u.armR.rotation.z)*k;
-  const eb = c==='front'||c==='across' ? -1.3 : 0; [u.armL,u.armR].forEach(m=>{ const e=m.userData.elbow; if(e) e.rotation.x+=(eb-e.rotation.x)*k; });   // 捧東西：上臂垂著、前臂往前平舉
+  const c=a.carry, up = false, fa = c==='front'||c==='across' ? -0.32 : c==='upright' ? -1.25 : c==='overhead'||c==='side' ? -0.12 : null, ha = a.holdAim!==undefined && !moving ? a.holdAim : null, tl = ha!==null?ha : up?-2.9 : fa!==null?fa : -sw, tr = ha!==null?ha : up?-2.9 : fa!==null?fa : sw;   /* ha＝小弟扶料：兩手伸向要裝的東西 */   // front＝捧在腰前；club＝拿在手上垂著，手照常擺
+  const GRIP = { across:{L:[-0.32,-0.6,-1.3], R:[-0.32,0.6,-1.3]}, upright:{L:[-0.32,-0.6,-1.3], R:[-0.32,0.6,-1.3]}, overhead:{R:[0.28,0.38,-0.6]}, side:{R:[0.28,0.38,-0.6]} };   /* 長料兩手握兩端；大板右手抓內側 */
+  const gz = c==='overhead' ? -0.42 : c==='front'||c==='across' ? Math.asin(Math.max(-0.565,Math.min(0.565,(0.26-(a.grip||0.15))/0.31))) : 0;   /* 手張開的寬度＝料的寬度（手掌貼著料的兩側） */                 // 捧著東西：兩手往內（或往外）收到東西的兩側
+  const gp = ha===null && GRIP[c], gL = gp && gp.L, gR = gp && gp.R;
+  u.armL.rotation.x+=((gL?gL[0]:tl)-u.armL.rotation.x)*k; u.armR.rotation.x+=((gR?gR[0]:tr)-u.armR.rotation.x)*k; u.armL.rotation.z+=((gL?gL[1]:c==='overhead'||c==='side'?0:gz)-u.armL.rotation.z)*k;   /* 夾板：左手垂著 */ u.armR.rotation.z+=((gR?gR[1]:-gz)-u.armR.rotation.z)*k;
+  const eb = c==='front' ? -1.3 : 0; [u.armL,u.armR].forEach((m,i)=>{ const e=m.userData.elbow, q=i?gR:gL; if(e) e.rotation.x+=((q?q[2]:eb)-e.rotation.x)*k; });
+  if((c==='front'||c==='across'||c==='upright') && ha===null && u.hold.children.length){ a.g.updateMatrixWorld(true); const hp=[u.armL,u.armR].map(m=>{ const b=m.userData.elbow.children.find(o=>o.geometry && o.geometry.type==='SphereGeometry'); return a.g.worldToLocal(b.getWorldPosition(new THREE.Vector3())); }); u.hold.position.set((hp[0].x+hp[1].x)/2,(hp[0].y+hp[1].y)/2,Math.max((hp[0].z+hp[1].z)/2, 0.27+(a.gripZ||0))); }   /* 厚的東西（水桶、膠條捲）往前推，不插進肚子 */   /* 料放在兩隻手掌正中間，跟著手走（不會浮在手外面） */   // 捧東西：上臂垂著、前臂往前平舉
   if(a.wob>0){ a.wob=Math.max(0,a.wob-dt*2.2); a.g.rotation.z=Math.sin(a.wob*18)*0.22*a.wob; } else a.g.rotation.z=0;
   if(a.atWork && !moving && u.clip){ u.armL.rotation.x=-1.15; u.armL.rotation.z=0.3; u.armR.rotation.x=-1.0+Math.sin(t*7+a.ph)*0.1; u.armR.rotation.z=-0.38; }   // 在忙：左手拿板夾，右手在上面寫
   if(u.clip) u.clip.visible = !a.carry;
@@ -2078,7 +2084,7 @@ const ITEM = {   // bar:長度:材質:v＝直料（立著）／h＝橫料（橫�
   'L3.mortar':'bucket', 'L3.jamb':'bar:1.4:alu:v', 'L3.sill':'bar:1.0:alu2:h', 'L3.head':'bar:1.0:alu2:h', 'L3.mid':'bar:1.0:alu2:h', 'L3.glass':'glass', 'L3.gasket':'coil',
   'L4.base':'bar:1.5:steelDark:h', 'L4.panel1':'panel', 'L4.fasten':'smallbox', 'L4.seal':'tube:seal', 'L4.panel2':'panel',
 };
-const POSE = { upright:[0.27,0.92,0.45], across:[0,1.1,0.42], overhead:[0.47,0.92,0.02], front:[0,1.06,0.45] };   /* 不舉過頭（舉過頭會插進安全帽）；捧在胸前的離項鍊墜子遠一點 */   // front＝雙手捧在胸前：位置對齊手掌
+const POSE = { upright:[0,1.176,0.318], across:[0,1.176,0.318], overhead:[0.47,0.85,0.02], front:[0,1.06,0.45], side:[0.44,0.8,0.02] };   /* 夾在身側的頂端壓在 1.30 以下：神明光圈的光芒會轉過來 */   /* 不舉過頭（舉過頭會插進安全帽）；捧在胸前的離項鍊墜子遠一點 */   // front＝雙手捧在胸前：位置對齊手掌
 const PY = { glass:0.62, embed:0.36, sheet:0.44, wool:0.27, bolts:0.19, plate:0.3, tube:0.18, bucket:0.3, coil:0.19, smallbox:0.22 };
 const flatPanelMat = [mat.foam, mat.foam, mat.face, mat.face, mat.foam, mat.foam];
 function makeItem(spec){ const g=new THREE.Group(), [kind,a,b,o]=spec.split(':'); let pose='front', len=0;
@@ -2086,7 +2092,7 @@ function makeItem(spec){ const g=new THREE.Group(), [kind,a,b,o]=spec.split(':')
     if(o==='v'){ g.add(box(0.1,len,0.13,0,0,0,m)); [-1,1].forEach(e=>g.add(box(0.106,0.03,0.136,0,e*len/2,0,mat.dark))); pose='upright'; }
     else { g.add(box(len,0.13,0.1,0,0,0,m)); [-1,1].forEach(e=>g.add(box(0.03,0.136,0.106,e*len/2,0,0,mat.dark))); pose='across'; } }
   else if(kind==='panel'){ g.add(box(0.9,0.09,1.6,0,0,0,flatPanelMat)); pose='overhead'; }
-  else if(kind==='glass'){ g.add(box(0.8,1.0,0.02,0,0,0,mat.glass)); g.add(box(0.82,0.03,0.03,0,0.5,0,mat.steel)); g.add(box(0.82,0.03,0.03,0,-0.5,0,mat.steel)); }
+  else if(kind==='glass'){ g.add(box(0.8,1.0,0.02,0,0,0,mat.glass)); g.add(box(0.82,0.03,0.03,0,0.5,0,mat.steel)); g.add(box(0.82,0.03,0.03,0,-0.5,0,mat.steel)); pose='side'; }   /* 玻璃 1 公尺高：立著夾在右邊（拿在胸前會擋到臉） */
   else { if(kind==='sheet'){ g.add(box(0.6,0.45,0.015,0,0,0,mat.steel)); [-0.21,0.21].forEach(y=>g.add(box(0.6,0.03,0.045,0,y,0.02,mat.steel))); }                       // 背襯板：一片有折邊的鐵板
     else if(kind==='wool'){ g.add(box(0.4,0.22,0.2,0,0,0,mat.wool)); [-0.06,0.06].forEach(y=>g.add(box(0.405,0.012,0.205,0,y,0,std(0xa98a35)))); }                            // 防火岩棉：一塊棉
     else if(kind==='embed'){ g.add(box(0.22,0.025,0.17,0,0,0,mat.anchor)); [[-0.07,-0.045],[0.07,-0.045],[-0.07,0.045],[0.07,0.045]].forEach(([x,z])=>{ g.add(cyl(0.012,0.12,'y',x,-0.07,z,mat.steel,8)); g.add(cyl(0.024,0.02,'y',x,-0.135,z,mat.steel,8)); }); }   // 鐵板＋四支錨筋
@@ -2532,7 +2538,7 @@ function tryPick(id){ if(done||dlgOpen||placed.has(id)) return; if(prank){ say([
   if(carry){ if(carry!==id) say([{who:L.boss, t: L.boss==='kun'?'……手上的，先裝。':'手上的先裝好，再拿別的。'}]); return; }
   if(id!==need().id){ wrongOrder(id); return; }
   carry=id; carryT=performance.now(); const spec=ITEM[L.id+'.'+id], me=LV.actors.you, hold=me.g.userData.hold; while(hold.children.length) hold.remove(hold.children[0]);
-  if(spec){ const it=makeItem(spec); me.grip=new THREE.Box3().setFromObject(it.g).max.x; hold.add(it.g); hold.position.set(...POSE[it.pose]); hold.rotation.z = it.pose==='overhead' ? Math.PI/2 : 0;   /* 大板立起來夾在身側 */ me.carry=it.pose; LV.pallets[id].item.visible=false; } else me.carry=null;
+  if(spec){ const it=makeItem(spec), bb=new THREE.Box3().setFromObject(it.g); me.grip=Math.min(bb.max.x,-bb.min.x); me.gripZ=-bb.min.z;   /* 料的背面離手掌中心多遠（L 型固定片前後不對稱） */   /* 手握的寬度：兩邊比較窄的那邊（矽利康管一頭有尖嘴） */ hold.add(it.g); hold.position.set(...POSE[it.pose]); hold.rotation.set(0, it.pose==='side' ? Math.PI/2 : 0, it.pose==='overhead'||it.pose==='upright' ? Math.PI/2 : 0);   /* 大板立起來夾在身側；直料放倒，跟橫料一樣兩手握兩端 */ me.carry=it.pose; LV.pallets[id].item.visible=false; } else me.carry=null;
   fan('offer',0.4);
   const st=need(); spot.position.set(st.spot[0], gyAt(st.spot[0],st.spot[1]), st.spot[1]); spot.visible=true; spotArmed=true; showGhost(id); setGoal();
   if(st.in) camGoal={theta:2.7, phi:0.95, dist:9.5}; buildSpotOcc(); ensureSpotVisible(); }                                 // 室內側的工作：鏡頭轉到室內看
