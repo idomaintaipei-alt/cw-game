@@ -1159,7 +1159,7 @@ function charcoal(X,Y){ const g=new THREE.Group(), u=g.userData, bk=std(0x26221f
     let dr=face-g.rotation.y; dr=Math.atan2(Math.sin(dr),Math.cos(dr)); g.rotation.y+=dr*Math.min(1,dt*10); }); return g; }
 function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /* WP＝高的東西（牆、柱、玻璃、高櫃）的障礙物多留的寬度：人最寬的地方（頭、垂著的手）半徑 35 公分，走路用的半徑只有 22 公分，不多留身體就會插進牆（他 11-13 截圖；T.wallPokeScan 在查） */
   const M={ floor:std(0x8a7a6c,{roughness:0.85}), out:std(0xa9adb3), conc:std(0xc8c6c0,{roughness:0.95}), paint:std(0xb4b7bc), wood:std(0xc9ad8a), woodD:std(0x8a6c50), blk:std(0x2a2d33), frame:std(0x1f2226), desk:std(0xc4a077), steel:std(0xb8bec6,{metalness:0.5, roughness:0.4}),
-    glass:new THREE.MeshStandardMaterial({color:0xcfe6f0, transparent:true, opacity:0.16, roughness:0.08, depthWrite:false}), scr:std(0x7fd0ff,{emissive:0x2a6f9a}), pot:std(0x33363c), leaf:std(0x3f9d5a), rug:std(0x9a8474), brick:brickMat(), door:std(0x4a3a2e), white:std(0xf2f2ee), lamp:std(0xfff4d6,{emissive:0xffe9a8}), beige:std(0xdccfb6), wallD:std(0x3d4148), rail:new THREE.MeshStandardMaterial({color:0x1f2226, transparent:true, opacity:0.13, depthWrite:false}), beam:new THREE.MeshStandardMaterial({color:0x0b0b0d, roughness:0.9}) };   /* beam＝真的黑色（不走 std：美術版的 std 會把顏色調淡，黑的會變成深藍灰） */
+    glass:new THREE.MeshStandardMaterial({color:0xcfe6f0, transparent:true, opacity:0.16, roughness:0.08, depthWrite:false}), scr:std(0x7fd0ff,{emissive:0x2a6f9a}), pot:std(0x33363c), leaf:std(0x3f9d5a), rug:std(0x9a8474), brick:brickMat(), door:std(0x4a3a2e), white:std(0xf2f2ee), lamp:std(0xfff4d6,{emissive:0xffe9a8}), beige:std(0xdccfb6), wallD:std(0x3d4148), rail:new THREE.MeshStandardMaterial({color:0x1f2226, transparent:true, opacity:0.13, depthWrite:false}) };
   const NS=m=>{ m.castShadow=false; return m; };
   /* CAD 的一塊矩形（X0,Y0)-(X1,Y1)，高 h、離地 yb */
   const Bx=(X0,Y0,X1,Y1,h,m,yb=0)=>stat(box(Math.abs(X1-X0)*K,h,Math.abs(Y1-Y0)*K, gx((X0+X1)/2), y0+yb+h/2, gz((Y0+Y1)/2), m));
@@ -1199,7 +1199,7 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
   Bx(1.13,9.44,2.62,9.5,0.86,M.frame,0.93); NS(Bx(1.17,9.43,2.58,9.445,0.78,std(0x16263a,{emissive:0x0c1a2c}),0.97)); NS(Bx(1.6,9.43,2.15,9.5,0.07,M.paint,1.82)); NS(Bx(1.18,9.26,2.57,9.5,0.32,M.white,2.2)); NS(Bx(1.24,9.25,2.51,9.262,0.03,M.paint,2.22));   /* 冷氣跟電視差不多寬、掛在電視正上方（他 11-13） */   /* 大電視（約 65 吋）、上面的視訊鏡頭、冷氣 */
   /* 老闆辦公室（植栽那一間；分機 1801、1802、1803）：植栽櫃、主機、兩張桌子；北邊一排高櫃 */
   Bx(3.46,5.18,3.54,6.26,H,M.conc); Bx(3.54,5.18,4.12,5.26,2.41,M.conc); Bx(5.39,5.18,6.97,5.26,2.41,M.conc); Bx(6.97,5.26,7.09,9.17,H,M.conc);
-  NS(Bx(3.54,5.14,4.12,5.3,H-2.41,M.beam,2.41)); NS(Bx(4.12,4.68,6.97,5.3,H-2.41,M.beam,2.41)); NS(Bx(6.97,4.68,7.51,5.26,H-2.41,M.beam,2.41));   /* 這面牆上面是一整根黑色的梁，跨在兩根紅磚柱上面，柱子只到梁底（他 11-13：影印機上面的梁是全黑的、柱頂到梁；照片 13） */
+  NS(Bx(3.54,5.14,4.12,5.3,H-2.41,M.frame,2.41)); NS(Bx(4.12,4.68,6.97,5.3,H-2.41,M.frame,2.41)); NS(Bx(6.97,4.68,7.51,5.26,H-2.41,M.frame,2.41));   /* 這面牆上面是一整根黑色的梁，跨在兩根紅磚柱上面，柱子只到梁底（他 11-13：影印機上面的梁是全黑的、柱頂到梁；照片 13）。顏色跟辦公區中間那根鋼板柱一樣的深灰：試過純黑，他說太黑 */
   NS(Bx(4.49,5.185,5.39,5.27,0.06,M.conc,2.35));   /* 老闆辦公室的門口：紅磚柱到米色拉門之間這一格是開著的（照片 13、11-13 的影片：看得到裡面的龜背芋和層板，沒有玻璃）；上面一條淺色門框，再上面是黑梁。原本做成一片玻璃，人進不去、身體還會插進玻璃 */
   { const dr=NS(Bx(5.39,5.11,6.45,5.17,2.35,std(0xdccfb6))); NS(Bx(5.47,5.095,5.5,5.115,0.5,M.frame,0.85)); NS(Bx(4.49,5.1,6.97,5.18,0.05,M.frame,2.35)); }   /* 門口右邊：米色拉門（他 11-13 說那一片是米色拉門），平常推開停在這裡；黑色把手、上面的軌道 */
   Bx(3.56,9.17,4.04,9.55,2.5,M.woodD); Bx(4.62,9.5,6.97,9.55,2.5,M.woodD); [4.62,5.78,6.93].forEach(X=>Bx(X,9.2,X+0.04,9.5,2.5,M.woodD));
