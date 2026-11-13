@@ -1339,8 +1339,8 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
   /* 天花板的圓形嵌燈拿掉了：天花板只從下面看得到，鏡頭從上面看進來時，一顆顆圓燈像飄在空中（他 11-13） */
   stat(board(['新人位','分機 1814'], gx(6.48),y0+0.84,gz(2.2),Math.PI/2,0.34,'#ffffff','#1d4f86'));   /* 你的位子：琳姊旁邊靠走道那一格，桌上一張名牌；分機 1814（他 11-13 指定：位置不動、分機給 1814） */
   /* 入口：方地毯、龜背芋、雨傘桶 */
-  { const rx=gx(2.15), rz=gz(5.3), rb=std(0x86705f), r=box(1.7,0.012,1.15, rx,y0+0.006,rz, M.rug); r.castShadow=false; r.receiveShadow=true; stat(r);   /* 門口的地毯：長方形（他 11-13：地毯是方的不是圓的；照片 3），兩圈深色的框線 */
-    [[0.74,0.47],[0.5,0.25]].forEach(([hx,hz])=>[[0,-hz,hx*2+0.03,0.03],[0,hz,hx*2+0.03,0.03],[-hx,0,0.03,hz*2+0.03],[hx,0,0.03,hz*2+0.03]].forEach(([dx,dz,w,d])=>{ const m=box(w,0.004,d, rx+dx,y0+0.014,rz+dz, rb); m.castShadow=false; stat(m); }));
+  { const rx=gx(1.82), rz=gz(5.4), rb=std(0x86705f), r=box(1.15,0.012,1.7, rx,y0+0.006,rz, M.rug); r.castShadow=false; r.receiveShadow=true; stat(r);   /* 門口的地毯：長方形（他 11-13：地毯是方的不是圓的；照片 3），兩圈深色的框線。長邊南北向、貼著 +15 小台座的東緣（他 11-13：轉 90 度、長的那一邊靠近 +15） */
+    [[0.47,0.74],[0.25,0.5]].forEach(([hx,hz])=>[[0,-hz,hx*2+0.03,0.03],[0,hz,hx*2+0.03,0.03],[-hx,0,0.03,hz*2+0.03],[hx,0,0.03,hz*2+0.03]].forEach(([dx,dz,w,d])=>{ const m=box(w,0.004,d, rx+dx,y0+0.014,rz+dz, rb); m.castShadow=false; stat(m); }));
     [[3.05,5.85,1],[2.6,5.95,0.75],[0.55,4.45,0.85]].forEach(([X,Y,k])=>{ stat(cyl(0.2*k,0.36*k,'y',gx(X),y0+0.18*k,gz(Y),M.pot,14)); stat(cyl(0.03*k,1.2*k,'y',gx(X),y0+0.9*k,gz(Y),M.leaf,8)); for(let i=0;i<7;i++){ const a=i/7*Math.PI*2, lf=ball(0.2*k,M.leaf,gx(X)+Math.sin(a)*0.22*k,y0+(0.75+0.28*(i%3))*k,gz(Y)+Math.cos(a)*0.22*k,1,0.25,0.75); lf.rotation.set(0.5*Math.cos(a),a,0.5*Math.sin(a)); stat(lf); } obw(X,Y,0.22*k); });
     Bx(0.15,5.26,1.28,6.26,0.15,M.floor); Bx(0.44,4.74,1.28,5.26,0.15,M.floor);   /* 門口的小台座：比外面高 15 公分。範圍照他 11-13 在截圖上畫的紅框：西邊到大門、北邊到會議室第一片玻璃、東邊到那片玻璃的盡頭、南邊到紅磚柱的南面 */
     stat(cyl(0.13,0.45,'y',gx(0.62),y0+0.15+0.225,gz(5.42),M.frame,12)); [[0.04,0x2f6fd0],[-0.05,0xe6b422]].forEach(([d,cl])=>{ const um=cyl(0.02,0.7,'y',gx(0.62)+d,y0+0.15+0.5,gz(5.42)+d,std(cl),8); um.rotation.z=d*3; stat(um); }); obw(0.62,5.42,0.13); }   /* 傘桶（藍、黃兩把傘）：在門口旁的紅磚柱邊、台座上（他 11-13；照片 3） */
@@ -1351,7 +1351,7 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
     [-0.9,0.9].forEach(dx=>{ stat(box(0.05,SCR.yc+Hh/2,0.05, xc+dx,y0+(SCR.yc+Hh/2)/2,zc+0.075, M.frame)); stat(box(0.06,0.05,0.34, xc+dx,y0+0.055,zc+0.05, M.frame)); [-0.14,0.14].forEach(dz=>stat(ball(0.03,M.frame,xc+dx,y0+0.03,zc+0.05+dz))); });
     bg.add(logoSign(SCR.X+(-W/2+0.16)/K,SCR.yc-Hh/2+0.11,SCR.Y+0.006/K,Math.PI,0.16));   /* W 是實際寬度，換回 CAD 座標要除以 K（不除的話 LOGO 會跑到板子外面飄著，T.signFloatScan 抓到） */ LV.obs.push({x:xc, z:zc+0.03, hx:1.0, hz:0.23}); }   /* 板面前面貼著圖（凸出 6 公分），障礙物往前多留一點，人才不會插進圖裡 */
   LV.cuts=cuts; cuts.forEach(c=>c.full.forEach(m=>{ m.userData.noFade=true; m.raycast=function(r,i){ if(this.visible) THREE.Mesh.prototype.raycast.call(this,r,i); }; })); LV.fx.push(()=>cuts.forEach(c=>{ const o=c.out(); c.full.forEach(m=>m.visible=!o); c.low.forEach(m=>m.visible=o); }));   /* 實牆：鏡頭在牆外面就收起來、只留牆腳（收起來的時候也不擋點擊） */
-  charcoal(2.15,5.3); }
+  charcoal(1.82,5.4); }
 function cornerWall(put, staged, fm){   // staged＝從板筋階段開始（樓板還沒灌漿）
   if(staged) tower(); else if(fm!=='none') ground(-0.25, fm);
   stat(box(0.5,3.6,0.6, -0.35,1.55,-0.15, mat.rc));
