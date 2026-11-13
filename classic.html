@@ -1101,7 +1101,7 @@ function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas')
 const LV = { group:null, parts:{}, refs:{}, pallets:{}, pick:[], actors:{} };
 const anims = [];
 function resetGroup(){ if(LV.group){ scene.remove(LV.group); LV.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.talkers=[]; LV.obs=[]; LV.raise=null; LV.cuts=null; LV.dog=null; LV.gates=null; combo=null; LV.wc=null; LV.boardTurned=false;   /* 北辦的台階、收起來的牆、恰恰：換關要清掉，不然別關的地面會在同一個位置被墊高 */ LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.down=false; LV.occ=null; LV.smash=null; LV.call=null; LV.ride=null; LV.rideArm=true; LV.myRide=null; LV.smashRects=[]; LV.bribed=new Set(); LV.cash=null; LV.cashFx=false; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
+  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.talkers=[]; LV.obs=[]; LV.raise=null; LV.cuts=null; LV.dog=null; LV.gates=null; combo=null; LV.wc=null; LV.boardTurned=false; LV.decoy=null;   /* 北辦的台階、收起來的牆、恰恰：換關要清掉，不然別關的地面會在同一個位置被墊高 */ LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.down=false; LV.occ=null; LV.smash=null; LV.call=null; LV.ride=null; LV.rideArm=true; LV.myRide=null; LV.smashRects=[]; LV.bribed=new Set(); LV.cash=null; LV.cashFx=false; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
 function part(id){ return LV.parts[id] || (LV.parts[id]={meshes:[],ghosts:[]}); }
 function ghostOf(id, mesh){ if(mesh.isSprite) return; const gh=new THREE.Mesh(mesh.geometry, mat.ghost); gh.position.copy(mesh.position); gh.rotation.copy(mesh.rotation); gh.visible=false; (LV.host||LV.group).add(gh); part(id).ghosts.push(gh); }
 function add(id, mesh){ mesh.visible=false; mesh.userData.home=mesh.position.clone(); (LV.host||LV.group).add(mesh); part(id).meshes.push(mesh); ghostOf(id,mesh); return mesh; }
@@ -1792,6 +1792,7 @@ const LEVELS = [
 { id:'L5', name:'週一　施工圖檢討', short:'週一', office:true, roastAt:3, view:{t:[0.3,0.8,0.9], theta:-0.14, phi:0.55, dist:17.5},
   boardAt:[BB.x(SCR.X),BB.z(SCR.Y)], boardCam:{theta:Math.PI, phi:1.15, dist:5.6},   /* 黑板的位置；走到黑板前面時鏡頭轉到北邊看板面 */
   area:{x0:BB.x(0), x1:BB.x(11.71), z0:BB.z(9.75), z1:BB.z(0)},   /* 走得到的範圍：整棟。牆、玻璃、家具各自當障礙物；會議室、老闆辦公室、茶水間都走得進去（他 11-13），左邊的原有廁所門關著 */
+  decoyAt:[BB.x(7.35),BB.z(8.3)],   /* 假的檢討立牌：在廁所裡面，騙人進去（他 11-13） */
   standAt:{ cost:[BB.x(5.3),BB.z(6.4)], iface:[BB.x(1.0),BB.z(5.0)], revise:[BB.x(6.6),BB.z(4.0)], embed:[BB.x(1.9),BB.z(3.8)], fab:[BB.x(10.1),BB.z(5.3)] },   /* 成本檢討＝老闆辦公室門口、安裝運送＝大門口、圖面修改＝辦公區中間、預埋圖＝西邊走道、加工方法＝茶水間（東邊走道太窄走不到；廁所前面會擋到廁所門） */
   trayAt:[[0.95,4.2],[1.67,4.2],[2.39,4.2],[3.11,4.2],[3.83,4.2]].map(([X,Y])=>[BB.x(X),BB.z(Y)]), startAt:[BB.x(1.15),BB.z(5.9)], batAt:[BB.x(0.62),BB.z(1.95)],   /* 球棒箱搬到西南角、第一組桌子後面靠西牆（他 11-13 14:43：放在不那麼明顯的位置；原本在門口台座上，一進門就看到） */   /* 五塊立牌都擺在入口前面這一塊任務區（他 11-13：黑柱子刪掉、任務區空出來、在這邊執行；排成一列（他 11-13：不要分成兩列），從右邊繞得過去，離藍圈也夠遠不會一拿就跳題），黑板在兩組桌子中間走道的南端；討論的站位在走道口（小安、鐵叔那一排後面，不用擠進兩排座位中間：走道中間只剩 46 公分，鍵盤、搖桿容易蹭到坐著的同事）；你從入口（ENTRY）進來，站在門口的小台座上；球棒和傘桶放在門口那根紅磚柱的東邊（他 11-13 指定）；你的起點往北挪到離球棒超過 75 公分，才不會一開場就跳內心獨白 */
   seats:[[BB.x(3.34),BB.z(2.63),-Math.PI/2,1813],[BB.x(5.0),BB.z(2.63),Math.PI/2,1815],[BB.x(6.81),BB.z(1.30),-Math.PI/2,1818]], fanSeats:[['di',BB.x(3.34),BB.z(1.30),-Math.PI/2,1814],['hao',BB.x(5.0),BB.z(1.30),Math.PI/2,1816]],   /* 小安 1813、鐵叔 1815、琳姊 1818、兩個同梯 1814／1816；你的位子是 1817（他 11-13 指定：琳姊坐裡面，空位給新人） */ desc:'到職第一天，在設計部。學長畫好的施工圖要送出去，你跟著學姊，把公司內部的檢討跑一遍。送出去之前有五件事。', trDone:'圖送出去了，鍋也是',
@@ -2964,6 +2965,7 @@ function ensureSpotVisible(){ if(!spot.visible || !L || L.bench || L.office || L
   else { if(!spotBlocked(cur.theta,cur.phi,cur.dist)) return; tries=[cur, base]; }
   for(const b of tries) for(const kz of [1,1.25,1.5]) for(const dp of [0,-0.22]) for(const dt of [0,0.35,-0.35,0.7,-0.7,1.05,-1.05,1.4,-1.4,1.9,-1.9]){ const th=b.theta+dt, ph=Math.max(0.45,b.phi+dp), d=Math.min(maxD,b.dist*kz); if(th<lo || th>hi) continue;
     if(!spotOff(th,ph,d) && !spotBlocked(th,ph,d)){ camGoal={theta:th, phi:ph, dist:d}; return; } } }   // 先試左右轉，再試從高一點往下看，再試拉遠一點，最後試這一步原本的角度
+function goDecoy(){ const d=LV.decoy; if(!d) return; const s=standNear(d.x,d.z,0.9,d.obs); moveTo(s.x,s.z,()=>bubble('you', pickOne(['（背面用原子筆寫著：「這塊是假的。」……誰放的？）','（結構計算檢討……這不是結構技師的事嗎？我在廁所幹嘛？）','（立牌背面貼著一張便利貼：「上班時間請勿久留。——人資」）']), true)); }   /* 假立牌：走過去才發現被騙；在廁所待太久照樣任務失敗 */
 function goPallet(id){ const q=LV.pallets[id]; if(!q||placed.has(id)) return; const s=standNear(q.x,q.z,0.9,q.obs); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(rectDist(q.obs,p.x,p.z).d<0.9) tryPick(id); }); }   // 真的走到旁邊才拿
 function goSpot(){ spotArmed=true; moveTo(spot.position.x, spot.position.z, ()=>{ const p=LV.actors.you; if(Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1) tryInstall(); }); }
 function goNpc(who){ const a=LV.actors[who]; const s=standNear(a.x,a.z,1.0); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(dlgOpen||failed||Math.hypot(p.x-a.x,p.z-a.z)>1.9) return; a.chats=(a.chats||0)+1;
@@ -3062,7 +3064,8 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
   if(L.bench){ const c=L.cam; target.set(...c.t); theta=c.theta; phi=c.phi; dist=c.dist; minD=c.min||dist*0.35; maxD=c.max||dist*2.5;
     $('#help').textContent = TOUCH ? '點工具盤＝做那一步　一指拖曳＝轉視角　兩指捏合＝縮放　兩指一起移＝平移　右邊＋－＝放大、縮小' : '點右邊工具盤＝做那一步　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   else { const n=L.tray.length, per=Math.ceil(n/2);
-    if(L.office) L.tray.forEach((id,k)=>{ const at=(L.standAt&&L.standAt[id])||L.trayAt[k]; makePallet(stepOf(id), at[0], at[1]); });   /* 北辦：五個立牌分散在辦公室各處（他 11-13：順便認識場景） */                                 // 辦公室：立牌在你面前排成一排，跟螢幕在同一個畫面
+    if(L.office) L.tray.forEach((id,k)=>{ const at=(L.standAt&&L.standAt[id])||L.trayAt[k]; makePallet(stepOf(id), at[0], at[1]); });
+    if(L.office && L.decoyAt){ makePallet({id:'decoy', name:'結構計算檢討'}, L.decoyAt[0], L.decoyAt[1]); const d=LV.decoy=LV.pallets.decoy; delete LV.pallets.decoy; d.g.traverse(o=>{ if(o.userData.pick) o.userData.pick={kind:'decoy'}; }); }   /* 假立牌：長得跟真的一樣，但不在五件事裡 */   /* 北辦：五個立牌分散在辦公室各處（他 11-13：順便認識場景） */                                 // 辦公室：立牌在你面前排成一排，跟螢幕在同一個畫面
     else if(per<=6) L.tray.forEach((id,k)=>{ const row=k<per?0:1, j=row?k-per:k, cnt=row?n-per:per; makePallet(stepOf(id), L.cx+(j-(cnt-1)/2)*1.5+(row && cnt===per ? 0.75 : 0), 3.4+row*1.9); });   // 兩排拉開、錯開半格，長料才不會頭尾相接
     else [L.tray.slice(0,per), L.tray.slice(per)].forEach((ids,row)=>{ ids.forEach(id=>makePallet(stepOf(id), 0, 3.4+row*1.9)); const ps=ids.map(id=>LV.pallets[id]), GAP=0.6, tot=ps.reduce((t,q)=>t+2*q.obs.hx,0)+GAP*(ps.length-1); let x=L.cx-tot/2;   // 一排超過六個：照每個棧板實際的寬度排，中間固定留 60 公分讓人走
       ps.forEach(q=>{ x+=q.obs.hx; q.x=q.obs.x=x; q.g.position.x=x; x+=q.obs.hx+GAP; }); });   // 兩排拉開、錯開半格，長料才不會頭尾相接
@@ -3102,6 +3105,7 @@ function onClick(e){ if(dlgOpen){ advance(); return; } if(!L||L.bench) return; i
   const r=cvs.getBoundingClientRect(); ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); ray.setFromCamera(ndc,camera);
   for(const h of ray.intersectObjects(LV.pick,false)){ const p=h.object.userData.pick; if(!p) continue;
     if(p.kind==='pallet'){ if(done||placed.has(p.id)) continue; goPallet(p.id); return; }
+    if(p.kind==='decoy'){ if(!done) goDecoy(); return; }
     if(p.kind==='spot'){ if(!spot.visible) continue; goSpot(); return; }
     if(p.kind==='prank'){ if(!done) goPrank(p.id); return; }
     if(p.kind==='hoist'){ if(!done) goHoist(); return; }
