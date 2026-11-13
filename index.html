@@ -1163,18 +1163,18 @@ function charcoal(X,Y){ const g=new THREE.Group(), u=g.userData, bk=std(0x26221f
     let dr=face-g.rotation.y; dr=Math.atan2(Math.sin(dr),Math.cos(dr)); g.rotation.y+=dr*Math.min(1,dt*10); }); return g; }
 function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /* WP＝高的東西（牆、柱、玻璃、高櫃）的障礙物多留的寬度：人最寬的地方（頭、垂著的手）半徑 35 公分，走路用的半徑只有 22 公分，不多留身體就會插進牆（他 11-13 截圖；T.wallPokeScan 在查） */
   const M={ floor:std(0x8a7a6c,{roughness:0.85}), out:std(0xa9adb3), conc:std(0xc8c6c0,{roughness:0.95}), paint:std(0xb4b7bc), wood:std(0xc9ad8a), woodD:std(0x8a6c50), blk:std(0x2a2d33), frame:std(0x1f2226), desk:std(0xc4a077), steel:std(0xb8bec6,{metalness:0.5, roughness:0.4}),
-    glass:new THREE.MeshStandardMaterial({color:0xcfe6f0, transparent:true, opacity:0.16, roughness:0.08, depthWrite:false}), scr:std(0x7fd0ff,{emissive:0x2a6f9a}), pot:std(0x33363c), leaf:std(0x3f9d5a), rug:std(0x9a8474), brick:brickMat(), door:std(0x4a3a2e), white:std(0xf2f2ee), lamp:std(0xfff4d6,{emissive:0xffe9a8}), beige:std(0xdccfb6), wallD:std(0x3d4148), rail:new THREE.MeshStandardMaterial({color:0x1f2226, transparent:true, opacity:0.13, depthWrite:false}) };
+    glass:new THREE.MeshStandardMaterial({color:0xcfe6f0, transparent:true, opacity:0.16, roughness:0.08, depthWrite:false}), scr:std(0x7fd0ff,{emissive:0x2a6f9a}), pot:std(0x33363c), leaf:std(0x3f9d5a), rug:std(0x9a8474), brick:brickMat(), door:std(0x4a3a2e), white:std(0xf2f2ee), lamp:std(0xfff4d6,{emissive:0xffe9a8}), beige:std(0xdccfb6), wallD:std(0x3d4148), rail:new THREE.MeshStandardMaterial({color:0x1f2226, transparent:true, opacity:0.13, depthWrite:false}), beam:new THREE.MeshStandardMaterial({color:0x0b0b0d, roughness:0.9}) };   /* beam＝真的黑色（不走 std：美術版的 std 會把顏色調淡，黑的會變成深藍灰） */
   const NS=m=>{ m.castShadow=false; return m; };
   /* CAD 的一塊矩形（X0,Y0)-(X1,Y1)，高 h、離地 yb */
   const Bx=(X0,Y0,X1,Y1,h,m,yb=0)=>stat(box(Math.abs(X1-X0)*K,h,Math.abs(Y1-Y0)*K, gx((X0+X1)/2), y0+yb+h/2, gz((Y0+Y1)/2), m));
   const ob=(X0,Y0,X1,Y1,pad=0)=>LV.obs.push({x:gx((X0+X1)/2), z:gz((Y0+Y1)/2), hx:Math.abs(X1-X0)/2*K+pad, hz:Math.abs(Y1-Y0)/2*K+pad}), wob=(X0,Y0,X1,Y1)=>ob(X0,Y0,X1,Y1,WP), obw=(X,Y,h)=>LV.obs.push({x:gx(X), z:gz(Y), hx:h, hz:h});   /* ob＝矮的東西；wob＝高的東西（多留 WP）；obw＝不跟著格局放大的東西（椅子、盆栽），h＝實際半寬 */
   const glass=(X0,Y0,X1,Y1,h=2.3,yb=0,lite=false)=>{   /* lite＝臨街的落地窗：不畫上橫料（鏡頭從外面看進來，上橫料會橫在畫面中間） */ const g=NS(Bx(X0,Y0,X1,Y1,h,M.glass,yb)); g.userData.noFade=true; const hx=Math.abs(X1-X0)>Math.abs(Y1-Y0), t=0.05;   /* 玻璃＋黑框（上下橫料、兩端直料） */
     (lite ? [yb] : [yb, yb+h-t]).forEach(y=>NS(Bx(X0,Y0,X1,Y1,t,M.frame,y))); (hx ? [[X0,X0+t],[X1-t,X1]] : [[Y0,Y0+t],[Y1-t,Y1]]).forEach(([a,b])=>NS(hx ? Bx(a,Y0,b,Y1,h,M.frame,yb) : Bx(X0,a,X1,b,h,M.frame,yb))); return g; };
-  const col=(X0,Y0,X1,Y1)=>{ Bx(X0,Y0,X1,Y1,H,M.brick); wob(X0,Y0,X1,Y1); };
+  const col=(X0,Y0,X1,Y1,h=H)=>{ Bx(X0,Y0,X1,Y1,h,M.brick); wob(X0,Y0,X1,Y1); };
   /* 地板、外面的人行道 */
   { const f=Bx(0,0,11.71,9.75,0.1,M.floor,-0.1); f.receiveShadow=true; const o=new THREE.Mesh(new THREE.PlaneGeometry(60,60), M.out); o.rotation.x=-Math.PI/2; o.position.set(0,y0-0.03,0); o.receiveShadow=true; stat(o); }
   /* 柱子（紅磚）。CAD：WAL_RC 的封閉方塊 */
-  [[4.04,9.17,4.62,9.75],[6.97,9.17,7.55,9.75],[11.13,9.17,11.71,9.75],[0,4.74,0.44,5.26],[0,2.38,0.4,2.77],[2.05,0,2.63,0.38],[6.97,0,7.51,0.58],[11.25,0,11.71,0.58],[4.12,4.72,4.49,5.26],[6.97,4.68,7.51,5.26],[11.18,4.68,11.71,5.26]].forEach(c=>col(...c));
+  [[4.04,9.17,4.62,9.75],[6.97,9.17,7.55,9.75],[11.13,9.17,11.71,9.75],[0,4.74,0.44,5.26],[0,2.38,0.4,2.77],[2.05,0,2.63,0.38],[6.97,0,7.51,0.58],[11.25,0,11.71,0.58],[4.12,4.72,4.49,5.26,2.41],[6.97,4.68,7.51,5.26,2.41],[11.18,4.68,11.71,5.26]].forEach(c=>col(...c));
   Bx(0,9.17,0.58,9.75,H,M.conc); wob(0,9.17,0.58,9.75); Bx(0.58,9.17,0.6,9.5,H,M.wood); Bx(0.25,9.15,0.6,9.17,H,M.wood);   /* 西北角（會議室的角落）：那根柱子在室內是木紋牆包起來的，沒有紅磚（他 11-13 指正；照片 1） */
   Bx(2.25,3.81,2.61,4.17,H,M.frame); wob(2.25,3.81,2.61,4.17);   /* 辦公區中間那根：黑色沖孔鋼板包起來的柱子 */
   /* 外牆：北、東是實牆；南、西臨街是落地窗 */
@@ -1200,10 +1200,10 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
   Bx(0.58,9.5,3.46,9.55,H,M.wood); Bx(0.2,8.27,0.25,9.17,H,M.wood); Bx(3.46,8.27,3.56,9.55,H,M.wood);
   glass(0.15,6.26,1.28,6.32); glass(2.48,6.26,3.54,6.32); glass(3.48,6.32,3.54,8.27); Bx(2.42,6.19,3.5,6.235,2.25,M.wood); NS(Bx(2.46,6.172,2.49,6.19,0.4,M.frame,0.85));   /* 中間是木頭拉門（他 11-13：木頭質感；照片 3、4），平常推開停在右邊那片玻璃前面，門口開著，人走得進去 */ NS(Bx(0.15,6.262,3.54,6.34,0.2,M.wood,2.3));
   Bx(1.36,7.1,2.39,9.5,0.05,M.desk,0.71); [[1.5,7.3],[2.25,7.3],[1.5,9.3],[2.25,9.3]].forEach(([X,Y])=>NS(Bx(X-0.03,Y-0.03,X+0.03,Y+0.03,0.71,M.frame))); ob(1.36,7.1,2.39,9.5);   /* 會議桌 */
-  Bx(1.13,9.44,2.62,9.5,0.86,M.frame,0.93); NS(Bx(1.17,9.43,2.58,9.445,0.78,std(0x16263a,{emissive:0x0c1a2c}),0.97)); NS(Bx(1.6,9.43,2.15,9.5,0.07,M.paint,1.82)); NS(Bx(1.85,9.26,2.75,9.5,0.3,M.white,2.2)); NS(Bx(1.9,9.25,2.7,9.262,0.03,M.paint,2.22));   /* 大電視（約 65 吋）、上面的視訊鏡頭、冷氣 */
+  Bx(1.13,9.44,2.62,9.5,0.86,M.frame,0.93); NS(Bx(1.17,9.43,2.58,9.445,0.78,std(0x16263a,{emissive:0x0c1a2c}),0.97)); NS(Bx(1.6,9.43,2.15,9.5,0.07,M.paint,1.82)); NS(Bx(1.18,9.26,2.57,9.5,0.32,M.white,2.2)); NS(Bx(1.24,9.25,2.51,9.262,0.03,M.paint,2.22));   /* 冷氣跟電視差不多寬、掛在電視正上方（他 11-13） */   /* 大電視（約 65 吋）、上面的視訊鏡頭、冷氣 */
   /* 老闆辦公室（植栽那一間；分機 1801、1802、1803）：植栽櫃、主機、兩張桌子；北邊一排高櫃 */
   Bx(3.46,5.18,3.54,6.26,H,M.conc); Bx(3.54,5.18,4.12,5.26,2.41,M.conc); Bx(5.39,5.18,6.97,5.26,2.41,M.conc); Bx(6.97,5.26,7.09,9.17,H,M.conc);
-  NS(Bx(3.54,5.14,4.12,5.3,H-2.41,M.frame,2.41)); NS(Bx(4.49,5.14,6.97,5.3,H-2.41,M.frame,2.41));   /* 這面牆上面是一整根黑色的梁（他 11-13：影印機上面的梁是全黑的；照片 13） */
+  NS(Bx(3.54,5.14,4.12,5.3,H-2.41,M.beam,2.41)); NS(Bx(4.12,4.68,6.97,5.3,H-2.41,M.beam,2.41)); NS(Bx(6.97,4.68,7.51,5.26,H-2.41,M.beam,2.41));   /* 這面牆上面是一整根黑色的梁，跨在兩根紅磚柱上面，柱子只到梁底（他 11-13：影印機上面的梁是全黑的、柱頂到梁；照片 13） */
   NS(Bx(4.49,5.185,5.39,5.27,0.06,M.conc,2.35));   /* 老闆辦公室的門口：紅磚柱到米色拉門之間這一格是開著的（照片 13、11-13 的影片：看得到裡面的龜背芋和層板，沒有玻璃）；上面一條淺色門框，再上面是黑梁。原本做成一片玻璃，人進不去、身體還會插進玻璃 */
   { const dr=NS(Bx(5.39,5.11,6.45,5.17,2.35,std(0xdccfb6))); NS(Bx(5.47,5.095,5.5,5.115,0.5,M.frame,0.85)); NS(Bx(4.49,5.1,6.97,5.18,0.05,M.frame,2.35)); }   /* 門口右邊：米色拉門（他 11-13 說那一片是米色拉門），平常推開停在這裡；黑色把手、上面的軌道 */
   Bx(3.56,9.17,4.04,9.55,2.5,M.woodD); Bx(4.62,9.5,6.97,9.55,2.5,M.woodD); [4.62,5.78,6.93].forEach(X=>Bx(X,9.2,X+0.04,9.5,2.5,M.woodD));
