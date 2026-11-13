@@ -1877,11 +1877,12 @@ function makePerson0(c){ const off=!!(L && L.office), cf=c.feat||{};            
     brow=std(c.hair||0x3a2a20), blush=std(0xf4a6a6), lf=!!f.lashes;   // 主角：小黑點眼睛、細眉毛、腮紅（其他人維持眼神死的上班族）
     [-1,1].forEach(sd=>{ const x=sd*0.072; g.add(ball(0.022,iris,x,1.585,0.188,1,1.25,0.6));   // 小黑點眼睛
       if(lf) [0,1].forEach(k=>{ const fl=box(0.02,0.007,0.008, x+sd*(0.014+k*0.012),1.616-k*0.008,0.195, mat.dark); fl.rotation.z=sd*(0.5+k*0.4); g.add(fl); });   // 女生：眼睛外上角兩撇睫毛
-      if(off){ const br=box(0.052,0.011,0.01, x,1.632,0.19, brow); br.rotation.z=-sd*0.1; g.add(br); } if(lf) g.add(ball(0.03,blush,sd*0.118,1.53,0.165,1,0.55,0.3)); });   // 細眉毛（在髮際線下面，不會被頭髮包住）；腮紅只有女生
+      { const br=box(0.052,0.011,0.01, x, off||f.shades ? 1.632 : 1.615, 0.19, brow); br.rotation.z=-sd*0.1; g.add(br); }   /* 工地也要有眉毛：在帽簷下緣下面（戴墨鏡會被鏡片上緣遮一點，跟真的一樣） */ if(lf) g.add(ball(0.03,blush,sd*0.118,1.53,0.165,1,0.55,0.3)); });   // 細眉毛（在髮際線下面，不會被頭髮包住）；腮紅只有女生
     g.add(box(0.036,0.008,0.01, 0,1.49,0.196, lf ? std(0xb35a5a) : mat.dark)); }   // 小小一字嘴（不笑，笑起來看起來憨憨的）
   else {
   const ey = f.squint ? 0.32 : 1;   // 瞇眼：眼睛壓成一條縫
-  [-1,1].forEach(sd=>{ g.add(ball(0.052,mat.shine,sd*0.078,f.squint?1.578:1.585,0.168,1,ey,0.5)); g.add(ball(0.02,mat.eye,sd*0.078,f.squint?1.576:1.572,0.196,1,ey,1)); g.add(ball(0.056,skin,sd*0.078,f.squint?1.6:1.612,0.172,1.05,f.squint?0.4:0.6,0.55));   /* 瞇眼：眼皮壓低、壓扁，貼著眼縫（不然鼓起來像怪眉毛） */ g.add(ball(0.05,mat.bag,sd*0.078,1.544,0.172,1,0.32,0.3)); });
+  [-1,1].forEach(sd=>{ g.add(ball(0.052,mat.shine,sd*0.078,f.squint?1.578:1.585,0.168,1,ey,0.5)); g.add(ball(0.02,mat.eye,sd*0.078,f.squint?1.576:1.572,0.196,1,ey,1)); if(f.squint){ const ln=box(0.1,0.013,0.012, sd*0.078,1.592,0.19, mat.dark); ln.rotation.z=sd*0.1; g.add(ln); } else g.add(ball(0.056,skin,sd*0.078,1.612,0.172,1.05,0.6,0.55));   /* 瞇眼：眼皮壓低、壓扁，貼著眼縫（不然鼓起來像怪眉毛） */ g.add(ball(0.05,mat.bag,sd*0.078,1.544,0.172,1,0.32,0.3));
+    const br=box(0.06,0.012,0.01, sd*0.08, f.squint?1.622:1.632, 0.2, std(c.hair||0x3a2a20)); br.rotation.z=-sd*(f.squint?0.18:0.08); g.add(br); });   /* 眉毛：深色，在帽簷下緣、髮際線下面（瞇眼的人眉毛壓低、往下斜） */
   if(f.grin){ g.add(box(0.09,0.018,0.01,0,1.479,0.193,mat.dark)); g.add(box(0.07,0.008,0.011,0,1.48,0.195,mat.white));   /* 咧嘴笑：一條細縫、只露一點點牙（太大會像爆牙） */ [-1,1].forEach(sd=>{ const cn=box(0.024,0.008,0.012,sd*0.052,1.486,0.19,mat.dark); cn.rotation.z=sd*0.5; g.add(cn); }); }   // 露齒的笑：嘴咧開、一排白牙、嘴角往上
   else if(!f.mustache) g.add(box(0.07,0.012,0.012,0,1.475,0.196,mat.dark));
   }
@@ -1907,13 +1908,13 @@ function makePerson0(c){ const off=!!(L && L.office), cf=c.feat||{};            
   if(f.mustache){ [-1,1].forEach(sd=>g.add(ball(0.04,mat.dark,sd*0.04,1.49,0.192,1.25,0.5,0.5))); }
   if(f.glasses){ const nG=g.children.length; [-1,1].forEach(sd=>{ const r=new THREE.Mesh(new THREE.TorusGeometry(0.048,0.009,6,18),mat.dark); r.position.set(sd*0.078,1.578,0.2); g.add(r); glassTemple(sd,1.585,[0.13,0.2]).forEach(t=>g.add(t)); }); g.add(box(0.066,0.01,0.01,0,1.585,0.206,mat.dark)); flyFrom(nG,'glasses'); }   // 眼鏡：框上緣不超過帽簷
   const hm=std(c.hair||0x2a2320);
-  if(f.bob){ const bk=new THREE.Mesh(new THREE.CylinderGeometry(0.212,0.24,0.33,22,1,true,Math.PI/2-0.75,Math.PI+1.5), std(c.hair||0x2a2320,{side:THREE.DoubleSide})); bk.position.set(0,1.455,0.0); bk.castShadow=true; g.add(bk);   // 鮑伯頭：後腦和兩側的頭髮垂到下巴，下緣往外翹一點
+  if(f.bob){ const bk=new THREE.Mesh(new THREE.CylinderGeometry(0.205,0.24,0.42,22,1,true,Math.PI/2-0.75,Math.PI+1.5), std(c.hair||0x2a2320,{side:THREE.DoubleSide})); bk.position.set(0,1.5,0.0);   /* 上緣伸進安全帽裡：帽簷下面不露皮膚 */ bk.castShadow=true; g.add(bk);   // 鮑伯頭：後腦和兩側的頭髮垂到下巴，下緣往外翹一點
     const rim=new THREE.Mesh(new THREE.TorusGeometry(0.235,0.022,6,22,Math.PI+1.5), hm); rim.rotation.x=Math.PI/2; rim.rotation.z=Math.PI-0.75; rim.position.set(0,1.295,0); g.add(rim); }
-  if(f.ponytail){ g.add(ball(0.06,mat.red,0,1.66,-0.2)); const pt=new THREE.Group(); pt.position.set(0,1.66,-0.22); pt.rotation.x=0.35;   // 高馬尾：紅色髮圈綁在後腦上方，馬尾往下垂到肩膀
+  if(f.ponytail){ const ty = off ? 1.66 : 1.56; g.add(ball(0.06,mat.red,0,ty,-0.2)); const pt=new THREE.Group(); pt.position.set(0,ty,-0.22);   /* 戴安全帽：馬尾綁低一點，從帽簷下面出來 */ pt.rotation.x=0.35;   // 高馬尾：紅色髮圈綁在後腦上方，馬尾往下垂到肩膀
     pt.add(ball(0.075,hm,0,-0.02,-0.04,1,1,1)); pt.add(ball(0.07,hm,0,-0.16,-0.06,1,1.8,0.9)); pt.add(ball(0.05,hm,0,-0.3,-0.05,1,1.5,0.85)); g.add(pt); }
   if(f.bangs){ const bg=new THREE.Mesh(new THREE.SphereGeometry(0.219,22,8,Math.PI*0.1,Math.PI*0.8,0.45,0.73), hm); bg.position.set(0,1.585,0.012); g.add(bg);   // 瀏海：蓋在額頭上，到眼鏡上面
     if(f.bob) [-1,1].forEach(sd=>{ const lk=box(0.07,0.2,0.09, sd*0.19,1.5,0.05, hm); lk.rotation.z=sd*0.08; g.add(lk); }); }   // 鮑伯頭：兩側到下巴
-  if(f.ponytail){ const nape=new THREE.Mesh(new THREE.SphereGeometry(0.222,22,8,Math.PI-0.35,Math.PI+0.7,1.42,0.98), hm); nape.position.set(0,1.585,0.01); nape.scale.set(1,1.08,1.04); g.add(nape);   /* 綁馬尾：頭髮往後梳，後腦到後頸包一圈（戴安全帽從側面、背面看也有頭髮） */
+  if(f.ponytail){ const nape=new THREE.Mesh(new THREE.SphereGeometry(0.222,22,10,Math.PI-0.35,Math.PI+0.7,1.0,1.4), hm); nape.position.set(0,1.585,0.01);   /* 上緣伸進安全帽裡：帽簷下面不露皮膚 */ nape.scale.set(1,1.08,1.04); g.add(nape);   /* 綁馬尾：頭髮往後梳，後腦到後頸包一圈（戴安全帽從側面、背面看也有頭髮） */
     [-1,1].forEach(sd=>{ const lk=ball(0.03,hm, sd*0.19,1.535,0.07, 0.55,2.2,0.8); lk.rotation.z=sd*0.12; g.add(lk); }); }   // 耳朵前面各一小撮細髮，垂到下巴（不再是兩塊長板）
   if(f.stubble){ const sb=new THREE.Mesh(new THREE.SphereGeometry(0.203,20,10,0,Math.PI*2,1.85,0.75), new THREE.MeshBasicMaterial({color:0x5a4a40, transparent:true, opacity:.3})); sb.position.set(0,1.57,0.01); g.add(sb); }
   if(f.towel){ const tw=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.04,8,22),mat.white); tw.rotation.x=Math.PI/2; tw.position.y=1.4; g.add(tw); g.add(box(0.07,0.18,0.03,0.1,1.3,0.15,mat.white)); }
