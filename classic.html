@@ -3063,7 +3063,7 @@ function smashDone(s){ const boss=LV.actors[L.boss];   /* 砸自己的車、怪�
   prank=null; WHY.car='你拿球棒砸了別人的車。'; WHY.office=L.plant ? '你拿球棒砸警衛室。' : '你拿球棒砸工務所。'; WHY.prank=PRANK.bat.why; award('misc.bat'); failMission(boss, s.kind==='car' ? 'car' : s.kind==='office' ? 'office' : 'prank'); }
 // 搭施工電梯：四樓走到電梯口（或點電梯）＝問要不要下樓；一樓走到西門＝問要不要回四樓。手上的料一起帶
 function goHoist(){ const H=LV.hoist, me=LV.actors.you; if(!H || LV.ride || done) return; const t = LV.down ? {x:H.x-H.hw-0.9, z:H.z} : {x:H.x, z:6.3}; moveTo(t.x,t.z,()=>askRide()); }
-function askRide(){ const H=LV.hoist, me=LV.actors.you; if(!H || LV.ride || done || failed || dlgOpen || me.swing || LV.chase) return;   /* 主管殺下來了：不能搭電梯逃 */ LV.rideArm=false; const dn=!LV.down;
+function askRide(){ const H=LV.hoist, me=LV.actors.you; if(!H || LV.ride || done || failed || dlgOpen || me.swing || (LV.chase && !LV.chase.polite)) return;   /* 主管殺下來了：不能搭電梯逃 */ LV.rideArm=false; const dn=!LV.down;
   dlgOpen=true; optsOpen=true; dlgQ=[]; dlgDone=null; $('#dlg').style.display='flex'; $('#dBar').style.display='none';
   showLine({who:'you', t: dn ? '（內心 OS）……施工電梯。\n要不要下去一樓晃一下？上班時間跑下去，主任應該會打來……' : '（內心 OS）回四樓吧。\n再不上去，主任要殺下來了。'});
   const o=$('#dOpts'); o.innerHTML=''; (dn ? ['搭電梯下一樓','算了，回去做事'] : ['搭電梯回四樓','再晃一下']).forEach((t,k)=>{ const b=document.createElement('button'); b.textContent=t; b.dataset.think=k?'no':'yes';
@@ -3086,7 +3086,8 @@ function rideFx(dt){ const R=LV.ride, H=LV.hoist, me=LV.actors.you; if(!R || !H 
   else if(R.st===4){ me.liftY=H.cage.position.y+0.02; if(H.open[outD]>0.95){ R.st=5; me.dest = dn ? {x:H.x-H.hw-0.9, z:H.z} : {x:H.x, z:8.0};   // 開門、走出去
       me.onArrive=()=>{ H.want[outD]=0; me.liftY=undefined; LV.ride=null; if(dn) setDown(true); else { setDown(false); me.dest={x:H.x, z:6.2}; me.onArrive=null; } }; } }
   else if(R.st===5){ me.liftY=H.cage.position.y+0.02; } }
-function setDown(on){ LV.down=on; LV.wasOut=false; LV.edgeP=0; if(on){ if(!LV.occ) buildOcc(); if(!LV.smash) buildSmash(); if(!LV.call) LV.call={who:L.boss, n:0, t:20}; else if(LV.call.left===undefined) LV.call.t=Math.max(LV.call.t,15); } else if(LV.call){ if(LV.call.left!==undefined){ delete LV.call.left; cdShow(null); LV.call.t=10; bubble(LV.call.who,'……總算回來了。下次就沒這麼好運。',true); } } LV.rideArm=false; }   /* 回四樓：電話先停；倒數中回來＝這次放過你 */
+function setDown(on){ if(!on && LV.chase && LV.chase.polite){ const C=LV.chase, b=LV.actors[C.who], h0=C.home0; b.x=h0.x; b.z=h0.z; b.g.position.set(h0.x,gyAt(h0.x,h0.z),h0.z); b.face=h0.face; b.home={x:h0.x,z:h0.z}; b.dest=null; b.onArrive=null; b.speed=4.2; b.waiting=false; LV.chase=null; if(LV.call){ LV.call.t=1e9; delete LV.call.left; } cdShow(null); }   /* 收過錢那次：你回四樓，他也回自己的位置，之後不再打電話 */
+  LV.down=on; LV.wasOut=false; LV.edgeP=0; if(on){ if(!LV.occ) buildOcc(); if(!LV.smash) buildSmash(); if(!LV.call) LV.call={who:L.boss, n:0, t:20}; else if(LV.call.left===undefined) LV.call.t=Math.max(LV.call.t,15); } else if(LV.call){ if(LV.call.left!==undefined){ delete LV.call.left; cdShow(null); LV.call.t=10; bubble(LV.call.who,'……總算回來了。下次就沒這麼好運。',true); } } LV.rideArm=false; }   /* 回四樓：電話先停；倒數中回來＝這次放過你 */
 // 在外面：主管會打三通電話。第一通（下樓 20 秒後）可以找藉口；第二通被戳破，沉默；第三通直接按掉 → 倒數 1 分鐘，沒回四樓＝任務失敗
 // 回四樓就停（倒數也取消）；再下樓從下一通繼續，不會重來。砸怪手＝下一通馬上打來
 const CALL = { kun:{ ok:'……嗯。快點。', two:'……你在幹嘛。我看得到你。' }, tie:{ ex:['廁所在四樓也有。','你車停哪我也知道。'], ok:'……快一點。五分鐘。', two:'{P}。四樓有廁所。你的車停在哪我也看得到。你現在在幹嘛？' },
@@ -3103,13 +3104,18 @@ function outFx(dt){ const me=LV.actors.you, H=LV.hoist; if(!me || done || failed
   if(C.left!==undefined){ C.left-=dt; cdShow(C.left); if(C.left<=0){ if(L.yard!==undefined && bossChase(C.who)){ delete C.left; return; } cdShow(null); WHY.phone=(L.yard!==undefined ? '你跑去一樓，' : '你跑出工作區，')+cname(C.who)+'打了三通電話，最後一通你直接按掉。'; failMission(LV.actors[C.who],'phone'); } return; }   // 第三通之後：倒數
   if(dlgOpen || me.swing) return; C.t-=dt; if(C.t<=0) phoneRing(); }
 function bossChase(who){ const me=LV.actors.you, b=LV.actors[who], H=LV.hoist; if(!b || !H || !me) return false;   /* 倒數到了：主管拿著球棒真的殺下來（他 11-16：不能只有對話） */
-  LV.chase={who, re:0}; LV.rideArm=false; cdShow(0); const el=document.getElementById('cdBox'); if(el) el.textContent=`⚠ ${cname(who)}拿著球棒殺下來了！`;
+  const nb=LV.bribed ? LV.bribed.size : 0; LV.chase={who, re:0, polite:nb, home0:{x:b.x, z:b.z, face:b.face}}; LV.rideArm=false; cdShow(0); const el=document.getElementById('cdBox'); if(el){ el.textContent = nb ? `${cname(who)}親自下來請你回去上工` : `⚠ ${cname(who)}拿著球棒殺下來了！`; el.style.background = nb ? 'rgba(30,110,60,.92)' : 'rgba(150,20,28,.92)'; }   // 收過錢：很恭敬
   b.seated=false; b.follower=false; b.waiting=false; b.atDesk=false; b.dest=null; b.onArrive=null; b.speed=4.6; b.lookT=0;
   b.x=H.x; b.z=H.z; b.g.position.set(b.x,gyAt(b.x,b.z),b.z); b.home={x:b.x,z:b.z}; b.face=Math.atan2(me.x-b.x,me.z-b.z); b.dest={x:H.x-H.hw-0.9, z:H.z}; b.onArrive=null;   // 搭工地電梯下來：從車廂裡走出西門，再追你
+  if(nb){ b.speed=2.4; bubble(who, fill(nb>=3 ? '老闆～我下來接您了！' : nb===2 ? '{P}大哥～我下來接您！' : '{P}～不好意思，我下來找你一下。'), true); return true; }   /* 收過錢：用走的、空手 */
   const it=prankItem('bat'); it.rotation.x=Math.PI-0.5; it.position.set(0,-0.61,0.19); b.g.userData.armR.userData.elbow.add(it); b.carry='club';   // 右手拿球棒（跟你拿的樣子一樣）
   bubble(who, fill('{P}！！！給我過來！！'), true); camShake=0.3; return true; }
 function chaseFx(dt){ const C=LV.chase, me=LV.actors.you, b=C && LV.actors[C.who]; if(!b || failed || done) return; C.re-=dt; if(b.swing) return;
   const d=Math.hypot(me.x-b.x, me.z-b.z);
+  if(C.polite){ if(d>1.7){ if(C.re<=0){ C.re=0.4; const ux=(b.x-me.x)/(d||1), uz=(b.z-me.z)/(d||1), pts=plan(b,{x:me.x+ux*1.3, z:me.z+uz*1.3}); if(pts && pts.length){ const go=()=>{ b.dest=pts.shift(); b.onArrive = pts.length ? go : null; }; go(); } } return; }   /* 收過錢：走到你面前 1.3 公尺，鞠躬、請你回去；之後跟在旁邊等 */
+    b.dest=null; b.onArrive=null; b.waiting=true; b.face=Math.atan2(me.x-b.x,me.z-b.z);
+    if(!C.said){ C.said=true; C.bowN=Math.min(3,C.polite); C.bowT=0; const n=C.polite; subtitle(C.who, fill(n>=3 ? '（九十度鞠躬）老闆！您慢慢來～電梯我已經幫您按好了，要不要我幫您拿東西？' : n===2 ? '（鞠躬）{P}大哥，辛苦了！樓上的料我都幫您整理好了，麻煩您回去過目一下 🙏' : '{P}，不好意思打擾～樓上的料在等你，方便的話回四樓一下好嗎？')); }
+    if(b.bow>0) b.bow=Math.max(0,b.bow-dt);   /* 鞠躬要自己倒數（姿勢在 stepActor 擺） */ if(C.bowN>0){ C.bowT-=dt; if(C.bowT<=0 && !(b.bow>0)){ b.bow=0.9; C.bowN--; C.bowT=1.2; } } return; }
   if(d<1.0){ b.dest=null; b.onArrive=null; b.face=Math.atan2(me.x-b.x,me.z-b.z); me.dest=null; me.onArrive=null; LV.chase=null;   // 追到了：揮棒
     b.swing={t:0, id:'bat', target:me, done:()=>{ setTimeout(()=>{ if(failed) return; WHY.phone='你跑去一樓，'+cname(C.who)+'打了三通電話，最後一通你直接按掉。'+cname(C.who)+'拿著球棒殺下來了。'; failMission(b,'phone'); }, 900); }}; return; }
   if(C.re<=0){ C.re=0.4; const pts=plan(b,{x:me.x,z:me.z}); if(pts && pts.length){ const go=()=>{ b.dest=pts.shift(); b.onArrive = pts.length ? go : null; }; go(); } else { b.dest={x:me.x,z:me.z}; b.onArrive=null; } } }   // 每 0.4 秒重新找路追你
