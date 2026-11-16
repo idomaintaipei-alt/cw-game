@@ -2385,7 +2385,7 @@ function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
   else if(a.who!=='you' && LV.actors.you){ const p=LV.actors.you, free = !a.follower && !dlgOpen && !(a.lookT>performance.now()), busy = free && a.seated && Math.hypot(a.x-a.home.x,a.z-a.home.z)<0.3;
     a.atDesk=busy; a.atWork = free && !a.seated && !L.office && Math.hypot(a.x-a.home.x,a.z-a.home.z)<0.9 && Math.hypot(p.x-a.x,p.z-a.z)>1.6;                 // 工地：在自己的位置、你沒走近、沒在講話＝在忙
     a.face = busy ? a.deskFace : a.atWork ? Math.atan2(L.cx-a.x, 0.2-a.z) : a.waiting ? a.face : LV.boardLook && L.boardAt && !optsOpen ? Math.atan2(L.boardAt[0]-a.x, L.boardAt[1]-a.z) : Math.atan2(p.x-a.x,p.z-a.z); }   /* 北辦：題目的選項還開著＝同事看著你等你回答；選完了才轉去看牆上的圖（他 11-13） */   // 坐著的人平常面向螢幕，講話或被叫才轉過來
-  if(LV.down && a.who==='you' && a.liftY===undefined){ if(occBlocked(a.x,a.z,-0.02)){ if(!occBlocked(a.x,a.pz0,-0.02)) a.z=a.pz0; else if(!occBlocked(a.px0,a.z,-0.02)) a.x=a.px0; else { a.x=a.px0; a.z=a.pz0; } } }   /* 在外面：撞到東西沿著邊滑 */
+  if(LV.down && a.who==='you' && a.liftY===undefined){ if(occBlocked(a.x,a.z,-0.02) && !occBlocked(a.px0,a.pz0,-0.02)){   /* 原本就站在擋路格子裡（他 11-16：打人後不能動）：讓他走出來，不拉回 */ if(!occBlocked(a.x,a.pz0,-0.02)) a.z=a.pz0; else if(!occBlocked(a.px0,a.z,-0.02)) a.x=a.px0; else { a.x=a.px0; a.z=a.pz0; } } }   /* 在外面：撞到東西沿著邊滑 */
   else pushOut(a, moving, seatR(a));   /* 坐著的人被推離座位：用椅子的大小擋，人和椅子不會插進桌子 */
   if(a.follower && a.liftY===undefined) for(const k in LV.actors){ const o=LV.actors[k]; if(o===a || o.liftY!==undefined || !o.g.visible) continue; const dx=a.x-o.x, dz=a.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ const fx=a.x, fz=a.z; a.x+=dx/d*(0.55-d); a.z+=dz/d*(0.55-d); pushOut(a); const c=clampXZ(a.x,a.z,{x:fx,z:fz}); a.x=c.x; a.z=c.z; } }   /* 被擠開也不會擠到牆的位置上；小弟走完這一步，跟任何人都保持 55 公分（走路途中也不會擦撞） */
   if(moving && a.dest){ const d=Math.hypot(a.dest.x-a.x,a.dest.z-a.z); if(d<a.bestD-0.015){ a.bestD=d; a.stuck=0; } else if(!(LV.gates && LV.gates.some(g=>g.on && rectDist(g,a.x,a.z).d<PR+0.06))) a.stuck+=dt;   /* 被還沒開好的拉門擋著＝在等門開，不算卡住（不然等 0.4 秒就放棄不走了） */
@@ -2424,7 +2424,7 @@ function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
   else if(a.swing){ const sw2=a.swing; sw2.t+=dt; const W1=0.45, W2=0.08, w=Math.min(1,sw2.t/W1), h=Math.max(0,Math.min(1,(sw2.t-W1)/W2)), e=w*w*(3-2*w), fo=Math.max(0,Math.min(1,(sw2.t-W1-W2)/0.3));   // 揮：0.45 秒蓄力、0.08 秒全力揮出、收棒
     const eL=u.armL.userData.elbow, eR=u.armR.userData.elbow; u.armR.rotation.x=u.armL.rotation.x = -1.35-1.0*e*(1-h); u.armR.rotation.z=-0.1; u.armL.rotation.z=0.5; eL.rotation.x=eR.rotation.x = -1.2*e*(1-h);   // 蓄力：球棒舉到肩後
     a.g.rotation.y = a.face - 1.6*e*(1-h) + 1.9*h + 0.3*fo; a.g.rotation.x = 0.12*e*(1-h) - 0.2*h*(1-fo*0.6); u.legL.rotation.x = -0.5*h; u.legR.rotation.x = 0.3*h;   // 轉身、前傾、跨步
-    if(h>0 && !sw2.lunge){ sw2.lunge=true; const tg=sw2.target, d=Math.hypot(tg.x-a.x,tg.z-a.z)||1; a.x+=(tg.x-a.x)/d*0.25; a.z+=(tg.z-a.z)/d*0.25; }
+    if(h>0 && !sw2.lunge){ sw2.lunge=true; const tg=sw2.target, d=Math.hypot(tg.x-a.x,tg.z-a.z)||1, nx=a.x+(tg.x-a.x)/d*0.25, nz=a.z+(tg.z-a.z)/d*0.25; if(!(LV.down && a.who==='you' && occBlocked(nx,nz,-0.02))){ a.x=nx; a.z=nz; } }   /* 揮棒往前跨一步；會跨進擋路格子就不跨（不然揮完卡住不能動） */
     if(h>=1 && !sw2.hit){ sw2.hit=true; const tg=sw2.target, d=Math.hypot(tg.x-a.x,tg.z-a.z)||1; if(tg.smash) smashHit(tg.smash); else { knockDown(tg,(tg.x-a.x)/d,(tg.z-a.z)/d); bubble(tg.who,'啊！！',true); } camShake=0.4; thud(); bubble('you','鏘——！',true); }   // 打到：對方被打退、畫面震、撞擊聲
     if(sw2.t>1.15){ a.g.rotation.x=0; a.swing=null; sw2.done(); } }
   if(a.knock){ const k=a.knock; k.t+=dt; const q=Math.min(1,k.t/0.6), e=1-Math.pow(1-q,2), bo=q>=1 ? Math.sin(Math.min(1,(k.t-0.6)/0.25)*Math.PI)*0.1 : 0;   // 被球棒打飛：往後飛 2 公尺、空中往後倒、落地躺平再彈一下
@@ -2724,7 +2724,10 @@ function buildSmash(){ const out=[], bb=new THREE.Box3(), actors=new Set(Object.
   out.forEach(q=>{ const tg=q.pickM||q.o; if(!tg) return; tg.traverse(m=>{ if(m.isMesh){ m.userData.pick={kind:'smash', s:q}; LV.pick.push(m); } }); });   // 點得到：拿著球棒點車、點人＝走過去動手
   LV.smash=out; }
 function liveXZ(s){ if(s.kind==='person' && s.o){ const v=s.o.getWorldPosition(new THREE.Vector3()); s.x=v.x; s.z=v.z; } return s; }   // 走動中的工人：用現在的位置
-function goSmash(s,tries=0){ const me=LV.actors.you; liveXZ(s); const t=standNear(s.x,s.z,0.7,s);
+function smashStand(s){ const me=LV.actors.you; let best=null, bs=1e9; if(LV.down && LV.occ) for(const r of [0.7,0.85,0.55]) for(let k=0;k<16;k++){ const a=k/16*Math.PI*2, x=s.x+Math.cos(a)*(s.hx+r-0.25), z=s.z+Math.sin(a)*(s.hz+r-0.25), c=clampXZ(x,z);   /* 繞一圈找站點：沒擋路、在圍籬內、走得到，挑路最短的（他 11-16：只有一邊有空位的師傅打不到） */
+    if(Math.abs(c.x-x)>0.01 || Math.abs(c.z-z)>0.01 || occBlocked(x,z,0.02)) continue; const pts=plan(me,{x,z}); if(!pts || !pts.length) continue; const e=pts[pts.length-1]; if(Math.hypot(e.x-x,e.z-z)>0.3) continue; let L1=0, px=me.x, pz=me.z; pts.forEach(q=>{ L1+=Math.hypot(q.x-px,q.z-pz); px=q.x; pz=q.z; }); if(L1<bs){ bs=L1; best={x,z}; } }
+  return best || standNear(s.x,s.z,0.7,s); }
+function goSmash(s,tries=0){ const me=LV.actors.you; liveXZ(s); const t=smashStand(s);
   moveTo(t.x,t.z,()=>{ liveXZ(s); if(rectDist(s,me.x,me.z).d>1.1){ if(tries<2) goSmash(s,tries+1); return; }   /* 工人走開了：再追一次 */ me.face=Math.atan2(s.x-me.x,s.z-me.z); if(s.kind==='person' && (prank==='bat' || drinkHeld)) actOn({crew:s}); else if(prank==='bat' && s.kind!=='person') smashSwing(s); else idleTalk(s); }); }
 // 空手點外面的東西：師父回一句、車子／怪手／工務所＝主角的內心 OS（只是聊聊，不會怎樣）
 const OUT_TALK={ person:['設計部的？下來幹嘛？樓上不是在裝料嗎？','便當還沒來啦，別問。','你安全帽有戴好，不錯。','這邊在忙，借過一下。','你們畫的圖喔……算了，我不說。','少年仔，鞋帶綁好。','要抽菸去那邊，這裡不行。','主任剛剛在找人，是不是在找你？'],
@@ -2732,7 +2735,7 @@ const OUT_TALK={ person:['設計部的？下來幹嘛？樓上不是在裝料嗎
 function subSay(name,t){ const el=$('#sub'); el.textContent=''; const b=document.createElement('b'); b.textContent=name; el.append(b); phrases(el,t); el.style.display='block'; clearTimeout(subT); subT=setTimeout(()=>{ el.style.display='none'; }, 3600); }
 function idleTalk(s){ const ln=pickOne(OUT_TALK[s.kind]||OUT_TALK.car); if(s.kind==='person') subSay(s.o && s.o.userData.crew ? '師父' : '路人',ln); else bubble('you',ln,true); }
 function nearSmash(){ if(!LV.smash) return null; const p=LV.actors.you; let best=null, bd=0.9; LV.smash.forEach(s=>{ const d=rectDist(liveXZ(s),p.x,p.z).d; if(d<bd){ bd=d; best=s; } }); return best; }
-function smashSwing(s){ const me=LV.actors.you; if(me.swing) return; me.dest=null; me.onArrive=null; const ex=Math.max(s.x-s.hx,Math.min(s.x+s.hx,me.x)), ez=Math.max(s.z-s.hz,Math.min(s.z+s.hz,me.z)); me.face=Math.atan2(ex-me.x,ez-me.z);
+function smashSwing(s){ const me=LV.actors.you; if(me.swing) return; me.dest=null; me.onArrive=null; LV.rideArm=false;   /* 剛揮完棒（例如打電梯裡的師傅）不自動跳電梯對話 */ const ex=Math.max(s.x-s.hx,Math.min(s.x+s.hx,me.x)), ez=Math.max(s.z-s.hz,Math.min(s.z+s.hz,me.z)); me.face=Math.atan2(ex-me.x,ez-me.z);
   me.swing={t:0, id:'bat', target:{x:ex, z:ez, smash:s}, done:()=>smashDone(s)}; }
 function smashHit(s){ const o=s.o; if(o){ const x0=o.position.x, z0=o.position.z; let k=0; const f=dt=>{ k+=dt; const e=Math.max(0,1-k/0.5); o.position.x=x0+Math.sin(k*70)*0.05*e; o.position.z=z0+Math.cos(k*61)*0.04*e; if(k>0.5){ o.position.x=x0; o.position.z=z0; LV.fx.splice(LV.fx.indexOf(f),1); } }; LV.fx.push(f); }   // 被砸到的東西抖一下
   if(s.kind==='person' && o) crewKnock(s); }   // 工人被打飛：跟同事一樣噴裝、流血
@@ -2787,8 +2790,8 @@ function outFx(dt){ const me=LV.actors.you, H=LV.hoist; if(!me || done || failed
   if(L.plant){ if(!LV.down){ if(inWork(me.x,me.z,0.9)) LV.rideArm=true; if((LV.edgeP||0)>0.4 && LV.rideArm && !dlgOpen && !me.swing){ LV.edgeP=0; askOut(null); } return; }   // 週五：在工作區邊緣往外推＝問要不要出去
     if(!inWork(me.x,me.z,0)) LV.wasOut=true; else if(LV.wasOut && inWork(me.x,me.z,0.35)){ setDown(false); return; } }   // 走回工作區＝回來了
   else if(!H) return;
-  else if(!LV.down){ const d=Math.hypot(me.x-H.x, me.z-6.4); if(d>1.8) LV.rideArm=true; else if(d<0.75 && LV.rideArm && !dlgOpen && !me.dest && !me.swing) askRide(); return; }   // 四樓：站到電梯口＝問要不要下樓
-  if(H){ const d=Math.hypot(me.x-(H.x-H.hw-0.9), me.z-H.z); if(d>2.0) LV.rideArm=true; else if(d<1.1 && LV.rideArm && !dlgOpen && !me.dest && !me.swing) askRide(); }   // 一樓：站到電梯西門＝問要不要回四樓
+  else if(!LV.down){ const d=Math.hypot(me.x-H.x, me.z-6.4); if(d>1.1) LV.rideArm=true;   /* 走出電梯口範圍就再問（原本 1.8：球棒箱離電梯口才 1 公尺，拿完走回來不會再問；他 11-16） */ else if(d<0.75 && LV.rideArm && !dlgOpen && !me.dest && !me.swing) askRide(); return; }   // 四樓：站到電梯口＝問要不要下樓
+  if(H){ const d=Math.hypot(me.x-(H.x-H.hw-0.9), me.z-H.z); if(d>1.5) LV.rideArm=true; else if(d<1.1 && LV.rideArm && !dlgOpen && !me.dest && !me.swing) askRide(); }   // 一樓：站到電梯西門＝問要不要回四樓
   const C=LV.call; if(!C) return;
   if(C.left!==undefined){ C.left-=dt; cdShow(C.left); if(C.left<=0){ cdShow(null); WHY.phone=(L.yard!==undefined ? '你跑去一樓，' : '你跑出工作區，')+cname(C.who)+'打了三通電話，最後一通你直接按掉。'; failMission(LV.actors[C.who],'phone'); } return; }   // 第三通之後：倒數
   if(dlgOpen || me.swing) return; C.t-=dt; if(C.t<=0) phoneRing(); }
@@ -2955,7 +2958,7 @@ function togglePrank(id){ if(done||dlgOpen) return; const me=LV.actors.you, hold
   if(carry||prank){ say([{who:L.boss, t:'手上的先放好，再拿別的。'}]); return; }
   prank=id; q.item.visible=false; const it=prankItem(id); while(hold.children.length) hold.remove(hold.children[0]);
   if(id==='bat'){ it.rotation.x=Math.PI-0.5; it.position.set(0,-0.61,0.19); } else { it.rotation.x=1.2; it.position.set(0,-0.33,0.07); }                // 握在右手，垂在身邊：球棒頭朝下朝前
-  me.g.userData.armR.userData.elbow.add(it); me.prankMesh=it; me.carry='club'; award('misc.prank'); bubble(L.boss, PRANK[id].say[L.boss], true); }
+  me.g.userData.armR.userData.elbow.add(it); me.prankMesh=it; me.carry='club'; award('misc.prank'); LV.rideArm=true;   /* 拿了球棒＝新的打算：電梯口會再問（他 11-16：拿完球棒叫不出電梯對話） */ bubble(L.boss, PRANK[id].say[L.boss], true); }
 /* 五連殺：用球棒打倒一個人後先不結算。3 秒內沒打到下一個人（或從第一個算起滿 10 秒）才照原本的失敗畫面；10 秒內打倒 5 個人＝五連殺，換警察出來（他 11-13） */
 var combo=null;
 function comboShow(c){ let el=document.getElementById('comboBox'); if(!c){ if(el) el.style.display='none'; return; }   /* 連殺提示：雙殺／三殺／四殺＋倒數 */
@@ -2964,7 +2967,7 @@ function comboShow(c){ let el=document.getElementById('comboBox'); if(!c){ if(el
 function comboHit(v,fail){ if(done) return; if(!combo){ combo={n:0, left:10, seen:new Set()}; const c=combo, f=dt=>{ if(combo!==c){ LV.fx.splice(LV.fx.indexOf(f),1); if(!combo) comboShow(null); return; } c.left-=dt; comboShow(c); if(c.left<=0){ LV.fx.splice(LV.fx.indexOf(f),1); combo=null; comboShow(null); if(!done){ prank=null; c.fail(); } } }; LV.fx.push(f); }   /* 他 11-13：原本 10 秒內打倒 5 個實際做不到 → 每打倒一個，重新給 10 秒（英雄聯盟連殺的算法） */
   if(!combo.seen.has(v)){ combo.seen.add(v); combo.n++; } combo.fail=fail; combo.left=10;
   if(combo.n>=5){ combo=null; comboShow(null); prank=null; award('misc.penta'); failMission(null,'police'); } }
-function prankHit(a){ const me=LV.actors.you, id=prank; if(me.swing || a.knock) return; me.dest=null; me.onArrive=null; me.face=Math.atan2(a.x-me.x,a.z-me.z);   /* 已經倒在地上的人不再打 */
+function prankHit(a){ const me=LV.actors.you, id=prank; if(me.swing || a.knock) return; me.dest=null; me.onArrive=null; LV.rideArm=false; me.face=Math.atan2(a.x-me.x,a.z-me.z);   /* 已經倒在地上的人不再打 */
   me.swing={t:0, id, target:a, done:()=>{ WHY.prank=PRANK[id].why; award('misc.'+id); if(id==='bat') comboHit(a, ()=>failMission(a,'prank')); else { prank=null; failMission(a,'prank'); } }}; }   /* 球棒：還拿在手上，可以接著打下一個 */
 // 藍圈看不看得到：從鏡頭往藍圈拉三條線（中間、左、右），兩條以上被不透明的東西擋住＝被擋；或是藍圈跑到畫面外、壓在上面的資訊框底下
 const spotRay=new THREE.Raycaster(); var carryT=0; let inCut=false, subT=null, spotOcc=[], userCamT=0, spotChk=0;
