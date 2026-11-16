@@ -1706,10 +1706,10 @@ const LEVELS = [
     stat(box(1.2,0.8,0.2, 0.6,0.4,-0.1, mat.rc)); stat(box(1.2,0.5,0.2, 0.6,2.55,-0.1, mat.rc));
     const X0=0, X1=1.2, Y0=0.8, Y1=2.3, G=0.05, FW=0.045, FZ0=-0.08, FZ1=-0.01, fz=(FZ0+FZ1)/2, fd=FZ1-FZ0, AZ=-0.1;   // 窗框四周留 5 公分崁縫；框深 7 公分，前面跟崁縫面齊
     const fx0=X0+G, fx1=X1-G, fy0=Y0+G, fy1=Y1-G, gx0=fx0+FW, gx1=fx1-FW, gy0=fy0+FW, gy1=fy1-FW;
-    { const ink=std(0xd23a2a), tag=(t,x,y,z)=>{ const m=label(t,'#b42318',x,y,z,0.05); m.material.depthTest=false; m.renderOrder=20; stat(m); };   /* 放樣線（他 11-16：一開始就畫在還沒裝框的 RC 牆上）：紅色墨線＋小字 */
-      stat(box(0.5,0.006,0.002, -0.25,1.0,0.001, ink)); stat(box(0.5,0.006,0.002, 1.45,1.0,0.001, ink)); tag('一米線', -0.25,1.07,0.06);   // 一米線：離地 1 公尺，開口左右兩邊的牆面
-      stat(box(0.006,0.8,0.002, 0.6,0.4,0.001, ink)); stat(box(0.006,0.5,0.002, 0.6,2.55,0.001, ink)); tag('中心線', 0.75,0.45,0.06);   // 中心線：開口正中間，開口下面、上面的牆面
-      stat(box(1.2,0.002,0.006, 0.6,0.801,-0.01, ink)); stat(box(1.2,0.002,0.006, 0.6,2.299,-0.01, ink)); tag('進出線', 0.32,0.88,0.06);   // 進出線：開口下緣、上緣，窗框前緣要對齊的位置
+    { const ink=std(0xd23a2a), tag=(t,x,y,z)=>{ const m=label(t,'#b42318',x,y,z,0.1); m.material.depthTest=false; m.renderOrder=20; stat(m); };   /* 放樣線（他 11-16：一開始就畫在還沒裝框的 RC 牆上）：紅色墨線＋小字 */
+      stat(box(0.5,0.006,0.002, -0.25,1.0,0.001, ink)); stat(box(0.5,0.006,0.002, 1.45,1.0,0.001, ink)); tag('一米線', -0.25,1.1,0.06);   // 一米線：離地 1 公尺，開口左右兩邊的牆面
+      stat(box(0.006,0.8,0.002, 0.6,0.4,0.001, ink)); stat(box(0.006,0.5,0.002, 0.6,2.55,0.001, ink)); tag('中心線', 0.83,0.45,0.06);   // 中心線：開口正中間，開口下面、上面的牆面
+      stat(box(1.2,0.002,0.006, 0.6,0.801,-0.01, ink)); stat(box(1.2,0.002,0.006, 0.6,2.299,-0.01, ink)); tag('進出線', 0.32,0.92,0.06);   // 進出線：開口下緣、上緣，窗框前緣要對齊的位置
     }
     { const X=-0.95, Z=0.95, leg=std(0x2b2f36), red=std(0xb3121e), blk=std(0x1d2126), sil=std(0xc9ced6), win=std(0x3a3f47), lg=new THREE.Group(); lg.position.set(X,0,Z); lg.rotation.y=-0.5;   /* 雷射水平儀（照他 11-16 給的照片）：架在三腳架上，正面朝牆 */
       [0,2.09,4.19].forEach(a=>{ const l=new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.011,0.84,6),leg); l.position.set(Math.sin(a)*0.12,0.41,Math.cos(a)*0.12); l.rotation.set(-Math.cos(a)*0.28,0,Math.sin(a)*0.28); l.castShadow=true; lg.add(l); });   /* 上面收在頂盤、下面張開踩地（他 11-16：原本畫反了） */
@@ -1723,19 +1723,23 @@ const LEVELS = [
       lg.add(box(0.07,0.075,0.004, 0,B+0.1,0.066, blk));   // 正面黑色面板
       lg.add(box(0.05,0.028,0.006, 0,B+0.165,0.058, win)); lg.add(box(0.026,0.006,0.05, 0,B+0.226,0, win));   // 正面、頂上的出光窗
       [-1,1].forEach(e=>lg.add(box(0.006,0.028,0.04, e*0.06,B+0.16,0, win)));   // 兩側出光窗
-      lg.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); stat(lg); LV.obs.push({x:X, z:Z, hx:0.2, hz:0.2}); }
+      lg.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); stat(lg); LV.obs.push({x:X, z:Z, hx:0.2, hz:0.2}); LV.laserAt={x:X, z:Z};
+      const sx=X-0.3, sz=Z+0.25;   /* 站在雷射左後方：不擋主角去劃間距的路 */
+      LV.fx.push((dt,t)=>{ if(!LV.actors.you) return; let h=LV.actors.di;   /* 小弟在雷射旁邊調雷射（他 11-16）：角色要等關卡建好才有，第一格再安排；當天有跟班就由他來 */
+        if(!h || !h.station){ if(!h){ h=makeActor('di',sx,sz); h.g.scale.setScalar(0.86); } else { h.x=sx; h.z=sz; h.g.position.x=sx; h.g.position.z=sz; h.dest=null; } h.helping=true; h.station={x:sx,z:sz}; laserPose(h); }
+        if(h.doorPose && !h.dest) h.doorPose.R[0]=-1.25+0.07*Math.sin(t*2.6); }); }   // 右手一下一下轉旋鈕
     const rod=(a,b,r,m)=>{ const A=new THREE.Vector3(...a), B=new THREE.Vector3(...b), v=B.clone().sub(A), c=new THREE.Mesh(new THREE.CylinderGeometry(r,r,v.length(),8),m); c.position.copy(A).add(B).multiplyScalar(0.5); c.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize()); c.castShadow=true; return c; };
     // 1 量 MO：捲尺貼著牆面量寬（開口下緣）、量高（右邊的牆面）
     const tape=std(0xf2c230);
     add('mo', box(X1-X0,0.004,0.025, 0.6,Y0+0.002,-0.03, tape)); add('mo', box(0.004,Y1-Y0,0.025, X1-0.002,1.55,-0.03, tape));   /* 捲尺量開口裡面：寬貼著下緣、高貼著右邊內側（他 11-16：原本貼在轉角，干涉） */
     const topLb=m=>{ m.material.depthTest=false; m.renderOrder=20; return m; };   /* 尺寸字永遠畫在最上層，不會插進牆被切掉 */
-    add('mo', topLb(label('MO 寬 120 cm','#8a5a00', 0.6,Y0+0.14,0.2,0.07))); add('mo', topLb(label('MO 高 150 cm','#8a5a00', X1-0.24,1.55,0.2,0.07)));
+    add('mo', topLb(label('MO 寬 120 cm','#8a5a00', 0.6,Y0+0.18,0.2,0.11))); add('mo', topLb(label('MO 高 150 cm','#8a5a00', X1-0.3,1.55,0.2,0.11)));
     // 2 劃分間距：照 CNS 頭尾 15、中間 @45（直向四支、橫向三支）
     const PJ=[0.15,0.6,1.05,1.35].map(d=>Y0+d), PH=[0.15,0.6,1.05].map(d=>X0+d);
     const AN=[...PJ.map(y=>({x:X0,y,n:[1,0]})), ...PJ.map(y=>({x:X1,y,n:[-1,0]})), ...PH.map(x=>({x,y:Y0,n:[0,1]})), ...PH.map(x=>({x,y:Y1,n:[0,-1]}))];
     const red=std(0xd23a2a);
     AN.forEach(a=>add('mark', box(a.n[0]?0.004:0.03, a.n[0]?0.03:0.004, 0.05, a.x+a.n[0]*0.002, a.y+a.n[1]*0.002, AZ, red)));
-    add('mark', topLb(label('頭尾 15','#b42318', X0+0.22,Y0+0.15,0.2,0.055))); add('mark', topLb(label('中間 @45','#b42318', X0+0.24,Y0+0.6,0.2,0.055)));
+    add('mark', topLb(label('頭尾 15','#b42318', X0+0.25,Y0+0.15,0.2,0.1))); add('mark', topLb(label('中間 @45','#b42318', X0+0.28,Y0+0.6,0.2,0.1)));
     // 3 打膨脹螺絲（外牙壁虎）：打進開口四周的混凝土，外牙露出 3 公分
     const nutM=std(0xb8953a);
     AN.forEach(a=>{ const r=rod([a.x-a.n[0]*0.055, a.y-a.n[1]*0.055, AZ], [a.x+a.n[0]*0.035, a.y+a.n[1]*0.035, AZ], 0.006, mat.zinc);   /* 螺桿中心在牆面內 1 公分：本地 y＝+0.01 是牆面、+0.045 是外牙尖端 */
@@ -1758,7 +1762,7 @@ const LEVELS = [
     [fx0,fx1].forEach(x=>add('seal991', box(0.014,fy1-fy0,0.012, x,(fy0+fy1)/2,FZ1+0.004, mat.seal))); [fy0,fy1].forEach(y=>add('seal991', box(fx1-fx0-0.016,0.014,0.012, 0.6,y,FZ1+0.004, mat.seal)));
     // 9 量玻璃＋裝玻璃（一個連貫動作）
     add('glass', box(gx1-gx0-0.004, gy1-gy0-0.004, 0.008, 0.6,(gy0+gy1)/2,fz, mat.glass));
-    LV.refs.glassTip=add('glass', topLb(label('量好內框，裝上玻璃','#374151', 0.6,gy1+0.12,0.2,0.06)));
+    LV.refs.glassTip=add('glass', topLb(label('量好內框，裝上玻璃','#374151', 0.6,gy1+0.12,0.2,0.1)));
     // 10 玻璃四周打膠 791（黑色）
     [gx0+0.005,gx1-0.005].forEach(x=>add('seal791', box(0.01,gy1-gy0,0.01, x,(gy0+gy1)/2,fz+0.009, mat.gasket))); [gy0+0.005,gy1-0.005].forEach(y=>add('seal791', box(gx1-gx0-0.022,0.01,0.01, 0.6,y,fz+0.009, mat.gasket)));
   },
@@ -3088,16 +3092,19 @@ function ensureSpotVisible(){ if(!spot.visible || !L || L.bench || L.office || L
   for(const b of tries) for(const kz of [1,1.25,1.5]) for(const dp of [0,-0.22]) for(const dt of [0,0.35,-0.35,0.7,-0.7,1.05,-1.05,1.4,-1.4,1.9,-1.9]){ const th=b.theta+dt, ph=Math.max(0.45,b.phi+dp), d=Math.min(maxD,b.dist*kz); if(th<lo || th>hi) continue;
     if(!spotOff(th,ph,d) && !spotBlocked(th,ph,d)){ camGoal={theta:th, phi:ph, dist:d}; return; } } }   // 先試左右轉，再試從高一點往下看，再試拉遠一點，最後試這一步原本的角度
 function walkThen(x,z,fn){ let st=false; const go=()=>{ if(st) return; st=true; fn(); }; moveTo(x,z,go); let k=0; const w=dt=>{ k+=dt; if(st || k>8 || (k>0.3 && !LV.actors.you.dest)){ LV.fx.splice(LV.fx.indexOf(w),1); go(); } }; LV.fx.push(w); }   /* 走過去再做；路被打斷或 8 秒沒到就直接做（小動畫不會卡死） */
+function laserPose(h){ const L0=LV.laserAt; if(!L0) return; h.home={x:h.station.x, z:h.station.z}; h.waiting=true; h.face=Math.atan2(L0.x-h.x, L0.z-h.z); h.doorPose={L:[-1.15,0.12,-0.6], R:[-1.25,-0.12,-0.5]}; }   /* 在雷射旁邊：面向雷射、兩手伸到機身上 */
 function duoCarry(o, done){ const me=LV.actors.you; let h=LV.actors.di, temp=false; if(!h){ h=makeActor('di', L.cx+3.2, 5.6); h.g.scale.setScalar(0.86); temp=true; } h.helping=true;   /* 兩個人一起扛（週四裝窗、裝玻璃；他 11-16：要有小弟來幫忙）：跟班小弟優先，沒有就臨時叫一個 */
   const q=LV.pallets[o.id], it=makeItem(ITEM[L.id+'.'+o.id]).g, P1=[q.x+0.55,q.z], P2=[q.x-0.55,q.z]; let ph=0, k=0;
   const go=(a,x,z)=>{ if(a===me) moveTo(x,z); else { a.dest={x,z}; a.onArrive=null; a.home={x,z}; } };
+  if(h.station){ h.doorPose=null; h.waiting=false; }   // 先放下雷射
   bubble('di', o.hi||'學長，我來幫你扛！'); go(me,P1[0],P1[1]); go(h,P2[0],P2[1]);
   const f=dt=>{ k+=dt;
     if(ph===0 && ((!me.dest && !h.dest) || k>8)){ ph=1; k=0; if(q.item) q.item.visible=false; LV.group.add(it); go(me,o.heroAt[0],o.heroAt[1]); go(h,o.helpAt[0],o.helpAt[1]); }   // 兩個人都到棧板旁邊：抬起來，扛到窗洞前面
     if(ph===1){ it.position.set((me.x+h.x)/2, o.y, (me.z+h.z)/2); it.rotation.set(0, -Math.atan2(h.z-me.z, h.x-me.x), 0);   // 夾在兩個人中間
       if((!me.dest && !h.dest) || k>10){ ph=2; k=0; me.face=Math.PI; h.face=Math.PI; } }
     if(ph===2){ const q2=Math.min(1,dt*5); it.position.x+=(0.6-it.position.x)*q2; it.position.z+=(o.setZ-it.position.z)*q2; it.rotation.y*=1-q2;   // 一起推進開口
-      if(k>0.9){ ph=3; k=0; LV.group.remove(it); o.show(); bubble('di', o.bye||'好了！我先去忙。'); go(h, L.cx+3.2, 5.6); done(); } }   // 裝上去了：這一步完成，小弟自己走開
+      if(k>0.9){ ph=3; k=0; LV.group.remove(it); o.show(); bubble('di', o.bye||'好了！我先去忙。'); if(h.station) go(h, h.station.x, h.station.z); else go(h, L.cx+3.2, 5.6); done(); } }   // 有雷射要顧的小弟：走回雷射旁邊   // 裝上去了：這一步完成，小弟自己走開
+    if(ph===3 && h.station && !h.dest){ LV.fx.splice(LV.fx.indexOf(f),1); laserPose(h); return; }   // 回到雷射旁邊繼續調
     if(ph===3 && (k>3 || !h.dest)){ LV.fx.splice(LV.fx.indexOf(f),1); if(temp){ LV.group.remove(h.g); delete LV.actors.di; LV.pick=LV.pick.filter(m=>!(m.userData.pick && m.userData.pick.kind==='npc' && m.userData.pick.who==='di')); } else h.helping=false; } };
   LV.fx.push(f); }
 function goDecoy(){ const d=LV.decoy; if(!d) return; const s=standNear(d.x,d.z,0.9,d.obs); moveTo(s.x,s.z,()=>bubble('you', pickOne(['（背面用原子筆寫著：「這塊是假的。」……誰放的？）','（摸魚計畫檢討……原來摸魚也要開會檢討。好，那我先在這裡檢討一下。）','（立牌背面貼著一張便利貼：「上班時間請勿久留。——人資」）']), true)); }   /* 假立牌：走過去才發現被騙；在廁所待太久照樣任務失敗 */
@@ -3214,7 +3221,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
     LV.fx.push(crewChat);   // 背景工人講垃圾話
     LV.pick.push(spot.userData.disc);
     if(L.view){ target.set(...L.view.t); theta=L.view.theta; phi=L.view.phi; dist=L.view.dist; } else { target.set(L.cx, L.gy+1.3, 2.5); theta=0.5; phi=1.08; dist=12; }
-    minD=4; maxD = L.yard!==undefined ? 45 : 24;   /* 週二在四樓：可以拉遠看整個工地（圍籬放大後約 68×48 公尺） */
+    minD = L.indoor ? 1.2 : 4; maxD = L.yard!==undefined ? 45 : 24;   /* 工務所（室內）可以拉近看牆上的字（他 11-16） */   /* 週二在四樓：可以拉遠看整個工地（圍籬放大後約 68×48 公尺） */
     $('#help').textContent = TOUCH ? '左下搖桿＝走路（也可以點地板）　點棧板＝拿材料　點藍圈＝安裝　點同事＝聊天　一指拖曳＝轉視角　兩指或右邊＋－＝縮放' : '點地板＝走路（WASD 也行）　點棧板＝拿材料　點藍色圈圈＝安裝　點同事＝聊天　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   if(LV.room) maxD=Math.min(maxD,15);
   if(vw()<vh() && LV.room) phi=Math.min(phi,0.78);   // 手機直著拿：畫面窄，鏡頭拉遠一點；室內被牆擋住拉不遠，就改成從高一點往下看
