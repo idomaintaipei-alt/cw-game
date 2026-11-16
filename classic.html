@@ -1708,7 +1708,7 @@ const LEVELS = [
       stat(box(1.2,0.002,0.006, 0.6,0.801,-0.01, ink)); stat(box(1.2,0.002,0.006, 0.6,2.299,-0.01, ink)); tag('進出線', 0.32,0.88,0.06);   // 進出線：開口下緣、上緣，窗框前緣要對齊的位置
     }
     { const X=-0.95, Z=0.95, leg=std(0x2b2f36), red=std(0xb3121e), blk=std(0x1d2126), sil=std(0xc9ced6), win=std(0x3a3f47), lg=new THREE.Group(); lg.position.set(X,0,Z); lg.rotation.y=-0.5;   /* 雷射水平儀（照他 11-16 給的照片）：架在三腳架上，正面朝牆 */
-      [0,2.09,4.19].forEach(a=>{ const l=new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.011,0.84,6),leg); l.position.set(Math.sin(a)*0.12,0.41,Math.cos(a)*0.12); l.rotation.set(Math.cos(a)*0.28,0,-Math.sin(a)*0.28); l.castShadow=true; lg.add(l); });
+      [0,2.09,4.19].forEach(a=>{ const l=new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.011,0.84,6),leg); l.position.set(Math.sin(a)*0.12,0.41,Math.cos(a)*0.12); l.rotation.set(-Math.cos(a)*0.28,0,Math.sin(a)*0.28); l.castShadow=true; lg.add(l); });   /* 上面收在頂盤、下面張開踩地（他 11-16：原本畫反了） */
       lg.add(cyl(0.05,0.03,'y',0,0.82,0,leg,14));   // 三腳架頂盤
       const B=0.87; lg.add(cyl(0.012,0.05,'y',0,B-0.02,0,sil,10));   // 中間銀色螺柱（鎖在三腳架上）
       [0,2.09,4.19].forEach(a=>lg.add(box(0.02,0.02,0.02, Math.sin(a)*0.055,B+0.01,Math.cos(a)*0.055, blk)));   // 三隻黑腳
