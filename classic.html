@@ -1722,12 +1722,28 @@ const LEVELS = [
       lg.add(box(0.07,0.075,0.004, 0,B+0.1,0.066, blk));   // 正面黑色面板
       lg.add(box(0.05,0.028,0.006, 0,B+0.165,0.058, win)); lg.add(box(0.026,0.006,0.05, 0,B+0.226,0, win));   // 正面、頂上的出光窗
       [-1,1].forEach(e=>lg.add(box(0.006,0.028,0.04, e*0.06,B+0.16,0, win)));   // 兩側出光窗
-      lg.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); stat(lg); LV.obs.push({x:X, z:Z, hx:0.2, hz:0.2}); LV.laserAt={x:X, z:Z};
+      lg.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); lg.userData.smash='laser'; stat(lg); LV.obs.push({x:X, z:Z, hx:0.2, hz:0.2}); LV.laserAt={x:X, z:Z};
       const sx=X-0.3, sz=Z+0.25;   /* 站在雷射左後方：不擋主角去劃間距的路 */
       LV.fx.push((dt,t)=>{ if(!LV.actors.you) return; let h=LV.actors.di;   /* 小弟在雷射旁邊調雷射（他 11-16）：角色要等關卡建好才有，第一格再安排；當天有跟班就由他來 */
         if(!h || !h.station){ if(!h){ h=makeActor('di',sx,sz); h.g.scale.setScalar(0.86); } else { h.x=sx; h.z=sz; h.g.position.x=sx; h.g.position.z=sz; h.dest=null; } h.follower=false; h.helping=true; h.speed=3.0; h.station={x:sx,z:sz}; laserPose(h); }
         let s2=LV.actors.hao; if(!s2 || !s2.station){ const hx=2.3, hz=0.45; if(!s2){ s2=makeActor('hao',hx,hz); s2.g.scale.setScalar(0.86); } else { s2.x=hx; s2.z=hz; s2.g.position.x=hx; s2.g.position.z=hz; s2.dest=null; } s2.follower=false; s2.helping=true; s2.speed=3.0; s2.station={x:hx,z:hz}; crewPost(s2); }   /* 他 11-16：週四不管有沒有跟班，兩個小弟都在場幫忙：一個顧雷射，一個站在開口右邊（綁繩子、電焊） */
-        if(h.doorPose && !h.dest) h.doorPose.R[0]=-1.25+0.07*Math.sin(t*2.6); }); }   // 右手一下一下轉旋鈕
+        if(h.doorPose && h.doorPose.R && !h.dest && Math.hypot(h.x-h.station.x,h.z-h.station.z)<0.1) h.doorPose.R[0]=-1.25+0.07*Math.sin(t*2.6); }); }   /* 只有站在雷射旁邊才轉旋鈕（扛窗時手的姿勢不能被改掉） */   // 右手一下一下轉旋鈕
+    { const W=new THREE.Group(), bl=std(0x1f5fa8), dk=std(0x1d2126), sil=std(0xc9ced6), rd=std(0xc62828), cab=std(0x111317), WX=2.1, WZ=-0.12; W.position.set(WX,0,WZ);   /* 電焊機（他 11-16：電焊動畫要工具，工務所一開始就要有）：手提式，放在樣品牆右邊地上，前面板朝室內 */
+      W.add(box(0.36,0.24,0.2, 0,0.14,0, bl)); W.add(box(0.34,0.03,0.18, 0,0.015,0, dk));   // 機身、底座
+      W.add(box(0.3,0.15,0.005, 0,0.15,0.1025, dk)); W.add(box(0.07,0.035,0.004, -0.07,0.19,0.106, std(0x2e7d32)));   // 黑色面板、電流顯示
+      W.add(cyl(0.022,0.02,'z',0.06,0.19,0.112,sil,16)); W.add(cyl(0.012,0.012,'z',0.06,0.19,0.125,dk,10));   // 電流旋鈕
+      [[-0.07,rd],[0.07,dk]].forEach(([x,m])=>W.add(cyl(0.016,0.02,'z',x,0.1,0.112,m,12)));   // 正負極接頭
+      [-0.11,0.11].forEach(x=>W.add(box(0.02,0.07,0.03, x,0.29,0, dk))); W.add(cyl(0.012,0.24,'x',0,0.33,0,dk,10));   // 提把
+      W.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); W.userData.smash='welder'; stat(W); LV.obs.push({x:WX, z:WZ, hx:0.22, hz:0.14});
+      const holder=new THREE.Group(), el=cyl(0.0025,0.16,'z',0,0,0.1,std(0x9aa0a8),6);   /* 焊把：黑色握柄＋紅色夾頭＋焊條；平常擱在電焊機上 */
+      holder.add(cyl(0.016,0.11,'z',0,0,-0.06,cab,12)); holder.add(box(0.03,0.03,0.04, 0,0,0.01, std(0x8a1f1f))); holder.add(el);
+      const mask=new THREE.Group(); mask.add(box(0.24,0.28,0.025, 0,0,0, cab)); mask.add(box(0.11,0.05,0.006, 0,0.04,0.0155, std(0x0c3a2a))); mask.add(cyl(0.012,0.12,'y',0,-0.2,-0.01,cab,8));   /* 手持焊接面罩：黑色面罩、深綠色濾光鏡、下面握柄 */
+      const coil=new THREE.Mesh(new THREE.TorusGeometry(0.09,0.012,6,20),cab); coil.rotation.x=Math.PI/2; coil.position.set(WX-0.32,0.012,WZ+0.05); coil.castShadow=true; LV.group.add(coil);   // 電線捲起來放在機器旁邊地上
+      const clamp=new THREE.Group(); clamp.add(box(0.02,0.018,0.05, 0,0,0, std(0xb87333))); clamp.add(box(0.016,0.016,0.06, 0,0.012,0.04, cab)); clamp.visible=false; clamp.position.set(1.175,0.9,-0.02); LV.group.add(clamp);   // 地線夾：電焊時夾在右下角的螺栓上
+      const restH=()=>{ if(holder.parent!==LV.group) LV.group.add(holder); holder.position.set(WX-0.04,0.276,WZ); holder.rotation.set(0,0,0); el.scale.z=1; }, restM=()=>{ if(mask.parent!==LV.group) LV.group.add(mask); mask.position.set(WX+0.36,0.013,WZ+0.02); mask.rotation.set(-Math.PI/2,0,0.4); };   // 焊把擱在機器上、面罩平放在旁邊地上
+      restH(); restM(); [holder,mask].forEach(g=>g.traverse(o=>{ if(o.isMesh) o.castShadow=true; }));
+      LV.refs.welder={x:WX, z:WZ, holder, el, mask, coil, clamp, restH, restM, T1:new THREE.Vector3(WX-0.07,0.1,WZ+0.125), T2:new THREE.Vector3(WX+0.07,0.1,WZ+0.125)}; }
+    LV.smashRects.push({kind:'mockwall', x:0.6, z:-0.1, hx:1.1, hz:0.1, exact:true, y:1.4, h:2.8});   /* 樣品牆：拿球棒可以砸（週四室內，他 11-16） */
     const rod=(a,b,r,m)=>{ const A=new THREE.Vector3(...a), B=new THREE.Vector3(...b), v=B.clone().sub(A), c=new THREE.Mesh(new THREE.CylinderGeometry(r,r,v.length(),8),m); c.position.copy(A).add(B).multiplyScalar(0.5); c.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize()); c.castShadow=true; return c; };
     // 1 量 MO：捲尺貼著牆面量寬（開口下緣）、量高（右邊的牆面）
     const tape=std(0xf2c230);
@@ -1789,21 +1805,37 @@ const LEVELS = [
         if(th.visible){ const b=Math.max(0.001,Math.min(1,(k-3.6)/1.6)); th.scale.y=b; th.position.set(th.userData.home.x, 0.8+1.5*b/2, th.userData.home.z); }   // 再從下面拉上去
         if(k>5.3 && !lh.visible){ lh.visible=true; lh.position.copy(lh.userData.home); }
         if(k>7.3){ LV.fx.splice(LV.fx.indexOf(f),1); done(); } }; LV.fx.push(f); }); },
-    win(done){ const hm=LV.parts.win.meshes[0].userData.home; duoCarry({id:'win', path:[[1.35,5.6],[1.35,4.4],[-0.9,4.4],[-0.9,1.7],[0.6,1.7],[0.6,0.45]], y:hm.y, setZ:hm.z, show:()=>LV.parts.win.meshes.forEach(m=>{ m.visible=true; m.position.copy(m.userData.home); }),   /* 從第二排棧板繞過前排（中間留 2.16 公尺寬的路），走到開口正前面 */
+    win(done){ const hm=LV.parts.win.meshes[0].userData.home; duoCarry({id:'win', path:[[1.35,5.3],[1.35,4.4],[-0.9,4.4],[-0.9,1.7],[0.6,1.7],[0.6,0.45]], y:hm.y, setZ:hm.z, show:()=>LV.parts.win.meshes.forEach(m=>{ m.visible=true; m.position.copy(m.userData.home); }),   /* 從第二排棧板繞過前排（中間留 2.16 公尺寬的路），走到開口正前面 */
       after:fin=>{ const s=LV.actors.hao, R=LV.refs.ropes; teachSay('an','窗先用小繩子綁在膨脹螺絲上，暫時固定；等一下電焊才是真的固定。'); bubble('hao','我來綁繩子！');   /* 你跟小弟扶著窗，另一個小弟來綁繩子（他 11-16：這種小事小弟做） */
         crewGo(s, [[1.95,1.0],[0.6,1.0],[0.6,0.62]], ()=>{ s.face=Math.PI; s.waiting=true; let k=0, i=0;
           const f=dt=>{ k+=dt; s.doorPose={L:[-1.4+0.08*Math.sin(k*9),0.2,-0.4], R:[-1.4+0.08*Math.cos(k*9),-0.2,-0.4]};   // 兩手在窗框邊綁
             while(i<R.length && k>0.4+i*0.8){ R[i].visible=true; i++; }
             if(k>0.4+R.length*0.8+0.3){ LV.fx.splice(LV.fx.indexOf(f),1); s.doorPose=null; bubble('hao','綁好了！'); crewGo(s, [[0.6,1.0],[1.95,1.0],[s.station.x,s.station.z]], ()=>{ crewPost(s); fin(); }); } };   // 走回開口右邊才放手（不跟你搶路）
           LV.fx.push(f); }); } }, done); },
-    glass(done){ teachSay('an','先量內框的寬、高，照尺寸裁玻璃；量好再一起抬上去。'); const hm=LV.parts.glass.meshes[0].userData.home; duoCarry({id:'glass', path:[[2.1,3.7],[2.1,1.7],[0.6,1.7],[0.6,0.45]], y:hm.y, setZ:hm.z, hi:'玻璃很重，我來抬另一邊！', show:()=>LV.parts.glass.meshes.forEach(m=>{ m.visible=true; m.position.copy(m.userData.home); })}, done); },
-    weld(done){ const me=LV.actors.you, s=LV.actors.hao, ws=LV.parts.weld.meshes, n=ws.length/4, R=LV.refs.ropes;   /* 電焊：小弟一個點一個點焊，焊完拆繩子（他 11-16：小事小弟做；你在旁邊看） */
+    glass(done){ teachSay('an','先量內框的寬、高，照尺寸裁玻璃；量好再一起抬上去。'); const hm=LV.parts.glass.meshes[0].userData.home; duoCarry({id:'glass', path:[[2.1,3.4],[2.1,1.7],[0.6,1.7],[0.6,0.45]], y:hm.y, setZ:hm.z, hi:'玻璃很重，我來抬另一邊！', show:()=>LV.parts.glass.meshes.forEach(m=>{ m.visible=true; m.position.copy(m.userData.home); })}, done); },
+    weld(done){ const me=LV.actors.you, s=LV.actors.hao, ws=LV.parts.weld.meshes, n=ws.length/4, R=LV.refs.ropes, Wd=LV.refs.welder, V3=THREE.Vector3;   /* 電焊：小弟拿焊把、戴面罩，拖著電線一個點一個點焊，焊完拆繩、工具放回去（他 11-16：要工具，不是用手焊） */
+      const pts=ws.filter((m,i)=>i%4===2).map(m=>m.userData.home), order=[0,1,2,3,8,9,10,4,5,6,7,11,12,13].filter(i=>i<n);   // 焊的順序：左邊直的、下面、右邊直的、上面
+      const stand=i=>({x:Math.max(0.3,Math.min(0.9,pts[i].x)), z:0.38});   // 站在那個點的正前面（左右兩邊站 0.3／0.9）：手臂＋焊條剛好碰得到縫裡
+      let cable=null, gnd=null; const tube=(ps,old)=>{ if(old){ old.geometry.dispose(); LV.group.remove(old); } const m=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(ps),28,0.008,5), Wd.holder.children[0].material); m.castShadow=true; LV.group.add(m); return m; };
+      const glow=new THREE.Mesh(new THREE.SphereGeometry(0.02,10,8), new THREE.MeshBasicMaterial({color:0xcfefff})); glow.visible=false; LV.group.add(glow);   // 電弧光
       walkThen(2.0,1.3,()=>{ me.face=Math.atan2(0.6-2.0,0.3-1.3);   /* 站右後方看：不擋鏡頭、不擋小弟的路 */ camGlide({t:[0.6,1.45,0], theta:-0.2, phi:1.3, dist:3.0}); teachSay('an','拿一小段鋼筋，把固定片跟膨脹螺絲焊在一起；全部焊好，再拆掉綁窗的繩子。'); bubble('hao','電焊交給我！');
-        crewGo(s, [[1.9,0.5],[0.6,0.5]], ()=>{ s.face=Math.PI; s.waiting=true; let k=0, i=0, r=0; const T=0.3+n*0.45;
-          const f=dt=>{ k+=dt; s.doorPose={L:[-1.25,0.15,-0.5], R:[-1.35+0.06*Math.sin(k*14),-0.1,-0.45]};   // 左手扶著、右手拿焊槍
-            while(i<n && k>0.3+i*0.45){ const m4=ws.slice(i*4,i*4+4); m4.forEach(m=>{ m.visible=true; m.position.copy(m.userData.home); }); weldSparks(m4[2].position,8); weldSparks(m4[3].position,8); i++; }   // 固定片扣上、放一小段鋼筋、兩頭焊牢
-            while(r<R.length && k>T+0.3+r*0.4){ R[r].visible=false; r++; }   // 全部焊好：拆掉綁窗的繩子
-            if(k>T+0.3+R.length*0.4+0.3){ LV.fx.splice(LV.fx.indexOf(f),1); s.doorPose=null; bubble('hao','焊好了，繩子也拆了！'); crewGo(s, [[1.9,0.5],[s.station.x,s.station.z]], ()=>{ crewPost(s); done(); }); } };
+        crewGo(s, [[Wd.x,0.3]], ()=>{ s.face=Math.PI; s.waiting=true; let ph=0, k=0, j=0, w=0, lit=false, r=0;   // 先去電焊機前面拿工具
+          const f=dt=>{ k+=dt; if(!s.dest) s.waiting=true;   // 停著的時候照這裡給的方向，不會轉頭看你
+            if(ph===0){ s.doorPose={L:[-0.5,-0.1,-0.4], R:[-0.5,0.1,-0.4]}; if(k>0.5){ ph=1; s.g.add(Wd.mask); Wd.mask.position.set(0,s.g.userData.head?1.6:1.53,0.2); Wd.mask.rotation.set(0,0,0); Wd.coil.visible=false; Wd.clamp.visible=true;   // 拿起焊把、面罩擋在臉前；電線拉開、地線夾夾上去
+                gnd=tube([Wd.T2, Wd.T2.clone().add(new V3(0,-0.085,0.08)), new V3(1.6,0.015,0.25), new V3(1.25,0.015,0.1), new V3(1.2,0.5,0.02), new V3(1.18,0.9,0.03)]); const t0=stand(order[0]); crewGo(s,[[1.9,0.5],[t0.x,t0.z]]); } }
+            if(ph>=1 && ph<5){ const u=s.g.userData, hand=u.armR.userData.elbow.children.find(o=>o.geometry && o.geometry.type==='SphereGeometry'), hp=(hand||u.armR).getWorldPosition(new V3()), P=new V3(...['x','y','z'].map(c=>pts[order[Math.min(j,order.length-1)]][c]));
+              Wd.holder.position.copy(hp); if(ph===1 || ph===2){ Wd.holder.lookAt(P); Wd.el.scale.z=Math.max(0.4,Math.min(1.5,(hp.distanceTo(P)-0.04)/0.16)); } else { Wd.holder.rotation.set(0.6,s.g.rotation.y,0); Wd.el.scale.z=1; }   // 焊把在右手；對著焊點，焊條剛好碰到
+              const back=Wd.holder.localToWorld(new V3(0,0,-0.12)); cable=tube([Wd.T1, Wd.T1.clone().add(new V3(0,-0.085,0.08)), new V3((Wd.T1.x+s.x)/2,0.015,(Wd.T1.z+s.z)/2+0.15), new V3(s.x+0.15,0.02,s.z+0.12), new V3(back.x,(back.y+0.02)/2,back.z+0.05), back], cable); }   // 電線從機器拖到手上
+            if(ph===1 && !s.dest && k>0.6){ ph=2; w=0; }
+            if(ph===2){ const P=pts[order[j]]; s.face=Math.atan2(P.x-s.x,P.z-s.z); const sh=s.g.userData.armR.getWorldPosition(new V3()), d=new V3(P.x-sh.x,P.y-sh.y,P.z-sh.z), ry=s.g.rotation.y, lx=d.x*Math.cos(ry)-d.z*Math.sin(ry), lz=d.x*Math.sin(ry)+d.z*Math.cos(ry), L0=Math.hypot(lx,d.y,lz)||1;
+              s.doorPose={L:[-1.25,0.45,-1.3], R:[Math.atan2(-lz/L0,-d.y/L0), Math.asin(Math.max(-1,Math.min(1,lx/L0))), 0]};   // 右手臂對準焊點；左手舉著面罩
+              if(!s.dest){ w+=dt; if(w>0.2 && !lit){ lit=true; const m4=ws.slice(order[j]*4,order[j]*4+4); m4.forEach(m=>{ m.visible=true; m.position.copy(m.userData.home); }); weldSparks(m4[2].position,10); weldSparks(m4[3].position,10); }   // 碰到了：固定片扣上、放一小段鋼筋、兩頭焊牢
+                glow.visible = w>0.2 && w<0.55 && Math.random()>0.2; if(glow.visible){ glow.position.set(P.x,P.y,P.z); glow.scale.setScalar(0.7+Math.random()*0.8); }
+                if(w>0.6){ glow.visible=false; lit=false; w=0; if(++j<order.length){ const t=stand(order[j]); if(Math.hypot(t.x-s.x,t.z-s.z)>0.05) crewGo(s,[[t.x,t.z]]); } else { ph=3; k=0; } } } }   // 下一個點：要換位置就走過去
+            if(ph===3){ s.doorPose={L:[-1.4+0.08*Math.sin(k*9),0.2,-0.4], R:[-0.6,0.1,-0.5]}; while(r<R.length && k>0.3+r*0.4){ R[r].visible=false; r++; }   // 全部焊好：拆掉綁窗的繩子
+              if(k>0.3+R.length*0.4+0.3){ ph=4; bubble('hao','焊好了，繩子也拆了！'); s.doorPose=null; crewGo(s,[[1.9,0.5],[Wd.x,0.3]], ()=>{ s.face=Math.PI; ph=5; k=0; }); } }
+            if(ph===5 && k>0.4){ LV.fx.splice(LV.fx.indexOf(f),1); Wd.restH(); Wd.restM(); Wd.clamp.visible=false; Wd.coil.visible=true; [cable,gnd].forEach(m=>{ if(m){ m.geometry.dispose(); LV.group.remove(m); } }); LV.group.remove(glow);   // 工具放回去、電線捲回去
+              crewGo(s,[[s.station.x,s.station.z]], ()=>{ crewPost(s); done(); }); } };
           LV.fx.push(f); }); }); },
     mark(done){ const me=LV.actors.you, ms=LV.parts.mark.meshes, bx=ms.filter(m=>!m.isSprite), lb=ms.filter(m=>m.isSprite); LV.parts.mo.meshes.forEach(m=>m.visible=false);   /* 上一步的捲尺、尺寸字先收起來（他 11-16：字會重疊） */ done=wallShot(done); (fn=>fn())(()=>{ teachSay('an','照 CNS：頭尾各 15 公分，中間每 45 公分一支。'); let k=0, i=0;
       const f=dt=>{ k+=dt; while(i<bx.length && k>0.3+i*0.18){ bx[i].visible=true; bx[i].position.copy(bx[i].userData.home); i++; }   // 記號一個一個劃上去
@@ -2828,7 +2860,7 @@ function buildSmash(){ const out=[], bb=new THREE.Box3(), actors=new Set(Object.
     if(bb.min.y>yardY()+1.5 || bb.max.y<yardY()-0.3) return;   // 只算站在地面上的
     out.push(k==='person' ? {kind:k, o, x:c.x, z:c.z, hx:0.25, hz:0.25} : {kind:k, o, x:c.x, z:c.z, hx:(bb.max.x-bb.min.x)/2, hz:(bb.max.z-bb.min.z)/2}); });
   for(let k=out.length-1;k>=0;k--){ const q=out[k]; if(q.kind!=='person') continue; const H=LV.hoist; if(!isFinite(q.x) || !isFinite(q.z)) continue;   /* 走動的師父還沒算出位置（動畫還沒跑過）：先留著 */ if(H && Math.abs(q.x-H.x)<H.hw+0.1 && Math.abs(q.z-H.z)<H.hd+0.1){ out.splice(k,1); continue; }   /* 電梯車廂裡的阿姨不算 */ let ok=false; for(let a=0;a<8 && !ok;a++){ const x=q.x+Math.cos(a*Math.PI/4)*0.95, z=q.z+Math.sin(a*Math.PI/4)*0.95; if(!occBlocked(x,z,0)) ok=true; } if(!ok) out.splice(k,1); }   // 走不到旁邊的人（在車廂裡、被東西圍住）不算
-  LV.smashRects.forEach(r=>{ const q=Object.assign({}, r), m=new THREE.Mesh(new THREE.BoxGeometry(r.hx*2-0.6,3.0,r.hz*2-0.6), new THREE.MeshBasicMaterial()); m.visible=false; m.position.set(r.x,yardY()+1.5,r.z); LV.group.add(m); q.o=null; q.pickM=m; out.push(q); });   // 工務所／警衛室：放一個看不見的盒子給滑鼠點
+  LV.smashRects.forEach(r=>{ const q=Object.assign({}, r), m=new THREE.Mesh(r.exact ? new THREE.BoxGeometry(r.hx*2,r.h,r.hz*2) : new THREE.BoxGeometry(r.hx*2-0.6,3.0,r.hz*2-0.6), new THREE.MeshBasicMaterial()); m.visible=false; m.position.set(r.x, r.exact ? yardY()+r.y : yardY()+1.5, r.z); LV.group.add(m); q.o=null; q.pickM=m; out.push(q); });   // 工務所／警衛室：放一個看不見的盒子給滑鼠點
   out.forEach(q=>{ const tg=q.pickM||q.o; if(!tg) return; tg.traverse(m=>{ if(m.isMesh){ m.userData.pick={kind:'smash', s:q}; LV.pick.push(m); } }); });   // 點得到：拿著球棒點車、點人＝走過去動手
   LV.smash=out; }
 function liveXZ(s){ if(s.kind==='person' && s.o){ const v=s.o.getWorldPosition(new THREE.Vector3()); s.x=v.x; s.z=v.z; } return s; }   // 走動中的工人：用現在的位置
@@ -2839,10 +2871,11 @@ function goSmash(s,tries=0){ const me=LV.actors.you; liveXZ(s); const t=smashSta
   moveTo(t.x,t.z,()=>{ liveXZ(s); if(rectDist(s,me.x,me.z).d>1.1){ if(tries<2) goSmash(s,tries+1); return; }   /* 工人走開了：再追一次 */ me.face=Math.atan2(s.x-me.x,s.z-me.z); if(s.kind==='person' && (prank==='bat' || drinkHeld)) actOn({crew:s}); else if(prank==='bat' && s.kind!=='person') smashSwing(s); else idleTalk(s); }); }
 // 空手點外面的東西：師父回一句、車子／怪手／工務所＝主角的內心 OS（只是聊聊，不會怎樣）
 const OUT_TALK={ person:['設計部的？下來幹嘛？樓上不是在裝料嗎？','便當還沒來啦，別問。','你安全帽有戴好，不錯。','這邊在忙，借過一下。','你們畫的圖喔……算了，我不說。','少年仔，鞋帶綁好。','要抽菸去那邊，這裡不行。','主任剛剛在找人，是不是在找你？'],
-  car:['（這台車好像是主任的……）','（車子擦得好亮。）','（後座堆滿安全帽。）'], mine:['（我的車。分期還沒繳完。）','（停得有點歪。算了。）'], dig:['（怪手好帥。一台要好幾百萬吧。）','（師父在駕駛座吃檳榔。）'], office:['（裡面冷氣好像很涼……）','（門口貼著：閒人勿進。）'] };
+  car:['（這台車好像是主任的……）','（車子擦得好亮。）','（後座堆滿安全帽。）'], mine:['（我的車。分期還沒繳完。）','（停得有點歪。算了。）'], dig:['（怪手好帥。一台要好幾百萬吧。）','（師父在駕駛座吃檳榔。）'], office:['（裡面冷氣好像很涼……）','（門口貼著：閒人勿進。）'],
+  laser:['（雷射水平儀。一台好幾萬，別亂碰。）'], welder:['（電焊機。等一下要用。）'], mockwall:['（樣品牆。今天就靠它了。）'] };
 function subSay(name,t){ const el=$('#sub'); el.classList.remove('big'); el.textContent=''; const b=document.createElement('b'); b.textContent=name; el.append(b); phrases(el,t); el.style.display='block'; clearTimeout(subT); subT=setTimeout(()=>{ el.style.display='none'; }, 3600); }
 function idleTalk(s){ const ln=pickOne(OUT_TALK[s.kind]||OUT_TALK.car); if(s.kind==='person') subSay(s.o && s.o.userData.crew ? '師父' : '路人',ln); else bubble('you',ln,true); }
-function nearSmash(){ if(!LV.smash) return null; const p=LV.actors.you; let best=null, bd=0.9; LV.smash.forEach(s=>{ const d=rectDist(liveXZ(s),p.x,p.z).d; if(d<bd){ bd=d; best=s; } }); return best; }
+function nearSmash(){ if(!LV.smash && L && L.indoor && LV.smashRects && LV.smashRects.length) buildSmash();   /* 週四室內：第一次用到才建 */ if(!LV.smash) return null; const p=LV.actors.you; let best=null, bd=0.9; LV.smash.forEach(s=>{ const d=rectDist(liveXZ(s),p.x,p.z).d; if(d<bd){ bd=d; best=s; } }); return best; }
 function smashSwing(s){ const me=LV.actors.you; if(me.swing) return; me.dest=null; me.onArrive=null; LV.rideArm=false;   /* 剛揮完棒（例如打電梯裡的師傅）不自動跳電梯對話 */ const ex=Math.max(s.x-s.hx,Math.min(s.x+s.hx,me.x)), ez=Math.max(s.z-s.hz,Math.min(s.z+s.hz,me.z)); me.face=Math.atan2(ex-me.x,ez-me.z);
   me.swing={t:0, id:'bat', target:{x:ex, z:ez, smash:s}, done:()=>smashDone(s)}; }
 function smashHit(s){ const o=s.o; if(o){ const x0=o.position.x, z0=o.position.z; let k=0; const f=dt=>{ k+=dt; const e=Math.max(0,1-k/0.5); o.position.x=x0+Math.sin(k*70)*0.05*e; o.position.z=z0+Math.cos(k*61)*0.04*e; if(k>0.5){ o.position.x=x0; o.position.z=z0; LV.fx.splice(LV.fx.indexOf(f),1); } }; LV.fx.push(f); }   // 被砸到的東西抖一下
@@ -2861,6 +2894,8 @@ function smashDone(s){ const boss=LV.actors[L.boss];   /* 砸自己的車、怪�
   if(s.kind==='mine'){ bubble('you','（心在淌血）……自己的車。分期還沒繳完。',true); return; }
   if(s.kind==='dig'){ bubble('you','（怪手：毫髮無傷）',true); if(LV.call && LV.call.left===undefined){ LV.call.dig=true; LV.call.t=Math.min(LV.call.t,0.8); } return; }   // 砸怪手：主任馬上打來
   if(s.kind==='person'){ WHY.prank=PRANK.bat.why; award('misc.bat'); comboHit(s.o, ()=>failMission(boss,'prank')); return; }   /* 打倒工地的師傅：也算進五連殺 */
+  const IN={laser:'你拿球棒砸了雷射水平儀。', welder:'你拿球棒砸了電焊機。', mockwall:'你拿球棒砸了樣品牆。'};   /* 週四工務所裡：公司的東西 */
+  if(IN[s.kind]){ prank=null; WHY.office=IN[s.kind]; WHY.prank=PRANK.bat.why; award('misc.bat'); failMission(boss,'office'); return; }
   prank=null; WHY.car='你拿球棒砸了別人的車。'; WHY.office=L.plant ? '你拿球棒砸警衛室。' : '你拿球棒砸工務所。'; WHY.prank=PRANK.bat.why; award('misc.bat'); failMission(boss, s.kind==='car' ? 'car' : s.kind==='office' ? 'office' : 'prank'); }
 // 搭施工電梯：四樓走到電梯口（或點電梯）＝問要不要下樓；一樓走到西門＝問要不要回四樓。手上的料一起帶
 function goHoist(){ const H=LV.hoist, me=LV.actors.you; if(!H || LV.ride || done) return; const t = LV.down ? {x:H.x-H.hw-0.9, z:H.z} : {x:H.x, z:6.3}; moveTo(t.x,t.z,()=>askRide()); }
@@ -3105,24 +3140,28 @@ function crewWalk(a, x, z, cb){ crewGo(a, plan(a,{x,z}).map(q=>[q.x,q.z]), cb); 
 function crewPost(s){ s.home={x:s.station.x, z:s.station.z}; s.waiting=true; s.doorPose=null; s.face=Math.atan2(0.6-s.x, 0.6-s.z); }   // 第二個小弟：站在開口右邊等著幫忙
 function weldSparks(q, n){ const sp=[]; for(let i=0;i<n;i++){ const m=new THREE.Mesh(new THREE.SphereGeometry(0.008,6,4), new THREE.MeshBasicMaterial({color:i%3?0xffc04a:0xfff3c0})); m.position.copy(q); m.userData.v=new THREE.Vector3((Math.random()-0.5)*1.4, 0.4+Math.random()*1.2, 0.3+Math.random()*0.8); LV.group.add(m); sp.push(m); }   /* 電焊的火花：一下下就沒了 */
   let k=0; const f=dt=>{ k+=dt; sp.forEach(m=>{ m.userData.v.y-=dt*4; m.position.addScaledVector(m.userData.v,dt); }); if(k>0.9){ sp.forEach(m=>LV.group.remove(m)); LV.fx.splice(LV.fx.indexOf(f),1); } }; LV.fx.push(f); }
-function wallShot(done){ const me=LV.actors.you, hid = me.x>-0.7 && me.x<1.9 && me.z>0.1 && me.z<3.8; if(hid) me.g.visible=false; camGlide({t:[0.6,1.55,0], theta:0, phi:1.5, dist:3.4}); return ()=>{ me.g.visible=true; done(); }; }   /* 鏡頭正對開口，整個開口落在小安的字幕框上面；主角剛好擋在鏡頭前面就先藏起來，播完再出現 */
-function duoCarry(o, done){ const me=LV.actors.you, h=LV.actors.di, q=LV.pallets[o.id], D=0.75, V=1.2, P=o.path;   /* 兩個人一起扛（週四裝窗、裝玻璃）。他 11-16：小弟跟窗會順移、窗突然黏上 RC →
-     兩個人照一條走得過的路一起走（同樣速度、隊形不變、一直面向牆，窗夾在兩人前面），窗跟裝上去的一樣大；到開口前先抬到窗洞的高度，再慢慢推進去，跟裝好的位置完全重疊才換成真的 */
+function wallShot(done){ const me=LV.actors.you, hid = me.x>-0.7 && me.x<1.9 && me.z>0.1 && me.z<3.8; if(hid) me.g.visible=false; camGlide({t:[0.6,1.55,0], theta:0, phi:1.5, dist:3.0});   /* 畫面往上讓 10%：開口中心落在畫面 40% 高，3 公尺剛好塞在頂端資訊列跟小安字幕框中間 */ return ()=>{ me.g.visible=true; done(); }; }   /* 鏡頭正對開口，整個開口落在小安的字幕框上面；主角剛好擋在鏡頭前面就先藏起來，播完再出現 */
+function duoCarry(o, done){ const me=LV.actors.you, h=LV.actors.di, q=LV.pallets[o.id], D=0.75, V=1.2, P=o.path;   /* 兩個人一起扛（週四裝窗、裝玻璃）。他 11-16：
+     小弟跟窗會順移、窗突然黏上 RC → 兩個人照一條走得過的路同速走、隊形不變，窗跟裝上去的一樣大，到開口前先抬到窗洞高度、再慢慢推進去，跟裝好的位置完全重疊才換成真的；
+     角色沒轉彎、都在平移 → 兩人照走的方向轉身：往牆走＝並排、窗夾中間；往左右走＝一前一後、窗在兩人中間（窗一直在兩人連線上，方向不用變） */
   const it=makeItem(ITEM[L.id+'.'+o.id]).g, v=new THREE.Vector3(); q.item.children[0].getWorldPosition(v); const y0=v.y, yc=y0+0.15;
   q.obs.hx=Math.min(q.obs.hx,0.425); q.obs.hz=Math.min(q.obs.hz,0.425);   // 兩個人要站到料的兩頭：擋路的範圍縮回棧板本身
-  bubble('di', o.hi||'學長，我來幫你扛！'); let ph=0, k=0, n=0, leg=0, x3=0;
-  moveTo(P[0][0]+D, P[0][1], ()=>n++); crewWalk(h, P[0][0]-D, P[0][1], ()=>n++);   // 你站右邊、小弟站左邊
-  const lead=(x,z,sp)=>[me,h].forEach((a,i)=>{ a.speed=sp; a.faceLock=Math.PI; a.dest={x:x+(i?-D:D), z}; a.onArrive=null; });   // 兩個人同一段路、同樣速度：隊形不會走樣
-  const free=()=>[me,h].forEach(a=>{ a.speed=3.0; a.faceLock=undefined; a.carry=null; });
+  bubble('di', o.hi||'學長，我來幫你扛！'); let ph=0, k=0, n=0, leg=0, x3=0, up=false;
+  moveTo(P[0][0]+D, P[0][1], ()=>n++); crewWalk(h, P[0][0]-D, P[0][1], ()=>n++);   // 你站右邊、小弟站左邊（窗的兩頭）
+  const lead=(x,z,sp)=>[me,h].forEach((a,i)=>{ a.speed=sp; a.dest={x:x+(i?-D:D), z}; a.onArrive=null; });   // 兩個人同一段路、同樣速度：隊形不會走樣；身體照走的方向轉
+  const grip=a=>{ const r=a.g.rotation.y, vx=it.position.x-a.x, vz=it.position.z-a.z, fw=vx*Math.sin(r)+vz*Math.cos(r), lat=vx*Math.cos(r)-vz*Math.sin(r);   /* 窗在這個人的前、後、左、右：手伸過去抓（右手在身體 +x 那一側，往外抬是正的） */
+    a.doorPose = up ? {L:[-1.35,-0.2,-0.3], R:[-1.35,0.2,-0.3]} : Math.abs(fw)>Math.abs(lat) ? (fw>0 ? {L:[-0.85,-0.15,-0.5], R:[-0.85,0.15,-0.5]} : {L:[0.55,-0.15,-0.15], R:[0.55,0.15,-0.15]}) : lat>0 ? {R:[-0.25,0.75,-0.3]} : {L:[-0.25,-0.75,-0.3]}; };
+  const free=()=>[me,h].forEach(a=>{ a.speed=3.0; a.doorPose=null; });
   const f=dt=>{ k+=dt;
-    if(ph===0){ if(n>=2 || k>12){ ph=1; k=0; me.face=h.face=Math.PI; me.carry=h.carry='across'; h.waiting=true; q.item.visible=false; q.lb.visible=false; it.position.copy(v); LV.group.add(it); LV.duo=it; } }   // 兩個人都到料的兩頭：一起抬起來
-    else if(ph===1){ const t=Math.min(1,k/0.5), e=t*t*(3-2*t); /* 一邊抬、一邊移到兩個人中間（不會跳） */ it.position.set(v.x+((me.x+h.x)/2-v.x)*e, y0+(yc-y0)*e, v.z+((me.z+h.z)/2-0.3-v.z)*e); if(k>0.6){ ph=2; k=0; leg=1; lead(P[1][0],P[1][1],V); } }
-    else if(ph===2){ it.position.set((me.x+h.x)/2, yc+Math.abs(Math.sin(k*5))*0.012, (me.z+h.z)/2-0.3);   // 窗一直夾在兩個人中間、前面 30 公分
-      if(!me.dest && !h.dest){ if(++leg<P.length) lead(P[leg][0],P[leg][1],V); else { ph=3; k=0; me.carry=h.carry='upright'; x3=it.position.x; } } }
-    else if(ph===3){ const t=Math.min(1,k/0.9), e=t*t*(3-2*t); it.position.y=yc+(o.y-yc)*e; it.position.x=x3+(P[P.length-1][0]-x3)*e; if(t>=1){ ph=4; k=0; const z=P[P.length-1][1]-0.15; [me,h].forEach(a=>{ a.speed=0.17; a.dest={x:a.x, z}; }); } }   // 開口前面：先抬到窗洞的高度
-    else if(ph===4){ const t=Math.min(1,k/1.1), e=t*t*(3-2*t), z0=P[P.length-1][1]-0.3; it.position.z=z0+(o.setZ-z0)*e;   // 再一起往前一步，慢慢推進開口
+    if(ph===0){ if(n>=2 || k>12){ ph=1; k=0; me.face=Math.atan2(h.x-me.x,h.z-me.z); h.face=Math.atan2(me.x-h.x,me.z-h.z); h.waiting=true; q.item.visible=false; q.lb.visible=false; it.position.copy(v); LV.group.add(it); LV.duo=it; } }   // 兩個人都到料的兩頭、面對面：一起抬起來
+    else if(ph===1){ const t=Math.min(1,k/0.5), e=t*t*(3-2*t); /* 一邊抬、一邊移到兩個人中間（不會跳） */ it.position.set(v.x+((me.x+h.x)/2-v.x)*e, y0+(yc-y0)*e, v.z+((me.z+h.z)/2-v.z)*e); if(k>0.6){ ph=2; k=0; leg=1; lead(P[1][0],P[1][1],V); } }
+    else if(ph===2){ it.position.set((me.x+h.x)/2, yc+Math.abs(Math.sin(k*5))*0.012, (me.z+h.z)/2);   // 窗一直在兩個人中間
+      if(!me.dest && !h.dest){ if(++leg<P.length) lead(P[leg][0],P[leg][1],V); else { ph=3; k=0; up=true; me.face=h.face=Math.PI; x3=it.position.x; } } }
+    else if(ph===3){ const t=Math.min(1,k/0.9), e=t*t*(3-2*t); it.position.y=yc+(o.y-yc)*e; it.position.x=x3+(P[P.length-1][0]-x3)*e; if(t>=1){ ph=4; k=0; const z=P[P.length-1][1]-0.15; [me,h].forEach(a=>{ a.speed=0.17; a.dest={x:a.x, z}; }); } }   // 開口前面：面向牆，先抬到窗洞的高度
+    else if(ph===4){ const t=Math.min(1,k/1.1), e=t*t*(3-2*t), z0=P[P.length-1][1]; it.position.z=z0+(o.setZ-z0)*e;   // 再一起往前一步，手往前推，慢慢推進開口
       if(t>=1){ ph=5; LV.group.remove(it); LV.duo=null; o.show(); LV.fx.splice(LV.fx.indexOf(f),1);   // 跟裝好的位置完全重疊：換成真的
-        const fin=()=>{ free(); bubble('di', o.bye||'好了！我回去顧雷射。'); crewWalk(h, h.station.x, h.station.z, ()=>laserPose(h)); done(); }; if(o.after) o.after(fin); else fin(); } } };
+        const fin=()=>{ free(); bubble('di', o.bye||'好了！我回去顧雷射。'); crewWalk(h, h.station.x, h.station.z, ()=>laserPose(h)); done(); }; if(o.after) o.after(fin); else fin(); } }
+    if(ph>=1 && ph<5){ grip(me); grip(h); } };
   LV.fx.push(f); }
 function goDecoy(){ const d=LV.decoy; if(!d) return; const s=standNear(d.x,d.z,0.9,d.obs); moveTo(s.x,s.z,()=>bubble('you', pickOne(['（背面用原子筆寫著：「這塊是假的。」……誰放的？）','（摸魚計畫檢討……原來摸魚也要開會檢討。好，那我先在這裡檢討一下。）','（立牌背面貼著一張便利貼：「上班時間請勿久留。——人資」）']), true)); }   /* 假立牌：走過去才發現被騙；在廁所待太久照樣任務失敗 */
 function goPallet(id){ const q=LV.pallets[id]; if(!q||placed.has(id)) return; if(L.anim && L.anim[id] && need() && need().id===id && !carry && !prank){ tryPick(id); return; }   /* 有小動畫的步驟（週四量 MO、劃間距）：點了直接開始，不用先走到立牌 */ const s=standNear(q.x,q.z,0.9,q.obs); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(rectDist(q.obs,p.x,p.z).d<0.9) tryPick(id); }); }   // 真的走到旁邊才拿
@@ -3270,7 +3309,7 @@ function onClick(e){ if(dlgOpen){ advance(); return; } if(LV.animBusy) return; i
     if(p.kind==='spot'){ if(!spot.visible) continue; goSpot(); return; }
     if(p.kind==='prank'){ if(!done) goPrank(p.id); return; }
     if(p.kind==='hoist'){ if(!done) goHoist(); return; }
-    if(p.kind==='smash'){ if(!LV.down) continue; if(!done) goSmash(p.s); return; }
+    if(p.kind==='smash'){ if(!LV.down && !(L.indoor && prank==='bat')) continue; if(!done) goSmash(p.s); return; }   // 週四室內：拿著球棒才點得到
     if(p.kind==='npc'){ if(prank){ const a=LV.actors[p.who]; moveTo(a.x,a.z,null); LV.actors.you.hitWho=p.who; } else goNpc(p.who); return; } }   // 拿著來亂的東西點同事＝故意走過去敲他
   const fy=LV.down ? yardY() : L.gy; gplane.constant=-fy; if(ray.ray.intersectPlane(gplane,hitPt) && L.plant && !LV.down && !inWork(hitPt.x,hitPt.z,-0.4) && hitPt.z>0.85 && !done){ const A=OUT(); askOut({x:Math.min(A.x1,Math.max(A.x0,hitPt.x)), z:Math.min(A.z1,Math.max(A.z0,hitPt.z))}); return; }   /* 週五：點工作區外面＝問要不要出去 */
   if(ray.ray.intersectPlane(gplane,hitPt)){ const c=clampXZ(hitPt.x,hitPt.z); moveTo(c.x,c.z,null); ping.position.set(c.x,fy+0.02,c.z); ping.visible=true; pingLife=1; } }
@@ -3285,7 +3324,7 @@ const joy={x:0, y:0, on:false, id:null}; { const J=document.getElementById('joy'
 addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; const k=e.key.toLowerCase(); keys[k]=true;
   if((k===' '||k==='enter') && dlgOpen){ e.preventDefault(); if(resOpen && performance.now()-resT<700) return; advance(); }
   if(k==='e' && !dlgOpen && L && !L.bench && !done && !LV.animBusy){ const p=LV.actors.you; if(carry && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1){ spotArmed=true; tryInstall(); return; }
-    if(LV.down && (prank==='bat' || drinkHeld)){ const sm=nearSmash(); if(sm && sm.kind==='person'){ actOn({crew:sm}); return; } if(sm && prank==='bat'){ smashSwing(sm); return; } }   // 在外面：旁邊是工人＝揮棒／請喝；車、怪手、工務所＝砸下去
+    if((LV.down || L.indoor) && (prank==='bat' || drinkHeld)){ const sm=nearSmash(); if(sm && sm.kind==='person'){ actOn({crew:sm}); return; } if(sm && prank==='bat'){ smashSwing(sm); return; } }   // 在外面：旁邊是工人＝揮棒／請喝；車、怪手、工務所＝砸下去
     if(prank || drinkHeld){ const near=Object.values(LV.actors).filter(a=>a!==p && Math.hypot(a.x-p.x,a.z-p.z)<0.95).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0]; if(near){ actOn(near); return; } }   // 拿著來亂的東西，在同事旁邊按 E＝敲下去／請喝
     let bestId=null, bd=1.0; Object.entries(LV.pallets).forEach(([id,q])=>{ const d=rectDist(q.obs,p.x,p.z).d; if(d<bd && !placed.has(id)){ bd=d; bestId=id; } });
     const pk=Object.keys(LV.pranks).find(id=>{ const d=rectDist(LV.pranks[id].obs,p.x,p.z).d; return d<0.7 && d<=bd; }); if(pk){ if(pk==='drink' && drinkHeld) putDrink(); else if(pk==='bat' && prank==='bat') togglePrank(pk); else thinkPrank(pk); return; }   /* 球棒箱和立牌都在旁邊：誰近拿誰（原本一定先拿球棒，旁邊的立牌按 E 拿不到） */
@@ -3302,7 +3341,7 @@ function actInfo(){ if(!L || L.bench || done || dlgOpen || failed || (cut && cut
   if(carry && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1) return '安裝';
   const hb=prank==='bat', hd=drinkHeld, lab = hb && hd ? '動手' : hb ? '揮棒' : '請喝';
   if((hb||hd) && Object.values(LV.actors).some(o=>o!==p && Math.hypot(o.x-p.x,o.z-p.z)<0.95)) return lab;
-  if(LV.down && (hb||hd)){ const sm=nearSmash(); if(sm && sm.kind==='person') return lab; if(sm && hb) return '揮棒'; }   // 跟 E 鍵一樣：拿著來亂的東西站在同事旁邊＝動手（後果自負）
+  if((LV.down || L.indoor) && (hb||hd)){ const sm=nearSmash(); if(sm && sm.kind==='person') return lab; if(sm && hb) return '揮棒'; }   // 跟 E 鍵一樣：拿著來亂的東西站在同事旁邊＝動手（後果自負）
   const pk=Object.keys(LV.pranks).find(id=>rectDist(LV.pranks[id].obs,p.x,p.z).d<0.7); if(pk && (pk==='bat' ? prank==='bat' : drinkHeld)) return '放回去';   // 隱藏功能：沒拿的時候不顯示「拿起來」
   if(carry || prank) return null;
   let best=null, bd=1.0; Object.entries(LV.pallets).forEach(([id,q])=>{ const d=rectDist(q.obs,p.x,p.z).d; if(d<bd && !placed.has(id)){ bd=d; best=id; } }); if(!best) return null; const nm=plain(stepOf(best).pal||stepOf(best).name); return ITEM[L.id+'.'+best] ? '拿「'+nm+'」' : '來'+nm; }   // 材料＝拿「預埋件」；工作（立牌）＝來放樣、來聯絡灌漿廠
@@ -3445,7 +3484,7 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
   spotChk+=dt; if(spotChk>0.5){ spotChk=0; if(carry && spot.visible && !pd && !touches.size && !joy.on && !camGoal && !(cut && cut.stage<2) && !dlgOpen && !talkCam && userCamT<carryT && performance.now()-carryT>300) ensureSpotVisible();   /* 拿起料之後你沒動過鏡頭才自動調（你自己移開去看別的地方，就不拉回來） */ }   /* 拿著料：藍圈看不到就自動調鏡頭（你剛動過鏡頭的話先不搶） */   /* 過場動畫中：收起資訊框 */
     // 時間不會倒著走
   for(let i=anims.length-1;i>=0;i--){ const a=anims[i]; a.m.visible=performance.now()>=a.t0; if(!a.m.visible) continue; const k=Math.min(1,Math.max(0,(performance.now()-a.t0)/450)); const e=1-Math.pow(1-k,3); a.m.position.y=a.from+(a.to-a.from)*e; if(k>=1) anims.splice(i,1); }
-  if(camGoal){ theta=camGoal.theta+Math.atan2(Math.sin(theta-camGoal.theta),Math.cos(theta-camGoal.theta)); theta+=(camGoal.theta-theta)*0.08; phi+=(camGoal.phi-phi)*0.08; dist+=(camGoal.dist-dist)*0.08; if(Math.abs(camGoal.theta-theta)<1e-3&&Math.abs(camGoal.phi-phi)<1e-3) camGoal=null; }
+  if(camGoal){ theta=camGoal.theta+Math.atan2(Math.sin(theta-camGoal.theta),Math.cos(theta-camGoal.theta)); theta+=(camGoal.theta-theta)*0.08; phi+=(camGoal.phi-phi)*0.08; dist+=(camGoal.dist-dist)*0.08; if(Math.abs(camGoal.theta-theta)<1e-3&&Math.abs(camGoal.phi-phi)<1e-3&&Math.abs(camGoal.dist-dist)<1e-2) camGoal=null; }   /* 遠近也要到位才停（他 11-16：角度原本就差不多時，鏡頭沒拉近就停了） */
   mat.ghost.opacity=0.45+0.4*Math.sin(now/250); camShake=Math.max(0,camShake-dt*1.3);
   if(LV.fx) LV.fx.forEach(f=>f(dt,t));
   if(L && !L.bench && LV.actors.you && !(cut && cut.stage<2)){ const q=Math.min(1,dt*2.5), me=LV.actors.you;
