@@ -1781,18 +1781,18 @@ const LEVELS = [
   fx:{ mo(){}, mark(){}, win(){}, glass(){} },   // 這兩步的東西動畫裡已經擺好了，不用再從上面掉下來
   anim:{   /* 點了立牌直接播（他 11-16：點完再走過去很智障） */
     mo(done){ const me=LV.actors.you, [tw,th,lw,lh]=LV.parts.mo.meshes; walkThen(1.6,0.7,()=>{ me.face=Math.PI-0.5; camGlide({t:[0.6,1.45,0], theta:-0.25, phi:1.3, dist:3.0}); teachSay('an','先量寬：捲尺從左邊的混凝土面，拉到右邊。'); tw.visible=true; let k=0;
-      const f=dt=>{ k+=dt; const a=Math.max(0.001,Math.min(1,k/1.2)); tw.scale.x=a; tw.position.set(1.2*a/2, tw.userData.home.y, tw.userData.home.z);   // 捲尺從左邊拉開
-        if(k>1.3 && !lw.visible){ lw.visible=true; lw.position.copy(lw.userData.home); }
-        if(k>1.9 && !th.visible){ th.visible=true; teachSay('an','再量高：從下面拉到上面。'); }
-        if(th.visible){ const b=Math.max(0.001,Math.min(1,(k-1.9)/1.2)); th.scale.y=b; th.position.set(th.userData.home.x, 0.8+1.5*b/2, th.userData.home.z); }   // 再從下面拉上去
-        if(k>3.2 && !lh.visible){ lh.visible=true; lh.position.copy(lh.userData.home); }
-        if(k>4.2){ LV.fx.splice(LV.fx.indexOf(f),1); done(); } }; LV.fx.push(f); }); },
+      const f=dt=>{ k+=dt; const a=Math.max(0.001,Math.min(1,k/1.6)); tw.scale.x=a; tw.position.set(1.2*a/2, tw.userData.home.y, tw.userData.home.z);   // 捲尺從左邊拉開
+        if(k>1.7 && !lw.visible){ lw.visible=true; lw.position.copy(lw.userData.home); }
+        if(k>3.6 && !th.visible){ th.visible=true; teachSay('an','再量高：從下面拉到上面。'); }   /* 量寬的話講久一點（他 11-16：字停久一點） */
+        if(th.visible){ const b=Math.max(0.001,Math.min(1,(k-3.6)/1.6)); th.scale.y=b; th.position.set(th.userData.home.x, 0.8+1.5*b/2, th.userData.home.z); }   // 再從下面拉上去
+        if(k>5.3 && !lh.visible){ lh.visible=true; lh.position.copy(lh.userData.home); }
+        if(k>7.3){ LV.fx.splice(LV.fx.indexOf(f),1); done(); } }; LV.fx.push(f); }); },
     win(done){ duoCarry({id:'win', heroAt:[1.0,0.9], helpAt:[0.2,0.9], y:1.0, setZ:0.0, show:()=>LV.parts.win.meshes.forEach(m=>{ m.visible=true; m.position.copy(m.userData.home); })}, done); },   /* 窗跟小弟一起扛過去裝 */
     glass(done){ teachSay('an','先量內框的寬、高，照尺寸裁玻璃；量好再一起抬上去。'); duoCarry({id:'glass', heroAt:[1.0,0.9], helpAt:[0.2,0.9], y:1.2, setZ:0.0, hi:'玻璃很重，我來抬另一邊！', show:()=>LV.parts.glass.meshes.forEach(m=>{ m.visible=true; m.position.copy(m.userData.home); })}, done); },
     mark(done){ const me=LV.actors.you, ms=LV.parts.mark.meshes, bx=ms.filter(m=>!m.isSprite), lb=ms.filter(m=>m.isSprite); walkThen(-0.35,0.7,()=>{ me.face=Math.PI+0.5; camGlide({t:[0.6,1.45,0], theta:0.25, phi:1.3, dist:3.0}); teachSay('an','照 CNS：頭尾各 15 公分，中間每 45 公分一支。'); let k=0, i=0;
       const f=dt=>{ k+=dt; while(i<bx.length && k>0.3+i*0.18){ bx[i].visible=true; bx[i].position.copy(bx[i].userData.home); i++; }   // 記號一個一個劃上去
         if(k>0.6 && !lb[0].visible){ lb[0].visible=true; lb[0].position.copy(lb[0].userData.home); } if(k>1.2 && !lb[1].visible){ lb[1].visible=true; lb[1].position.copy(lb[1].userData.home); }
-        if(k>0.3+bx.length*0.18+0.8){ LV.fx.splice(LV.fx.indexOf(f),1); done(); } }; LV.fx.push(f); }); } },
+        if(k>0.3+bx.length*0.18+2.5){ LV.fx.splice(LV.fx.indexOf(f),1); done(); } }; LV.fx.push(f); }); } },
   onPlace:{ mark(){ LV.parts.mo.meshes.forEach(m=>m.visible=false); },                                                    // 量完了，捲尺收起來
     anchor(){ LV.parts.mark.meshes.forEach(m=>{ if(m.isSprite) m.visible=false; }); },                                   // 字收起來，紅色記號留著（螺絲就打在上面）
     weld(){ const pts=LV.parts.weld.meshes.filter(m=>m.geometry && m.geometry.type==='SphereGeometry').map(m=>m.userData.home), sp=[];   /* 電焊的火花：一下下就沒了 */
@@ -3077,7 +3077,7 @@ function prankHit(a){ const me=LV.actors.you, id=prank; if(me.swing || a.knock) 
 // 藍圈看不看得到：從鏡頭往藍圈拉三條線（中間、左、右），兩條以上被不透明的東西擋住＝被擋；或是藍圈跑到畫面外、壓在上面的資訊框底下
 const spotRay=new THREE.Raycaster(); var carryT=0; let inCut=false, subT=null, spotOcc=[], userCamT=0, spotChk=0;
 function phrases(el,text){ text.split(/(?<=[，。：；！？　])/).forEach(t=>{ const sp=document.createElement('span'); sp.className='ph'; sp.textContent=t; el.append(sp); }); }   // 一小句一整塊（只在標點後面換行）
-function teachSay(who,text){ const el=$('#sub'); el.textContent=''; el.classList.add('big'); const cv=document.createElement('canvas'); cv.width=cv.height=112; drawFace(cv,who,'smile'); const d=document.createElement('div'), b=document.createElement('b'); b.textContent=cname(who); d.append(b); phrases(d,text); el.append(cv,d); el.style.display='flex'; clearTimeout(subT); subT=setTimeout(()=>{ el.style.display='none'; el.classList.remove('big'); }, 5200); }   /* 教學字幕：大字＋頭像，不擋操作 */
+function teachSay(who,text){ const el=$('#sub'); el.textContent=''; el.classList.add('big'); const cv=document.createElement('canvas'); cv.width=cv.height=112; drawFace(cv,who,'smile'); const d=document.createElement('div'), b=document.createElement('b'); b.textContent=cname(who); d.append(b); phrases(d,text); el.append(cv,d); el.style.display='flex'; clearTimeout(subT); subT=setTimeout(()=>{ el.style.display='none'; el.classList.remove('big'); }, 9000); }   /* 教學字幕：大字＋頭像，不擋操作 */
 function subtitle(who,text){ $('#sub').classList.remove('big'); const el=$('#sub'); el.textContent=''; const b=document.createElement('b'); b.textContent=cname(who); el.append(b); phrases(el, text); el.style.display='block'; clearTimeout(subT); subT=setTimeout(()=>{ el.style.display='none'; }, 4200); }   // 過場時的台詞：放在畫面下面當字幕，不蓋住動畫
 function buildSpotOcc(){ const skip=new Set(); Object.values(LV.actors).forEach(a=>a.g.traverse(o=>skip.add(o))); spotOcc=[];
   LV.group.traverse(o=>{ if(!o.isMesh || skip.has(o) || o.userData.blob) return; const m0=Array.isArray(o.material)?o.material[0]:o.material; if(m0.transparent || m0===mat.ghost) return; let q=o, v=true; while(q){ if(!q.visible) v=false; q=q.parent; } if(v) spotOcc.push(o); }); LV.group.updateMatrixWorld(true); }
@@ -3147,7 +3147,7 @@ function benchPick(id,btn){ if(done||dlgOpen||placed.has(id)) return;
   const st=need(); if(st.q) ask(st, ok=>{ if(ok) doPlace(); }); else doPlace(); }
 function doPlace(){ const st=need(); placed.add(st.id); carry=null;  if(st.in) camGoal={theta:0.5, phi:1.08, dist:12}; if(LV.actors.you){ const h=LV.actors.you.g.userData.hold; while(h.children.length) h.remove(h.children[0]); LV.actors.you.carry=null; } spot.visible=false; showGhost(null);
   if(LV.pallets[st.id]) LV.pallets[st.id].lb.visible=false;
-  if(L.boardAt && LV.pallets[st.id]){ const q=LV.pallets[st.id]; q.g.visible=false; const i=LV.obs.indexOf(q.obs); if(i>=0) LV.obs.splice(i,1); }   /* 北辦：答對的立牌整個收掉、不再擋路，沒做完的留著（他 11-13） */
+  if((L.boardAt || L.indoor) && LV.pallets[st.id]){ const q=LV.pallets[st.id]; q.g.visible=false; const i=LV.obs.indexOf(q.obs); if(i>=0) LV.obs.splice(i,1); }   /* 北辦：答對的立牌整個收掉、不再擋路，沒做完的留著（他 11-13） */
   if(L.fx && L.fx[st.id]) L.fx[st.id](); else dropIn(st.id, st.temp, st.multi ? st.multi.length*3 : 0);
   if(L.onPlace&&L.onPlace[st.id]) L.onPlace[st.id](); award(L.id+'.'+st.id); fan('cheer',0.55); cur++; stats(); buildTray();
   const nx=()=>{   /* 北辦：釘完、講完，鏡頭不再自己拉回遠景（他 11-13：拽回去的角度太大會頭暈） */   /* 北辦：釘完、講完，鏡頭就轉回平常的方向（等到走路時才轉，鍵盤的方向會偏） */ if(cur>=L.steps.length) finish(); else setGoal(); }; if(st.plain) say([{who:L.boss, t:st.plain}], nx); else nx(); }   // plain＝做對之後，用一句白話說這步在幹嘛
