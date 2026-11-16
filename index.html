@@ -411,7 +411,7 @@ const fill = s => gtext(s.replace(/\{P\}/g, cname('you')));
 // 對話裡的重點：用 **…** 包起來。重點剛好是這裡的名詞，對話框下面就會自動出現白話解釋
 const GLOSS = {
   'MO':'牆上留給窗的開口（洞口）尺寸。先量寬、高，才知道窗裝不裝得下。',
-  'CNS':'中華民國國家標準。', '膨脹螺絲':'俗稱壁虎。打進混凝土裡，前端會撐開卡住。', '焊接固定片':'扣在窗框背面的小鐵片；焊在膨脹螺絲上，把窗固定住。',
+  'CNS':'中華民國國家標準。', '膨脹螺絲':'俗稱壁虎。打進混凝土裡，前端會撐開卡住。', '焊接固定片':'扣在窗框背面的小鐵片；焊在膨脹螺絲上，把窗固定住。', '991':'道康寧 991 矽利康：塞水路用。', '791':'道康寧 791 矽利康：玻璃四周打膠用。',
   '風雨試驗':'到風雨試驗室，照設計做一片樣品牆，用風壓和噴水去測，看會不會漏水、漏風。通過之後，工廠才正式下料，工地才開始組裝。',
   '視覺模型':'做一小片實體樣品，給建築師和業主確認外觀、材料和顏色。它看的是好不好看，不測漏水。',
   '標準部分':'整面帷幕牆裡重複最多次的那一段。整個案子成不成功看它，所以給最有經驗的設計師畫。',
@@ -1109,7 +1109,7 @@ function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas')
 const LV = { group:null, parts:{}, refs:{}, pallets:{}, pick:[], actors:{} };
 const anims = [];
 function resetGroup(){ if(LV.group){ scene.remove(LV.group); LV.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.talkers=[]; LV.obs=[]; LV.raise=null; LV.cuts=null; LV.dog=null; LV.gates=null; combo=null; LV.wc=null; LV.boardTurned=false; LV.decoy=null;   /* 北辦的台階、收起來的牆、恰恰：換關要清掉，不然別關的地面會在同一個位置被墊高 */ LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.down=false; LV.occ=null; LV.smash=null; LV.call=null; LV.ride=null; LV.rideArm=true; LV.myRide=null; LV.smashRects=[]; LV.bribed=new Set(); LV.cash=null; LV.cashFx=false; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
+  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.talkers=[]; LV.obs=[]; LV.raise=null; LV.cuts=null; LV.dog=null; LV.gates=null; combo=null; LV.wc=null; LV.boardTurned=false; LV.decoy=null; LV.animBusy=false;   /* 北辦的台階、收起來的牆、恰恰：換關要清掉，不然別關的地面會在同一個位置被墊高 */ LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.down=false; LV.occ=null; LV.smash=null; LV.call=null; LV.ride=null; LV.rideArm=true; LV.myRide=null; LV.smashRects=[]; LV.bribed=new Set(); LV.cash=null; LV.cashFx=false; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
 function part(id){ return LV.parts[id] || (LV.parts[id]={meshes:[],ghosts:[]}); }
 function ghostOf(id, mesh){ if(mesh.isSprite) return; const gh=new THREE.Mesh(mesh.geometry, mat.ghost); gh.position.copy(mesh.position); gh.rotation.copy(mesh.rotation); gh.visible=false; (LV.host||LV.group).add(gh); part(id).ghosts.push(gh); }
 function add(id, mesh){ mesh.visible=false; mesh.userData.home=mesh.position.clone(); (LV.host||LV.group).add(mesh); part(id).meshes.push(mesh); ghostOf(id,mesh); return mesh; }
@@ -1706,19 +1706,42 @@ const LEVELS = [
     stat(box(1.2,0.8,0.2, 0.6,0.4,-0.1, mat.rc)); stat(box(1.2,0.5,0.2, 0.6,2.55,-0.1, mat.rc));
     const X0=0, X1=1.2, Y0=0.8, Y1=2.3, G=0.05, FW=0.045, FZ0=-0.08, FZ1=-0.01, fz=(FZ0+FZ1)/2, fd=FZ1-FZ0, AZ=-0.1;   // 窗框四周留 5 公分崁縫；框深 7 公分，前面跟崁縫面齊
     const fx0=X0+G, fx1=X1-G, fy0=Y0+G, fy1=Y1-G, gx0=fx0+FW, gx1=fx1-FW, gy0=fy0+FW, gy1=fy1-FW;
+    { const ink=std(0xd23a2a), tag=(t,x,y,z)=>{ const m=label(t,'#b42318',x,y,z,0.05); m.material.depthTest=false; m.renderOrder=20; stat(m); };   /* 放樣線（他 11-16：一開始就畫在還沒裝框的 RC 牆上）：紅色墨線＋小字 */
+      stat(box(0.5,0.006,0.002, -0.25,1.0,0.001, ink)); stat(box(0.5,0.006,0.002, 1.45,1.0,0.001, ink)); tag('一米線', -0.25,1.07,0.06);   // 一米線：離地 1 公尺，開口左右兩邊的牆面
+      stat(box(0.006,0.8,0.002, 0.6,0.4,0.001, ink)); stat(box(0.006,0.5,0.002, 0.6,2.55,0.001, ink)); tag('中心線', 0.75,0.45,0.06);   // 中心線：開口正中間，開口下面、上面的牆面
+      stat(box(1.2,0.002,0.006, 0.6,0.801,-0.01, ink)); stat(box(1.2,0.002,0.006, 0.6,2.299,-0.01, ink)); tag('進出線', 0.32,0.88,0.06);   // 進出線：開口下緣、上緣，窗框前緣要對齊的位置
+    }
+    { const X=-0.95, Z=0.95, leg=std(0x2b2f36), red=std(0xb3121e), blk=std(0x1d2126), sil=std(0xc9ced6), win=std(0x3a3f47), lg=new THREE.Group(); lg.position.set(X,0,Z); lg.rotation.y=-0.5;   /* 雷射水平儀（照他 11-16 給的照片）：架在三腳架上，正面朝牆 */
+      [0,2.09,4.19].forEach(a=>{ const l=new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.011,0.84,6),leg); l.position.set(Math.sin(a)*0.12,0.41,Math.cos(a)*0.12); l.rotation.set(Math.cos(a)*0.28,0,-Math.sin(a)*0.28); l.castShadow=true; lg.add(l); });
+      lg.add(cyl(0.05,0.03,'y',0,0.82,0,leg,14));   // 三腳架頂盤
+      const B=0.87; lg.add(cyl(0.012,0.05,'y',0,B-0.02,0,sil,10));   // 中間銀色螺柱（鎖在三腳架上）
+      [0,2.09,4.19].forEach(a=>lg.add(box(0.02,0.02,0.02, Math.sin(a)*0.055,B+0.01,Math.cos(a)*0.055, blk)));   // 三隻黑腳
+      lg.add(cyl(0.075,0.03,'y',0,B+0.035,0,blk,24)); lg.add(cyl(0.077,0.008,'y',0,B+0.048,0,sil,24));   // 黑底座、銀色刻度環
+      [-1,1].forEach(e=>{ lg.add(cyl(0.018,0.035,'x',e*0.09,B+0.035,0,sil,12)); for(let k=0;k<3;k++) lg.add(cyl(0.02,0.004,'x',e*(0.078+k*0.011),B+0.035,0,std(0x9aa0a8),12)); });   // 兩側銀色壓花旋鈕
+      { const bd=new THREE.Mesh(new THREE.CylinderGeometry(0.058,0.068,0.13,24),red); bd.position.set(0,B+0.117,0); lg.add(bd); }   // 紅色機身
+      { const d=new THREE.Mesh(new THREE.SphereGeometry(0.058,24,12,0,Math.PI*2,0,Math.PI/2),red); d.position.set(0,B+0.182,0); d.scale.y=0.75; lg.add(d); }   // 圓頂
+      lg.add(box(0.07,0.075,0.004, 0,B+0.1,0.066, blk));   // 正面黑色面板
+      lg.add(box(0.05,0.028,0.006, 0,B+0.165,0.058, win)); lg.add(box(0.026,0.006,0.05, 0,B+0.226,0, win));   // 正面、頂上的出光窗
+      [-1,1].forEach(e=>lg.add(box(0.006,0.028,0.04, e*0.06,B+0.16,0, win)));   // 兩側出光窗
+      lg.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); stat(lg); LV.obs.push({x:X, z:Z, hx:0.2, hz:0.2}); }
     const rod=(a,b,r,m)=>{ const A=new THREE.Vector3(...a), B=new THREE.Vector3(...b), v=B.clone().sub(A), c=new THREE.Mesh(new THREE.CylinderGeometry(r,r,v.length(),8),m); c.position.copy(A).add(B).multiplyScalar(0.5); c.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize()); c.castShadow=true; return c; };
     // 1 量 MO：捲尺貼著牆面量寬（開口下緣）、量高（右邊的牆面）
     const tape=std(0xf2c230);
-    add('mo', box(X1-X0,0.02,0.006, 0.6,Y0-0.03,0.003, tape)); add('mo', box(0.02,Y1-Y0,0.006, X1+0.04,1.55,0.003, tape));
-    add('mo', label('MO 寬 120 cm','#8a5a00', 0.6,Y0-0.12,0.03,0.07)); add('mo', label('MO 高 150 cm','#8a5a00', X1+0.28,1.55,0.03,0.07));
+    add('mo', box(X1-X0,0.004,0.025, 0.6,Y0+0.002,-0.03, tape)); add('mo', box(0.004,Y1-Y0,0.025, X1-0.002,1.55,-0.03, tape));   /* 捲尺量開口裡面：寬貼著下緣、高貼著右邊內側（他 11-16：原本貼在轉角，干涉） */
+    const topLb=m=>{ m.material.depthTest=false; m.renderOrder=20; return m; };   /* 尺寸字永遠畫在最上層，不會插進牆被切掉 */
+    add('mo', topLb(label('MO 寬 120 cm','#8a5a00', 0.6,Y0+0.14,0.2,0.07))); add('mo', topLb(label('MO 高 150 cm','#8a5a00', X1-0.24,1.55,0.2,0.07)));
     // 2 劃分間距：照 CNS 頭尾 15、中間 @45（直向四支、橫向三支）
     const PJ=[0.15,0.6,1.05,1.35].map(d=>Y0+d), PH=[0.15,0.6,1.05].map(d=>X0+d);
     const AN=[...PJ.map(y=>({x:X0,y,n:[1,0]})), ...PJ.map(y=>({x:X1,y,n:[-1,0]})), ...PH.map(x=>({x,y:Y0,n:[0,1]})), ...PH.map(x=>({x,y:Y1,n:[0,-1]}))];
     const red=std(0xd23a2a);
     AN.forEach(a=>add('mark', box(a.n[0]?0.004:0.03, a.n[0]?0.03:0.004, 0.05, a.x+a.n[0]*0.002, a.y+a.n[1]*0.002, AZ, red)));
-    add('mark', label('頭尾 15','#b42318', X0+0.22,Y0+0.15,0.03,0.055)); add('mark', label('中間 @45','#b42318', X0+0.24,Y0+0.6,0.03,0.055));
+    add('mark', topLb(label('頭尾 15','#b42318', X0+0.22,Y0+0.15,0.2,0.055))); add('mark', topLb(label('中間 @45','#b42318', X0+0.24,Y0+0.6,0.2,0.055)));
     // 3 打膨脹螺絲（外牙壁虎）：打進開口四周的混凝土，外牙露出 3 公分
-    AN.forEach(a=>add('anchor', rod([a.x-a.n[0]*0.055, a.y-a.n[1]*0.055, AZ], [a.x+a.n[0]*0.035, a.y+a.n[1]*0.035, AZ], 0.009, mat.zinc)));   /* 放大一點，縫裡看得清楚 */
+    const nutM=std(0xb8953a);
+    AN.forEach(a=>{ const r=rod([a.x-a.n[0]*0.055, a.y-a.n[1]*0.055, AZ], [a.x+a.n[0]*0.035, a.y+a.n[1]*0.035, AZ], 0.006, mat.zinc);   /* 螺桿中心在牆面內 1 公分：本地 y＝+0.01 是牆面、+0.045 是外牙尖端 */
+      r.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.002,18),nutM),0,0.011,0)); r.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.011,0.011,0.008,6),nutM),0,0.017,0));   // 墊片貼牆、六角螺帽
+      for(let y=0.024;y<0.044;y+=0.004) r.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.0068,0.0068,0.0016,10),mat.zinc),0,y,0));   // 外牙：一圈一圈的牙紋
+      add('anchor', r); });   /* 他 11-16：太卡通 → 牙紋、墊片、螺帽 */   /* 放大一點，縫裡看得清楚 */
     // 4 裝窗：Tostem 一樘的框（直料一整支，上下框接在直料中間）
     add('win', box(FW,fy1-fy0,fd, fx0+FW/2,(fy0+fy1)/2,fz, mat.alu)); add('win', box(FW,fy1-fy0,fd, fx1-FW/2,(fy0+fy1)/2,fz, mat.alu));
     add('win', box(fx1-fx0-2*FW,FW,fd, 0.6,fy0+FW/2,fz, mat.alu2)); add('win', box(fx1-fx0-2*FW,FW,fd, 0.6,fy1-FW/2,fz, mat.alu2));
@@ -1735,7 +1758,7 @@ const LEVELS = [
     [fx0,fx1].forEach(x=>add('seal991', box(0.014,fy1-fy0,0.012, x,(fy0+fy1)/2,FZ1+0.004, mat.seal))); [fy0,fy1].forEach(y=>add('seal991', box(fx1-fx0-0.016,0.014,0.012, 0.6,y,FZ1+0.004, mat.seal)));
     // 9 量玻璃＋裝玻璃（一個連貫動作）
     add('glass', box(gx1-gx0-0.004, gy1-gy0-0.004, 0.008, 0.6,(gy0+gy1)/2,fz, mat.glass));
-    LV.refs.glassTip=add('glass', label('量好內框，裝上玻璃','#374151', 0.6,gy1+0.12,0.03,0.06));
+    LV.refs.glassTip=add('glass', topLb(label('量好內框，裝上玻璃','#374151', 0.6,gy1+0.12,0.2,0.06)));
     // 10 玻璃四周打膠 791（黑色）
     [gx0+0.005,gx1-0.005].forEach(x=>add('seal791', box(0.01,gy1-gy0,0.01, x,(gy0+gy1)/2,fz+0.009, mat.gasket))); [gy0+0.005,gy1-0.005].forEach(y=>add('seal791', box(gx1-gx0-0.022,0.01,0.01, 0.6,y,fz+0.009, mat.gasket)));
   },
@@ -1748,6 +1771,21 @@ const LEVELS = [
     {who:'you', t:'（十件事……先從量尺寸開始。）'} ],
   outroGood:[ {who:'an', t:'漂亮！從量 MO 到打膠，一樘窗整套走完了。', mood:'smile'} ],
   outroBad:[ {who:'an', t:'窗是裝好了，不過琳姊剛剛來了 {N} 趟……順序再背熟一點。'} ],
+  fx:{ mo(){}, mark(){}, win(){}, glass(){} },   // 這兩步的東西動畫裡已經擺好了，不用再從上面掉下來
+  anim:{   /* 點了立牌直接播（他 11-16：點完再走過去很智障） */
+    mo(done){ const me=LV.actors.you, [tw,th,lw,lh]=LV.parts.mo.meshes; walkThen(1.6,0.7,()=>{ me.face=Math.PI-0.5; camGlide({t:[0.6,1.45,0], theta:-0.25, phi:1.3, dist:3.0}); subtitle('an','先量寬：捲尺從左邊的混凝土面，拉到右邊。'); tw.visible=true; let k=0;
+      const f=dt=>{ k+=dt; const a=Math.max(0.001,Math.min(1,k/1.2)); tw.scale.x=a; tw.position.set(1.2*a/2, tw.userData.home.y, tw.userData.home.z);   // 捲尺從左邊拉開
+        if(k>1.3 && !lw.visible){ lw.visible=true; lw.position.copy(lw.userData.home); }
+        if(k>1.9 && !th.visible){ th.visible=true; subtitle('an','再量高：從下面拉到上面。'); }
+        if(th.visible){ const b=Math.max(0.001,Math.min(1,(k-1.9)/1.2)); th.scale.y=b; th.position.set(th.userData.home.x, 0.8+1.5*b/2, th.userData.home.z); }   // 再從下面拉上去
+        if(k>3.2 && !lh.visible){ lh.visible=true; lh.position.copy(lh.userData.home); }
+        if(k>4.2){ LV.fx.splice(LV.fx.indexOf(f),1); done(); } }; LV.fx.push(f); }); },
+    win(done){ duoCarry({id:'win', heroAt:[1.0,0.9], helpAt:[0.2,0.9], y:1.0, setZ:0.0, show:()=>LV.parts.win.meshes.forEach(m=>{ m.visible=true; m.position.copy(m.userData.home); })}, done); },   /* 窗跟小弟一起扛過去裝 */
+    glass(done){ subtitle('an','先量內框的寬、高，照尺寸裁玻璃；量好再一起抬上去。'); duoCarry({id:'glass', heroAt:[1.0,0.9], helpAt:[0.2,0.9], y:1.2, setZ:0.0, hi:'玻璃很重，我來抬另一邊！', show:()=>LV.parts.glass.meshes.forEach(m=>{ m.visible=true; m.position.copy(m.userData.home); })}, done); },
+    mark(done){ const me=LV.actors.you, ms=LV.parts.mark.meshes, bx=ms.filter(m=>!m.isSprite), lb=ms.filter(m=>m.isSprite); walkThen(-0.35,0.7,()=>{ me.face=Math.PI+0.5; camGlide({t:[0.6,1.45,0], theta:0.25, phi:1.3, dist:3.0}); subtitle('an','照 CNS：頭尾各 15 公分，中間每 45 公分一支。'); let k=0, i=0;
+      const f=dt=>{ k+=dt; while(i<bx.length && k>0.3+i*0.18){ bx[i].visible=true; bx[i].position.copy(bx[i].userData.home); i++; }   // 記號一個一個劃上去
+        if(k>0.6 && !lb[0].visible){ lb[0].visible=true; lb[0].position.copy(lb[0].userData.home); } if(k>1.2 && !lb[1].visible){ lb[1].visible=true; lb[1].position.copy(lb[1].userData.home); }
+        if(k>0.3+bx.length*0.18+0.8){ LV.fx.splice(LV.fx.indexOf(f),1); done(); } }; LV.fx.push(f); }); } },
   onPlace:{ mark(){ LV.parts.mo.meshes.forEach(m=>m.visible=false); },                                                    // 量完了，捲尺收起來
     anchor(){ LV.parts.mark.meshes.forEach(m=>{ if(m.isSprite) m.visible=false; }); },                                   // 字收起來，紅色記號留著（螺絲就打在上面）
     weld(){ const pts=LV.parts.weld.meshes.filter(m=>m.geometry && m.geometry.type==='SphereGeometry').map(m=>m.userData.home), sp=[];   /* 電焊的火花：一下下就沒了 */
@@ -1771,7 +1809,7 @@ const LEVELS = [
         {t:'可以，反正看不到', ok:false, exp:'照工法：電焊之後要**先塗防鏽漆**，再崁縫。'},
         {t:'焊點先塗防鏽漆，再崁縫', ok:true, exp:'**電焊 → 防鏽漆 → 崁縫**。'} ] } },
     { id:'mortar', name:'崁縫', tr:'填好填滿', spot:[0.6,0.95], hint:'窗框跟開口中間的縫，用崁縫水泥填滿。' },
-    { id:'seal991', name:'塞水路 991', tr:'水路不通', spot:[1.0,0.95], hint:'用 991 塞水路，打在**室外側**（樣品牆朝你這面當室外）。',
+    { id:'seal991', name:'塞水路 991', tr:'水路不通', spot:[1.0,0.95], hint:'用道康寧 **991** 矽利康塞水路，打在**室外側**（樣品牆朝你這面當室外）。',
       q:{ by:'an', title:'塞水路的 991，打在哪一側？', body:'崁縫做好了。', src:SRC.tostem, opts:[
         {t:'室外側', ok:true, exp:'**塞水路 991 打在室外側**。'},
         {t:'室內側', ok:false, exp:'照工法，**塞水路 991 打在室外側**。'} ] } },
@@ -1779,8 +1817,8 @@ const LEVELS = [
       q:{ by:'an', title:'玻璃什麼時候量、什麼時候裝？', body:'玻璃要照尺寸裁。', src:SRC.tostem, opts:[
         {t:'窗還沒裝之前，先照 MO 尺寸量好', ok:false, exp:'照工法，**量玻璃、裝玻璃**排在窗裝好、崁縫、塞水路之後。'},
         {t:'窗裝好、崁縫、塞水路都做完，再量玻璃、裝玻璃', ok:true, exp:'照工法的順序：**塞水路之後才量玻璃、裝玻璃**。'} ] } },
-    { id:'seal791', name:'玻璃四周打膠 791', tr:'收邊收乾淨', spot:[0.8,0.95], hint:'最後在玻璃四周打一圈 791。',
-      q:{ by:'an', title:'玻璃四周打哪一支膠？', body:'手上有 991 跟 791。', src:SRC.tostem, opts:[
+    { id:'seal791', name:'玻璃四周打膠 791', tr:'收邊收乾淨', spot:[0.8,0.95], hint:'最後在玻璃四周打一圈道康寧 **791** 矽利康。',
+      q:{ by:'an', title:'玻璃四周打哪一支膠？', body:'手上有道康寧 991、791 兩支矽利康。', src:SRC.tostem, opts:[
         {t:'991', ok:false, exp:'991 是塞水路用的；**玻璃四周打 791**。'},
         {t:'791', ok:true, exp:'**玻璃四周打 791**；991 是塞水路用的。'} ] } },
   ] },
@@ -2588,7 +2626,11 @@ function makeItem(spec){ const g=new THREE.Group(), [kind,a,b,o]=spec.split(':')
     else if(kind==='bolts'){ [-0.045,0,0.045].forEach((z,i)=>{ g.add(cyl(0.013,0.22,'x',0,(i%2)*0.026,z,mat.anchor,10)); g.add(cyl(0.026,0.03,'x',0.08,(i%2)*0.026,z,mat.steel,6)); }); }
     else if(kind==='plate'){ g.add(box(0.24,0.2,0.025,0,0,0,mat.steel)); g.add(box(0.24,0.025,0.15,0,-0.09,0.075,mat.steel)); [-0.06,0.06].forEach(x=>g.add(cyl(0.02,0.03,'z',x,0.03,0.015,mat.dark,8))); }
     else if(kind==='tube'){ g.add(cyl(0.034,0.26,'x',0,0,0,mat[a])); g.add(cyl(0.036,0.03,'x',-0.12,0,0,mat.white,12)); g.add(cyl(0.01,0.1,'x',0.18,0,0,mat.white,8)); }
-    else if(kind==='expbolt'){ [-0.045,0,0.045].forEach((z,i)=>{ const y=(i%2)*0.026; g.add(cyl(0.012,0.12,'x',0.05,y,z,mat.zinc,10)); g.add(cyl(0.017,0.09,'x',-0.055,y,z,mat.zinc,10)); [-0.08,-0.055,-0.03].forEach(x=>g.add(cyl(0.019,0.008,'x',x,y,z,std(0xa8862e),10))); g.add(ball(0.02,mat.zinc,-0.105,y,z,0.6,1,1)); }); }   // 外牙壁虎三支：一半外牙、一半開縫壓花套管、前端錐頭（五彩鍍鋅）
+    else if(kind==='expbolt'){ const dk2=std(0x6e5a24), nt=std(0xb8953a); [-0.045,0,0.045].forEach((z,i)=>{ const y=(i%2)*0.026; g.add(cyl(0.011,0.12,'x',0.05,y,z,mat.zinc,12)); for(let x=-0.005;x<0.108;x+=0.008) g.add(cyl(0.0128,0.003,'x',x,y,z,mat.zinc,12));   /* 外牙：一圈一圈牙紋 */
+        g.add(cyl(0.024,0.004,'x',0.075,y,z,nt,18)); g.add(cyl(0.02,0.016,'x',0.087,y,z,nt,6));   /* 墊片、六角螺帽 */
+        g.add(cyl(0.016,0.09,'x',-0.055,y,z,mat.zinc,14)); [0,1,2,3].forEach(k=>{ const a=k*Math.PI/2+0.4, sl=box(0.06,0.003,0.004,-0.06,y+Math.cos(a)*0.0165,z+Math.sin(a)*0.0165,dk2); sl.rotation.x=a; g.add(sl); });   /* 套管＋四條開縫 */
+        for(let x=-0.03;x>-0.09;x-=0.012) g.add(cyl(0.0175,0.004,'x',x,y,z,std(0xa8862e),14));   /* 套管上的壓花 */
+        const cn=new THREE.Mesh(new THREE.ConeGeometry(0.018,0.03,14),mat.zinc); cn.rotation.z=Math.PI/2; cn.position.set(-0.115,y,z); cn.castShadow=true; g.add(cn); }); }   // 外牙壁虎三支（他 11-16：細節太少太卡通）：牙紋、墊片螺帽、開縫壓花套管、前端錐頭   // 外牙壁虎三支：一半外牙、一半開縫壓花套管、前端錐頭（五彩鍍鋅）
     else if(kind==='clip'){ g.add(box(0.22,0.012,0.075,0,0,0,mat.zinc)); g.add(box(0.07,0.025,0.035,0,-0.017,0,mat.zinc)); [-0.065,0.065].forEach(x=>g.add(cyl(0.012,0.014,'y',x,0,0,mat.dark,10))); [-1,1].forEach(e=>{ const t=box(0.03,0.01,0.02,e*0.115,0.012,0.022,mat.zinc); t.rotation.z=e*0.6; g.add(t); }); }   // 焊接固定片：長方形鐵片、中間沖出往背面凸的小橋、兩個圓孔、兩端斜折的小耳
     else if(kind==='paint'){ g.add(cyl(0.1,0.14,'y',0,0,0,mat.steel,18)); g.add(cyl(0.095,0.012,'y',0,0.07,0,mat.rustp,18)); g.add(box(0.11,0.05,0.016,0,0.095,0,std(0x8a6c50))); g.add(box(0.02,0.14,0.012,0,0.18,0,std(0x8a6c50))); }   // 防鏽漆：一桶漆＋一支刷子（刷子插在桶口上）
     else if(kind==='bucket'){ const m=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.12,0.26,18),mat.steel); m.castShadow=true; g.add(m); g.add(cyl(0.14,0.02,'y',0,0.125,0,mat.mortar,18)); }
@@ -3045,8 +3087,21 @@ function ensureSpotVisible(){ if(!spot.visible || !L || L.bench || L.office || L
   else { if(!spotBlocked(cur.theta,cur.phi,cur.dist)) return; tries=[cur, base]; }
   for(const b of tries) for(const kz of [1,1.25,1.5]) for(const dp of [0,-0.22]) for(const dt of [0,0.35,-0.35,0.7,-0.7,1.05,-1.05,1.4,-1.4,1.9,-1.9]){ const th=b.theta+dt, ph=Math.max(0.45,b.phi+dp), d=Math.min(maxD,b.dist*kz); if(th<lo || th>hi) continue;
     if(!spotOff(th,ph,d) && !spotBlocked(th,ph,d)){ camGoal={theta:th, phi:ph, dist:d}; return; } } }   // 先試左右轉，再試從高一點往下看，再試拉遠一點，最後試這一步原本的角度
+function walkThen(x,z,fn){ let st=false; const go=()=>{ if(st) return; st=true; fn(); }; moveTo(x,z,go); let k=0; const w=dt=>{ k+=dt; if(st || k>8 || (k>0.3 && !LV.actors.you.dest)){ LV.fx.splice(LV.fx.indexOf(w),1); go(); } }; LV.fx.push(w); }   /* 走過去再做；路被打斷或 8 秒沒到就直接做（小動畫不會卡死） */
+function duoCarry(o, done){ const me=LV.actors.you; let h=LV.actors.di, temp=false; if(!h){ h=makeActor('di', L.cx+3.2, 5.6); h.g.scale.setScalar(0.86); temp=true; } h.helping=true;   /* 兩個人一起扛（週四裝窗、裝玻璃；他 11-16：要有小弟來幫忙）：跟班小弟優先，沒有就臨時叫一個 */
+  const q=LV.pallets[o.id], it=makeItem(ITEM[L.id+'.'+o.id]).g, P1=[q.x+0.55,q.z], P2=[q.x-0.55,q.z]; let ph=0, k=0;
+  const go=(a,x,z)=>{ if(a===me) moveTo(x,z); else { a.dest={x,z}; a.onArrive=null; a.home={x,z}; } };
+  bubble('di', o.hi||'學長，我來幫你扛！'); go(me,P1[0],P1[1]); go(h,P2[0],P2[1]);
+  const f=dt=>{ k+=dt;
+    if(ph===0 && ((!me.dest && !h.dest) || k>8)){ ph=1; k=0; if(q.item) q.item.visible=false; LV.group.add(it); go(me,o.heroAt[0],o.heroAt[1]); go(h,o.helpAt[0],o.helpAt[1]); }   // 兩個人都到棧板旁邊：抬起來，扛到窗洞前面
+    if(ph===1){ it.position.set((me.x+h.x)/2, o.y, (me.z+h.z)/2); it.rotation.set(0, -Math.atan2(h.z-me.z, h.x-me.x), 0);   // 夾在兩個人中間
+      if((!me.dest && !h.dest) || k>10){ ph=2; k=0; me.face=Math.PI; h.face=Math.PI; } }
+    if(ph===2){ const q2=Math.min(1,dt*5); it.position.x+=(0.6-it.position.x)*q2; it.position.z+=(o.setZ-it.position.z)*q2; it.rotation.y*=1-q2;   // 一起推進開口
+      if(k>0.9){ ph=3; k=0; LV.group.remove(it); o.show(); bubble('di', o.bye||'好了！我先去忙。'); go(h, L.cx+3.2, 5.6); done(); } }   // 裝上去了：這一步完成，小弟自己走開
+    if(ph===3 && (k>3 || !h.dest)){ LV.fx.splice(LV.fx.indexOf(f),1); if(temp){ LV.group.remove(h.g); delete LV.actors.di; LV.pick=LV.pick.filter(m=>!(m.userData.pick && m.userData.pick.kind==='npc' && m.userData.pick.who==='di')); } else h.helping=false; } };
+  LV.fx.push(f); }
 function goDecoy(){ const d=LV.decoy; if(!d) return; const s=standNear(d.x,d.z,0.9,d.obs); moveTo(s.x,s.z,()=>bubble('you', pickOne(['（背面用原子筆寫著：「這塊是假的。」……誰放的？）','（摸魚計畫檢討……原來摸魚也要開會檢討。好，那我先在這裡檢討一下。）','（立牌背面貼著一張便利貼：「上班時間請勿久留。——人資」）']), true)); }   /* 假立牌：走過去才發現被騙；在廁所待太久照樣任務失敗 */
-function goPallet(id){ const q=LV.pallets[id]; if(!q||placed.has(id)) return; const s=standNear(q.x,q.z,0.9,q.obs); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(rectDist(q.obs,p.x,p.z).d<0.9) tryPick(id); }); }   // 真的走到旁邊才拿
+function goPallet(id){ const q=LV.pallets[id]; if(!q||placed.has(id)) return; if(L.anim && L.anim[id] && need() && need().id===id && !carry && !prank){ tryPick(id); return; }   /* 有小動畫的步驟（週四量 MO、劃間距）：點了直接開始，不用先走到立牌 */ const s=standNear(q.x,q.z,0.9,q.obs); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(rectDist(q.obs,p.x,p.z).d<0.9) tryPick(id); }); }   // 真的走到旁邊才拿
 function goSpot(){ spotArmed=true; moveTo(spot.position.x, spot.position.z, ()=>{ const p=LV.actors.you; if(Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1) tryInstall(); }); }
 function goNpc(who){ const a=LV.actors[who]; const s=standNear(a.x,a.z,1.0); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(dlgOpen||failed||Math.hypot(p.x-a.x,p.z-a.z)>1.9) return; a.chats=(a.chats||0)+1;
     if(!done && !a.follower && a.chats>3){ bubble(who, ANNOY[who], true); hurt(a.chats>5?16:9, a, 'chat'); return; }
@@ -3061,6 +3116,7 @@ function wrongOrder(id){
 function tryPick(id){ if(done||dlgOpen||placed.has(id)) return; if(prank){ say([{who:L.boss, t:'手上那個先放回去。'}]); return; } multiN=0;
   if(carry){ if(carry!==id) say([{who:L.boss, t: L.boss==='kun'?'……手上的，先裝。':'手上的先裝好，再拿別的。'}]); return; }
   if(id!==need().id){ wrongOrder(id); return; }
+  if(L.anim && L.anim[id]){ const st=need(), go=()=>{ LV.animBusy=true; L.anim[id](()=>{ LV.animBusy=false; doPlace(); }); }; if(st.q) ask(st, ok=>{ if(ok) go(); }); else go(); return; }   /* 小動畫：有題目先答，答對才播；播完就完成 */
   if(L.boardAt){ const st=need(); if(st.q) ask(st, ok=>{ if(ok){ boardTalk(); doPlace(); } }); else doPlace(); return; }   /* 北辦：點到正確的立牌，直接出題、答對就完成，不用再走到黑板前（他 11-13：多此一舉）；鏡頭也不動 */   /* 北辦：拿下一塊立牌，鏡頭轉回平常的方向，同事回去做事 */
   carry=id; carryT=performance.now(); const spec=ITEM[L.id+'.'+id], me=LV.actors.you, hold=me.g.userData.hold; while(hold.children.length) hold.remove(hold.children[0]);
   if(spec){ const it=makeItem(spec), bb=new THREE.Box3().setFromObject(it.g); me.grip=Math.min(bb.max.x,-bb.min.x); me.gripZ=-bb.min.z;   /* 料的背面離手掌中心多遠（L 型固定片前後不對稱） */   /* 手握的寬度：兩邊比較窄的那邊（矽利康管一頭有尖嘴） */ hold.add(it.g); hold.position.set(...POSE[it.pose]); hold.rotation.set(0, it.pose==='side' ? Math.PI/2 : 0, it.pose==='overhead'||it.pose==='upright' ? Math.PI/2 : 0);   /* 大板立起來夾在身側；直料放倒，跟橫料一樣兩手握兩端 */ me.carry=it.pose; LV.pallets[id].item.visible=false; } else me.carry=null;
@@ -3182,7 +3238,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
 
 // ===================== 點擊與鍵盤 =====================
 const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(), gplane=new THREE.Plane(new THREE.Vector3(0,1,0),0), hitPt=new THREE.Vector3();
-function onClick(e){ if(dlgOpen){ advance(); return; } if(!L||L.bench) return; if(cut && cut.stage<2) return; if(LV.ride) return;
+function onClick(e){ if(dlgOpen){ advance(); return; } if(LV.animBusy) return; if(!L||L.bench) return; if(cut && cut.stage<2) return; if(LV.ride) return;
   const r=cvs.getBoundingClientRect(); ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); ray.setFromCamera(ndc,camera);
   for(const h of ray.intersectObjects(LV.pick,false)){ const p=h.object.userData.pick; if(!p) continue;
     if(p.kind==='pallet'){ if(done||placed.has(p.id)) continue; goPallet(p.id); return; }
@@ -3204,7 +3260,7 @@ const joy={x:0, y:0, on:false, id:null}; { const J=document.getElementById('joy'
   ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>J.addEventListener(ev,e=>{ if(e.pointerId!==joy.id) return; joy.on=false; joy.id=null; joy.x=joy.y=0; K.style.transform=''; })); }
 addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; const k=e.key.toLowerCase(); keys[k]=true;
   if((k===' '||k==='enter') && dlgOpen){ e.preventDefault(); if(resOpen && performance.now()-resT<700) return; advance(); }
-  if(k==='e' && !dlgOpen && L && !L.bench && !done){ const p=LV.actors.you; if(carry && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1){ spotArmed=true; tryInstall(); return; }
+  if(k==='e' && !dlgOpen && L && !L.bench && !done && !LV.animBusy){ const p=LV.actors.you; if(carry && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1){ spotArmed=true; tryInstall(); return; }
     if(LV.down && (prank==='bat' || drinkHeld)){ const sm=nearSmash(); if(sm && sm.kind==='person'){ actOn({crew:sm}); return; } if(sm && prank==='bat'){ smashSwing(sm); return; } }   // 在外面：旁邊是工人＝揮棒／請喝；車、怪手、工務所＝砸下去
     if(prank || drinkHeld){ const near=Object.values(LV.actors).filter(a=>a!==p && Math.hypot(a.x-p.x,a.z-p.z)<0.95).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0]; if(near){ actOn(near); return; } }   // 拿著來亂的東西，在同事旁邊按 E＝敲下去／請喝
     let bestId=null, bd=1.0; Object.entries(LV.pallets).forEach(([id,q])=>{ const d=rectDist(q.obs,p.x,p.z).d; if(d<bd && !placed.has(id)){ bd=d; bestId=id; } });
@@ -3334,7 +3390,7 @@ function crowd(dt,now){ const p=LV.actors.you; if(!p) return;
     const hs = carry && spot.visible && !L.bench ? helpSlots() : null; let fi=0, said=false;   // 小弟的工作：你拿著料＝先到藍圈旁邊等；你走到藍圈＝過來扶住；沒拿料＝回待命位置
     const near = hs && ITEM[L.id+'.'+carry] && Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.8;   /* 放樣、叫灌漿車這種沒有料的工作不用扶 */ if(near) LV.holdKeep={slots:holdSlots(), until:now+1800};   // 你快到藍圈了：小弟伸手扶（裝好之後還扶 1.8 秒）
     const keep = LV.holdKeep && now<LV.holdKeep.until, hk = keep ? LV.holdKeep.slots : hs ? holdSlots() : null;   // 你一拿起料，小弟就先走到藍圈旁邊扶料的位置等
-    for(const k in LV.actors){ const f=LV.actors[k]; if(!f.follower || f.cashGrab) continue; const hj = hk && hk[fi], job = hj || (hs ? hs[fi] : f.post); fi++; if(!job){ f.holdAim=undefined; continue; } const tx=job.x, tz=job.z;
+    for(const k in LV.actors){ const f=LV.actors[k]; if(!f.follower || f.cashGrab || f.helping) continue; const hj = hk && hk[fi], job = hj || (hs ? hs[fi] : f.post); fi++; if(!job){ f.holdAim=undefined; continue; } const tx=job.x, tz=job.z;
       const at=Math.hypot(f.x-tx,f.z-tz)<0.25, hold = hj && at && (near || keep); f.holdAim = hold ? hj.aim : undefined; if(hj && at) f.face=hj.face;   // 先站好面向牆；你走過來才伸手
       if(hold){ f.dest=null;   // 扶住：面向要裝的東西，兩手伸出去
         if(f.helping!==hk.key && !said){ said=true; if(Math.random()<0.8) bubble(f.who,pickOne(FAN.help)); } f.helping=hk.key; continue; }
@@ -3379,7 +3435,7 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
     const kw=keys.w||keys.arrowup, ks=keys.s||keys.arrowdown, kd=keys.d||keys.arrowright, ka=keys.a||keys.arrowleft, jm=Math.hypot(joy.x,joy.y), jOn=jm>0.18;   // 搖桿推超過一點點才算
     if(!(kw||ks||kd||ka||jOn) || (TOUCH && jOn)) keyTheta=theta;   /* 手機搖桿：方向一直照現在的畫面（推上＝往畫面上方走） */
     if(TOUCH && jOn && camGoal && !(cut && cut.stage<2)) camGoal=null;   /* 推著搖桿的時候，鏡頭不自己轉 */                                         // 放開按鍵才跟上鏡頭的新角度：鏡頭自己轉的時候，按住的方向不會跟著歪掉
-    if(!dlgOpen && !failed && !p.swing && !LV.ride && !(cut && cut.stage<2)){ let fx=0,fz=0; const sn=Math.sin(keyTheta), cs=Math.cos(keyTheta); if(kw){ fx-=sn; fz-=cs; } if(ks){ fx+=sn; fz+=cs; }
+    if(!dlgOpen && !failed && !p.swing && !LV.ride && !LV.animBusy && !(cut && cut.stage<2)){ let fx=0,fz=0; const sn=Math.sin(keyTheta), cs=Math.cos(keyTheta); if(kw){ fx-=sn; fz-=cs; } if(ks){ fx+=sn; fz+=cs; }
       if(kd){ fx+=cs; fz-=sn; } if(ka){ fx-=cs; fz+=sn; }
       if(jOn){ fx+=cs*joy.x+sn*joy.y; fz+=-sn*joy.x+cs*joy.y; }   /* 搖桿：往上推＝往前（離開鏡頭），往右推＝往右 */
       if(jOn && !prank){ const m0=Math.hypot(fx,fz)||1; fx/=m0; fz/=m0;                                    // 搖桿快碰到站著的同事：往他那邊的分量拿掉，貼著他滑過去（不會硬撞上去被扣分）
