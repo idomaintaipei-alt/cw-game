@@ -288,6 +288,7 @@ const SRC = {
   ncr:'品管通告 J501261000001（HM2 轉角托架，2026/11/07）、詳圖 6007a',
   anchor:'化栓與拉脹螺栓教育訓練 v2.0（2026/11/05；SGS 拉拔 2026/10/13）；錨栓施工教育訓練「化栓特別注意事項」',
   model:'跨案 Revit 建模經驗清單（HM2 TOSTEM w1）',
+  tostem:'開會資料：Tostem 窗安裝工法（一樘）（2026/11/16）', tostemCns:'開會資料：Tostem 窗安裝工法（一樘），間距照 CNS（2026/11/16）',
   rule3:'公司規定三條（品管通告 J501261000001）',
   check:'跨案建模驗收清單',
   site:'現場做法（2026/11/11 口述，尚無書面文件）',
@@ -409,6 +410,8 @@ const cname = id => { const c=CAST[id]; return typeof c.name==='function' ? c.na
 const fill = s => gtext(s.replace(/\{P\}/g, cname('you')));
 // 對話裡的重點：用 **…** 包起來。重點剛好是這裡的名詞，對話框下面就會自動出現白話解釋
 const GLOSS = {
+  'MO':'牆上留給窗的開口（洞口）尺寸。先量寬、高，才知道窗裝不裝得下。',
+  'CNS':'中華民國國家標準。', '膨脹螺絲':'俗稱壁虎。打進混凝土裡，前端會撐開卡住。', '焊接固定片':'扣在窗框背面的小鐵片；焊在膨脹螺絲上，把窗固定住。',
   '風雨試驗':'到風雨試驗室，照設計做一片樣品牆，用風壓和噴水去測，看會不會漏水、漏風。通過之後，工廠才正式下料，工地才開始組裝。',
   '視覺模型':'做一小片實體樣品，給建築師和業主確認外觀、材料和顏色。它看的是好不好看，不測漏水。',
   '標準部分':'整面帷幕牆裡重複最多次的那一段。整個案子成不成功看它，所以給最有經驗的設計師畫。',
@@ -470,6 +473,7 @@ const mat = {
 };
 const panelMat = [mat.foam, mat.foam, mat.foam, mat.foam, mat.face, mat.face];
 mat.wool=std(0xcfae52); mat.wool2=std(0xb38f3a); mat.fire=std(0xc8392b); mat.boot=std(0x7a5230); mat.tire=std(0x22252b); mat.chrome=std(0xe6ebf2,{emissive:0x30343a}); mat.lamp=std(0xfff6c8,{emissive:0xfff0a0}); mat.red=std(0xff3030,{emissive:0x8a0000});
+mat.zinc=std(0xc9a646); mat.rustp=std(0x9a3b28);   /* 五彩鍍鋅（外牙壁虎、焊接固定片）、防鏽漆 */
 mat.bag=new THREE.MeshBasicMaterial({color:0x5a4860, transparent:true, opacity:.38}); mat.shine=new THREE.MeshBasicMaterial({color:0xffffff}); mat.blush=new THREE.MeshBasicMaterial({color:0xff8f8f, transparent:true, opacity:.65});
 { const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'); g.fillStyle='#c6c4bd'; g.fillRect(0,0,64,64); g.fillStyle='#bcbab3'; g.fillRect(0,0,32,32); g.fillRect(32,32,32,32);
   const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(100,100); mat.floor.map=t; }
@@ -1694,54 +1698,91 @@ const LEVELS = [
   ] },
 
 // ---------- 週三 ----------
-{ id:'L3', name:'週四　雨天的窗', short:'週四', desc:'下雨停工。學姊小安帶你進工務所，在樣品牆上裝一樘鋁窗。', trDone:'下雨天也沒有放假',
+{ id:'L3', name:'週四　雨天的窗', short:'週四', desc:'下雨停工。學姊小安帶你進工務所，在樣品牆上照 Tostem 工法裝一樘鋁窗。', trDone:'下雨天也沒有放假',
   gy:0, cx:0.6, indoor:true, boss:'an', npcs:['an','lin'],          // indoor＝在工務所室內：沒有戶外工地、沒有座駕進場
-  build(){
+  build(){   /* Tostem 窗安裝工法（一樘）（他 11-16 開會資料）：開口 MO 寬 1.2、高 1.5（x 0～1.2、y 0.8～2.3）；樣品牆朝你這面當室外側 */
     siteOffice();
     stat(box(0.5,2.8,0.2, -0.25,1.4,-0.1, mat.rc)); stat(box(0.5,2.8,0.2, 1.45,1.4,-0.1, mat.rc));
     stat(box(1.2,0.8,0.2, 0.6,0.4,-0.1, mat.rc)); stat(box(1.2,0.5,0.2, 0.6,2.55,-0.1, mat.rc));
-    const ZM=-0.07, ZF=-0.08;
-    add('mortar', box(0.03,1.5,0.1, 0.015,1.55,ZM, mat.mortar)); add('mortar', box(0.03,1.5,0.1, 1.185,1.55,ZM, mat.mortar));
-    add('mortar', box(1.14,0.03,0.1, 0.6,0.815,ZM, mat.mortar)); add('mortar', box(1.14,0.03,0.1, 0.6,2.285,ZM, mat.mortar));
-    add('jamb', box(0.045,1.44,0.07, 0.0525,1.55,ZF, mat.alu)); add('jamb', box(0.045,1.44,0.07, 1.1475,1.55,ZF, mat.alu));
-    add('sill', box(1.05,0.045,0.065, 0.6,0.8525,ZF, mat.alu2)); add('head', box(1.05,0.045,0.065, 0.6,2.2475,ZF, mat.alu2)); add('mid', box(1.05,0.045,0.065, 0.6,1.5,ZF, mat.alu2));
-    const panes=[[0.875,1.4775],[1.5225,2.225]];
-    panes.forEach(([y0,y1])=>add('glass', box(1.05,y1-y0,0.008, 0.6,(y0+y1)/2,ZF, mat.glass)));
-    panes.forEach(([y0,y1])=>{ const zc=ZF+0.008;
-      add('gasket', box(1.05,0.008,0.006, 0.6,y0+0.004,zc, mat.gasket)); add('gasket', box(1.05,0.008,0.006, 0.6,y1-0.004,zc, mat.gasket));
-      add('gasket', box(0.008,y1-y0,0.006, 0.079,(y0+y1)/2,zc, mat.gasket)); add('gasket', box(0.008,y1-y0,0.006, 1.121,(y0+y1)/2,zc, mat.gasket)); });
+    const X0=0, X1=1.2, Y0=0.8, Y1=2.3, G=0.05, FW=0.045, FZ0=-0.08, FZ1=-0.01, fz=(FZ0+FZ1)/2, fd=FZ1-FZ0, AZ=-0.1;   // 窗框四周留 5 公分崁縫；框深 7 公分，前面跟崁縫面齊
+    const fx0=X0+G, fx1=X1-G, fy0=Y0+G, fy1=Y1-G, gx0=fx0+FW, gx1=fx1-FW, gy0=fy0+FW, gy1=fy1-FW;
+    const rod=(a,b,r,m)=>{ const A=new THREE.Vector3(...a), B=new THREE.Vector3(...b), v=B.clone().sub(A), c=new THREE.Mesh(new THREE.CylinderGeometry(r,r,v.length(),8),m); c.position.copy(A).add(B).multiplyScalar(0.5); c.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize()); c.castShadow=true; return c; };
+    // 1 量 MO：捲尺貼著牆面量寬（開口下緣）、量高（右邊的牆面）
+    const tape=std(0xf2c230);
+    add('mo', box(X1-X0,0.02,0.006, 0.6,Y0-0.03,0.003, tape)); add('mo', box(0.02,Y1-Y0,0.006, X1+0.04,1.55,0.003, tape));
+    add('mo', label('MO 寬 120 cm','#8a5a00', 0.6,Y0-0.12,0.03,0.07)); add('mo', label('MO 高 150 cm','#8a5a00', X1+0.28,1.55,0.03,0.07));
+    // 2 劃分間距：照 CNS 頭尾 15、中間 @45（直向四支、橫向三支）
+    const PJ=[0.15,0.6,1.05,1.35].map(d=>Y0+d), PH=[0.15,0.6,1.05].map(d=>X0+d);
+    const AN=[...PJ.map(y=>({x:X0,y,n:[1,0]})), ...PJ.map(y=>({x:X1,y,n:[-1,0]})), ...PH.map(x=>({x,y:Y0,n:[0,1]})), ...PH.map(x=>({x,y:Y1,n:[0,-1]}))];
+    const red=std(0xd23a2a);
+    AN.forEach(a=>add('mark', box(a.n[0]?0.004:0.03, a.n[0]?0.03:0.004, 0.05, a.x+a.n[0]*0.002, a.y+a.n[1]*0.002, AZ, red)));
+    add('mark', label('頭尾 15','#b42318', X0+0.22,Y0+0.15,0.03,0.055)); add('mark', label('中間 @45','#b42318', X0+0.24,Y0+0.6,0.03,0.055));
+    // 3 打膨脹螺絲（外牙壁虎）：打進開口四周的混凝土，外牙露出 3 公分
+    AN.forEach(a=>add('anchor', rod([a.x-a.n[0]*0.055, a.y-a.n[1]*0.055, AZ], [a.x+a.n[0]*0.035, a.y+a.n[1]*0.035, AZ], 0.009, mat.zinc)));   /* 放大一點，縫裡看得清楚 */
+    // 4 裝窗：Tostem 一樘的框（直料一整支，上下框接在直料中間）
+    add('win', box(FW,fy1-fy0,fd, fx0+FW/2,(fy0+fy1)/2,fz, mat.alu)); add('win', box(FW,fy1-fy0,fd, fx1-FW/2,(fy0+fy1)/2,fz, mat.alu));
+    add('win', box(fx1-fx0-2*FW,FW,fd, 0.6,fy0+FW/2,fz, mat.alu2)); add('win', box(fx1-fx0-2*FW,FW,fd, 0.6,fy1-FW/2,fz, mat.alu2));
+    // 5 電焊：焊接固定片扣在窗框背面，短段鋼筋把固定片跟膨脹螺絲焊在一起
+    const bar=std(0x6b5a4a), wl=std(0x3a3530), WP=[];
+    AN.forEach(a=>{ const n=a.n, t=[-n[1],n[0]], T=[a.x+n[0]*0.035, a.y+n[1]*0.035, AZ], P=[a.x+n[0]*(G-0.002), a.y+n[1]*(G-0.002), AZ], E=[P[0]+t[0]*0.022-n[0]*0.004, P[1]+t[1]*0.022-n[1]*0.004, AZ];
+      add('weld', box(n[0]?0.004:0.09, n[0]?0.09:0.004, 0.04, P[0],P[1],AZ, mat.zinc)); add('weld', rod(T,E,0.005,bar)); [T,E].forEach(q=>{ add('weld', ball(0.008,wl,q[0],q[1],q[2])); WP.push(q); }); });
+    // 6 防鏽漆：焊過的地方塗一層
+    WP.forEach(q=>add('rust', ball(0.013,mat.rustp,q[0],q[1],q[2],1,1,0.9)));
+    // 7 崁縫：開口跟窗框中間的縫用崁縫水泥填滿（螺絲、固定片都包在裡面）
+    add('mortar', box(G,Y1-Y0,0.18, X0+G/2,(Y0+Y1)/2,AZ, mat.mortar)); add('mortar', box(G,Y1-Y0,0.18, X1-G/2,(Y0+Y1)/2,AZ, mat.mortar));
+    add('mortar', box(X1-X0-2*G,G,0.18, 0.6,Y0+G/2,AZ, mat.mortar)); add('mortar', box(X1-X0-2*G,G,0.18, 0.6,Y1-G/2,AZ, mat.mortar));
+    // 8 塞水路 991（室外側）：窗框跟崁縫交接處打一圈（灰色）
+    [fx0,fx1].forEach(x=>add('seal991', box(0.014,fy1-fy0,0.012, x,(fy0+fy1)/2,FZ1+0.004, mat.seal))); [fy0,fy1].forEach(y=>add('seal991', box(fx1-fx0-0.016,0.014,0.012, 0.6,y,FZ1+0.004, mat.seal)));
+    // 9 量玻璃＋裝玻璃（一個連貫動作）
+    add('glass', box(gx1-gx0-0.004, gy1-gy0-0.004, 0.008, 0.6,(gy0+gy1)/2,fz, mat.glass));
+    LV.refs.glassTip=add('glass', label('量好內框，裝上玻璃','#374151', 0.6,gy1+0.12,0.03,0.06));
+    // 10 玻璃四周打膠 791（黑色）
+    [gx0+0.005,gx1-0.005].forEach(x=>add('seal791', box(0.01,gy1-gy0,0.01, x,(gy0+gy1)/2,fz+0.009, mat.gasket))); [gy0+0.005,gy1-0.005].forEach(y=>add('seal791', box(gx1-gx0-0.022,0.01,0.01, 0.6,y,fz+0.009, mat.gasket)));
   },
-  tray:['mid','gasket','jamb','glass','mortar','head','sill'],
+  tray:['seal791','anchor','mortar','glass','mo','weld','seal991','win','rust','mark'],
+  recap:['Tostem 窗安裝工法（一樘）', '1 量 MO（寬、高）', '2 劃間距：頭尾 15、中間 @45（CNS）', '3 打膨脹螺絲　4 裝窗', '5 電焊固定片　6 防鏽漆', '7 崁縫　8 塞水路 991（室外側）', '9 量玻璃、裝玻璃', '10 玻璃四周打膠 791'],   // 收工後的整理卡
   intro:[
-    {who:'an', t:'嗨 {P}！今天下雨，外牆停工。我從辦公室過來，帶你進工務所，在樣品牆上裝一樘窗。'},
-    {who:'an', t:'我以前把鋁料照剪口切成一百多段再黏回去，白做兩天，還被鐵叔笑到現在。'},
-    {who:'an', t:'所以今天只教你一句話：**直的永遠贏**。裝的順序，就是**誰贏誰先放**。', mood:'smile'},
-    {who:'you', t:'（直的永遠贏……先記起來。）'} ],
-  outroGood:[ {who:'an', t:'漂亮！一條縫都沒有。你比我當年強多了。', mood:'smile'} ],
-  outroBad:[ {who:'an', t:'窗是好了，不過琳姊剛剛來了 {N} 趟……沒關係，我當年更慘。'} ],
+    {who:'an', t:'嗨 {P}！今天下雨，外牆停工。我們在工務所裡，用這面樣品牆練習裝一樘 **Tostem** 鋁窗。'},
+    {who:'an', t:'整套工法十件事：量尺寸、劃間距、打膨脹螺絲、裝窗、電焊、防鏽漆、崁縫、塞水路、量玻璃裝玻璃、打膠。'},
+    {who:'an', t:'材料跟工作項目都在旁邊。**順序不能亂**；答錯了琳姊會過來開單。', mood:'smile'},
+    {who:'you', t:'（十件事……先從量尺寸開始。）'} ],
+  outroGood:[ {who:'an', t:'漂亮！從量 MO 到打膠，一樘窗整套走完了。', mood:'smile'} ],
+  outroBad:[ {who:'an', t:'窗是裝好了，不過琳姊剛剛來了 {N} 趟……順序再背熟一點。'} ],
+  onPlace:{ mark(){ LV.parts.mo.meshes.forEach(m=>m.visible=false); },                                                    // 量完了，捲尺收起來
+    anchor(){ LV.parts.mark.meshes.forEach(m=>{ if(m.isSprite) m.visible=false; }); },                                   // 字收起來，紅色記號留著（螺絲就打在上面）
+    weld(){ const pts=LV.parts.weld.meshes.filter(m=>m.geometry && m.geometry.type==='SphereGeometry').map(m=>m.userData.home), sp=[];   /* 電焊的火花：一下下就沒了 */
+      for(let i=0;i<30;i++){ const q=pts[i%pts.length], m=new THREE.Mesh(new THREE.SphereGeometry(0.008,6,4), new THREE.MeshBasicMaterial({color:i%3?0xffc04a:0xfff3c0})); m.position.copy(q); m.userData.v=new THREE.Vector3((Math.random()-0.5)*1.4, 0.4+Math.random()*1.2, 0.3+Math.random()*0.8); LV.group.add(m); sp.push(m); }
+      let k=0; const f=dt=>{ k+=dt; sp.forEach(m=>{ m.userData.v.y-=dt*4; m.position.addScaledVector(m.userData.v,dt); }); if(k>0.9){ sp.forEach(m=>LV.group.remove(m)); LV.fx.splice(LV.fx.indexOf(f),1); } }; LV.fx.push(f); },
+    seal791(){ if(LV.refs.glassTip) LV.refs.glassTip.visible=false; } },
   steps:[
-    { id:'mortar', name:'崁補', tr:'邊界感', spot:[0.6,0.95], hint:'先做**崁補**（水泥砂漿）。崁補＝外框的邊界。',
-      q:{ title:'鋁料伸到崁補的時候，停在哪裡？', body:'窗框四周都是崁補。', src:SRC.model, opts:[
-        {t:'停在崁補面上', ok:true, exp:'崁補四邊各一整條，料伸進崁補就**停在崁補面上**。'},
-        {t:'穿過崁補伸進牆裡，比較牢', ok:false, exp:'崁補是外框邊界，料碰到崁補面就停。'} ] } },
-    { id:'jamb', name:'直料', tr:'一整支的尊嚴', spot:[0.2,0.95], hint:'左右直料。直的永遠贏。',
-      q:{ title:'直料跟很多支料有交接，你怎麼建？', body:'CAD 上直料到處都是剪口。', src:SRC.model, opts:[
-        {t:'照交接處切成很多段，再黏回去', ok:false, exp:'切碎＝兩天白工，還滿身分段線。**鋁擠型不准切碎**。'},
-        {t:'原始斷面直直擠出一整支', ok:true, exp:'**一支料＝一個實體**，直直擠出一整支。'} ] } },
-    { id:'sill', name:'下框', tr:'直的永遠贏', spot:[0.6,0.95], hint:'下框跟直料會碰到。',
-      q:{ title:'下框跟直料碰到，誰讓誰？', body:'直料底會坐進下框。', src:SRC.model, opts:[
-        {t:'下框貫通，把直料底切掉', ok:false, exp:'「下框 > 直料」的舊優先序已經作廢。直的永遠贏。'},
-        {t:'直料衝到底不剪，下框照直料斷面剪口', ok:true, exp:'**直通橫斷**：下框、中橫料、上框都算橫的。'} ] } },
-    { id:'head', name:'上框', tr:'上下一致', spot:[0.9,0.95], hint:'上框一樣是橫的，照直料剪口去接。' },
-    { id:'mid', name:'中橫料', tr:'不湊料', spot:[0.6,0.95], hint:'中橫料接在左右直料之間。',
-      q:{ title:'中橫料接直料的角落有個小洞，怎麼辦？', body:'交接處看得到一點縫。', src:SRC.model, opts:[
-        {t:'另外補一塊料頭或角塊把洞塞住', ok:false, exp:'**不准為了補洞湊料**。料頭、補料、角塊都不另外做。'},
-        {t:'中橫料本體伸進直料溝，再照形狀剪口', ok:true, exp:'這就是**料頭接法**：還是一支料。'} ] } },
-    { id:'glass', name:'玻璃', tr:'透心涼', spot:[0.4,1.0], hint:'框完成，放玻璃。' },
-    { id:'gasket', name:'膠條', tr:'軟的讓硬的', spot:[0.8,0.95], hint:'最後壓膠條。膠條是軟料。',
-      q:{ title:'模型裡膠條跟鋁料重疊了一點點，怎麼處理？', body:'只重疊一點點而已。', src:SRC.model, opts:[
-        {t:'沒關係，穿過去一點比較密', ok:false, exp:'**軟料絕對不准穿過鋁料**，畫面上會變成黑條插出來。'},
-        {t:'軟料讓鋁，膠條退到鋁料面', ok:true, exp:'膠條、壓膠、矽利康**一律讓鋁**。顏色用灰或黑。'} ] } },
+    { id:'mo', name:'量 MO 尺寸', tr:'尺不離手', spot:[0.6,0.95], hint:'先量窗洞（**MO**）的寬和高。' },
+    { id:'mark', name:'劃分間距', tr:'15 跟 45', spot:[0.2,0.95], hint:'在開口四周劃出**膨脹螺絲**的位置。',
+      q:{ by:'an', title:'膨脹螺絲的位置怎麼劃？', body:'開口四周都要打。', src:SRC.tostemCns, opts:[
+        {t:'頭尾各 15 公分，中間每 45 公分一支', ok:true, exp:'照 **CNS**：**頭尾 15 公分、中間 @45 公分**。'},
+        {t:'平均分幾等份，看起來整齊就好', ok:false, exp:'間距有標準：照 **CNS**，**頭尾 15 公分、中間 @45 公分**。'} ] } },
+    { id:'anchor', name:'打膨脹螺絲', tr:'壁虎上牆', spot:[0.2,0.95], hint:'照劃好的位置，把**膨脹螺絲**（外牙壁虎）打進混凝土。' },
+    { id:'win', name:'裝窗', tr:'一樘到位', spot:[0.6,1.0], hint:'把 Tostem 窗放進開口，四周留縫。' },
+    { id:'weld', name:'電焊', tr:'火花四射', spot:[1.0,0.95], hint:'**焊接固定片**扣在窗框背面，用短段鋼筋把固定片跟膨脹螺絲焊在一起。',
+      q:{ by:'an', title:'窗放進開口了，下一步做哪個？', body:'窗還沒固定住。', src:SRC.tostem, opts:[
+        {t:'先電焊固定，再塗防鏽漆、崁縫', ok:true, exp:'照工法：**電焊 → 防鏽漆 → 崁縫**。'},
+        {t:'先崁縫，水泥乾了窗就不會動', ok:false, exp:'照工法，窗裝上去以後**先電焊**，再塗防鏽漆，最後才崁縫。'} ] } },
+    { id:'rust', name:'塗防鏽漆', tr:'不鏽之心', spot:[0.2,0.95], hint:'焊過的地方塗**防鏽漆**。',
+      q:{ by:'an', title:'焊好了，可以直接崁縫蓋起來嗎？', body:'焊點等一下就被水泥包住，看不到了。', src:SRC.tostem, opts:[
+        {t:'可以，反正看不到', ok:false, exp:'照工法：電焊之後要**先塗防鏽漆**，再崁縫。'},
+        {t:'焊點先塗防鏽漆，再崁縫', ok:true, exp:'**電焊 → 防鏽漆 → 崁縫**。'} ] } },
+    { id:'mortar', name:'崁縫', tr:'填好填滿', spot:[0.6,0.95], hint:'窗框跟開口中間的縫，用崁縫水泥填滿。' },
+    { id:'seal991', name:'塞水路 991', tr:'水路不通', spot:[1.0,0.95], hint:'用 991 塞水路，打在**室外側**（樣品牆朝你這面當室外）。',
+      q:{ by:'an', title:'塞水路的 991，打在哪一側？', body:'崁縫做好了。', src:SRC.tostem, opts:[
+        {t:'室外側', ok:true, exp:'**塞水路 991 打在室外側**。'},
+        {t:'室內側', ok:false, exp:'照工法，**塞水路 991 打在室外側**。'} ] } },
+    { id:'glass', name:'量玻璃、裝玻璃', tr:'量好再裝', spot:[0.4,1.0], hint:'在窗框裡量好尺寸，再把玻璃裝上去。',
+      q:{ by:'an', title:'玻璃什麼時候量、什麼時候裝？', body:'玻璃要照尺寸裁。', src:SRC.tostem, opts:[
+        {t:'窗還沒裝之前，先照 MO 尺寸量好', ok:false, exp:'照工法，**量玻璃、裝玻璃**排在窗裝好、崁縫、塞水路之後。'},
+        {t:'窗裝好、崁縫、塞水路都做完，再量玻璃、裝玻璃', ok:true, exp:'照工法的順序：**塞水路之後才量玻璃、裝玻璃**。'} ] } },
+    { id:'seal791', name:'玻璃四周打膠 791', tr:'收邊收乾淨', spot:[0.8,0.95], hint:'最後在玻璃四周打一圈 791。',
+      q:{ by:'an', title:'玻璃四周打哪一支膠？', body:'手上有 991 跟 791。', src:SRC.tostem, opts:[
+        {t:'991', ok:false, exp:'991 是塞水路用的；**玻璃四周打 791**。'},
+        {t:'791', ok:true, exp:'**玻璃四周打 791**；991 是塞水路用的。'} ] } },
   ] },
 
 // ---------- 週四 ----------
@@ -2528,7 +2569,7 @@ function drawFace(cv, who, mood){ const c=CAST[who], g=cv.getContext('2d'), W=cv
 // 扛在身上的樣子。沒列在這裡的步驟＝純動作，不扛東西，去立牌「接工作」。
 const ITEM = {   // bar:長度:材質:v＝直料（立著）／h＝橫料（橫著）
   'L1.anchor':'embed', 'L1.joint':'tube:seal', 'L1.bracket':'plate', 'L1.mullion':'bar:1.6:alu:v', 'L1.transom':'bar:1.1:alu2:h', 'L1.backpan':'sheet', 'L1.spin':'wool', 'L1.wool':'wool', 'L1.fcoat':'tube:fire', 'L1.glass':'glass', 'L1.sealant':'tube:seal',
-  'L3.mortar':'bucket', 'L3.jamb':'bar:1.4:alu:v', 'L3.sill':'bar:1.0:alu2:h', 'L3.head':'bar:1.0:alu2:h', 'L3.mid':'bar:1.0:alu2:h', 'L3.glass':'glass', 'L3.gasket':'coil',
+  'L3.anchor':'expbolt', 'L3.win':'window', 'L3.weld':'clip', 'L3.rust':'paint', 'L3.mortar':'bucket', 'L3.seal991':'tube:seal', 'L3.glass':'glass', 'L3.seal791':'tube:gasket',   /* 週四 Tostem 工法：C 膨脹螺絲、A 鋁窗、D 焊接固定片、H 防鏽漆、E 崁縫水泥、F 991、B 玻璃、G 791 */
   'L4.base':'bar:1.5:steelDark:h', 'L4.panel1':'panel', 'L4.fasten':'smallbox', 'L4.seal':'tube:seal', 'L4.panel2':'panel',
 };
 const POSE = { upright:[0,1.176,0.318], across:[0,1.176,0.318], overhead:[0.47,0.85,0.02], front:[0,1.06,0.45], side:[0.44,0.8,0.02] };   /* 夾在身側的頂端壓在 1.30 以下：神明光圈的光芒會轉過來 */   /* 不舉過頭（舉過頭會插進安全帽）；捧在胸前的離項鍊墜子遠一點 */   // front＝雙手捧在胸前：位置對齊手掌
@@ -2539,6 +2580,7 @@ function makeItem(spec){ const g=new THREE.Group(), [kind,a,b,o]=spec.split(':')
     if(o==='v'){ g.add(box(0.1,len,0.13,0,0,0,m)); [-1,1].forEach(e=>g.add(box(0.106,0.03,0.136,0,e*len/2,0,mat.dark))); pose='upright'; }
     else { g.add(box(len,0.13,0.1,0,0,0,m)); [-1,1].forEach(e=>g.add(box(0.03,0.136,0.106,e*len/2,0,0,mat.dark))); pose='across'; } }
   else if(kind==='panel'){ g.add(box(0.9,0.09,1.6,0,0,0,flatPanelMat)); pose='overhead'; }
+  else if(kind==='window'){ [-1,1].forEach(e=>{ g.add(box(0.05,1.0,0.07,e*0.375,0,0,mat.alu)); g.add(box(0.7,0.05,0.07,0,e*0.475,0,mat.alu2)); }); pose='side'; }   /* Tostem 一樘：只有框（玻璃最後才裝） */
   else if(kind==='glass'){ g.add(box(0.8,1.0,0.02,0,0,0,mat.glass)); g.add(box(0.82,0.03,0.03,0,0.5,0,mat.steel)); g.add(box(0.82,0.03,0.03,0,-0.5,0,mat.steel)); pose='side'; }   /* 玻璃 1 公尺高：立著夾在右邊（拿在胸前會擋到臉） */
   else { if(kind==='sheet'){ g.add(box(0.6,0.45,0.015,0,0,0,mat.steel)); [-0.21,0.21].forEach(y=>g.add(box(0.6,0.03,0.045,0,y,0.02,mat.steel))); }                       // 背襯板：一片有折邊的鐵板
     else if(kind==='wool'){ g.add(box(0.4,0.22,0.2,0,0,0,mat.wool)); [-0.06,0.06].forEach(y=>g.add(box(0.405,0.012,0.205,0,y,0,std(0xa98a35)))); }                            // 防火岩棉：一塊棉
@@ -2546,6 +2588,9 @@ function makeItem(spec){ const g=new THREE.Group(), [kind,a,b,o]=spec.split(':')
     else if(kind==='bolts'){ [-0.045,0,0.045].forEach((z,i)=>{ g.add(cyl(0.013,0.22,'x',0,(i%2)*0.026,z,mat.anchor,10)); g.add(cyl(0.026,0.03,'x',0.08,(i%2)*0.026,z,mat.steel,6)); }); }
     else if(kind==='plate'){ g.add(box(0.24,0.2,0.025,0,0,0,mat.steel)); g.add(box(0.24,0.025,0.15,0,-0.09,0.075,mat.steel)); [-0.06,0.06].forEach(x=>g.add(cyl(0.02,0.03,'z',x,0.03,0.015,mat.dark,8))); }
     else if(kind==='tube'){ g.add(cyl(0.034,0.26,'x',0,0,0,mat[a])); g.add(cyl(0.036,0.03,'x',-0.12,0,0,mat.white,12)); g.add(cyl(0.01,0.1,'x',0.18,0,0,mat.white,8)); }
+    else if(kind==='expbolt'){ [-0.045,0,0.045].forEach((z,i)=>{ const y=(i%2)*0.026; g.add(cyl(0.012,0.12,'x',0.05,y,z,mat.zinc,10)); g.add(cyl(0.017,0.09,'x',-0.055,y,z,mat.zinc,10)); [-0.08,-0.055,-0.03].forEach(x=>g.add(cyl(0.019,0.008,'x',x,y,z,std(0xa8862e),10))); g.add(ball(0.02,mat.zinc,-0.105,y,z,0.6,1,1)); }); }   // 外牙壁虎三支：一半外牙、一半開縫壓花套管、前端錐頭（五彩鍍鋅）
+    else if(kind==='clip'){ g.add(box(0.22,0.012,0.075,0,0,0,mat.zinc)); g.add(box(0.07,0.025,0.035,0,-0.017,0,mat.zinc)); [-0.065,0.065].forEach(x=>g.add(cyl(0.012,0.014,'y',x,0,0,mat.dark,10))); [-1,1].forEach(e=>{ const t=box(0.03,0.01,0.02,e*0.115,0.012,0.022,mat.zinc); t.rotation.z=e*0.6; g.add(t); }); }   // 焊接固定片：長方形鐵片、中間沖出往背面凸的小橋、兩個圓孔、兩端斜折的小耳
+    else if(kind==='paint'){ g.add(cyl(0.1,0.14,'y',0,0,0,mat.steel,18)); g.add(cyl(0.095,0.012,'y',0,0.07,0,mat.rustp,18)); g.add(box(0.11,0.05,0.016,0,0.095,0,std(0x8a6c50))); g.add(box(0.02,0.14,0.012,0,0.18,0,std(0x8a6c50))); }   // 防鏽漆：一桶漆＋一支刷子（刷子插在桶口上）
     else if(kind==='bucket'){ const m=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.12,0.26,18),mat.steel); m.castShadow=true; g.add(m); g.add(cyl(0.14,0.02,'y',0,0.125,0,mat.mortar,18)); }
     else if(kind==='coil'){ const m=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.04,8,22),mat.gasket); m.rotation.x=Math.PI/2; m.castShadow=true; g.add(m); }
     else { g.add(box(0.22,0.13,0.16,0,0,0,mat.crate)); [-0.05,0,0.05].forEach(x=>g.add(cyl(0.012,0.1,'z',x,0.075,0,mat.steel,8))); }
@@ -2563,8 +2608,8 @@ function makePallet(st,x,z){ const g=new THREE.Group(); g.position.set(x,L.gy,z)
   else { const ink=std(0x2b2f36), chrome=std(0xc9ced6);   /* 純動作：立牌（他 11-13：原本一根木棒看不出是什麼）＝圓底座、立桿、往後仰的牌面，牌面畫這件事的圖示 */
     g.add(cyl(0.17,0.03,'y',0,0.015,0,ink,28)); g.add(cyl(0.05,0.02,'y',0,0.04,0,chrome,16)); g.add(cyl(0.016,0.72,'y',0,0.39,0,chrome,12));
     const c=document.createElement('canvas'); c.width=256; c.height=200; const x2=c.getContext('2d'); x2.fillStyle='#f7f8fa'; x2.fillRect(0,0,256,200); x2.fillStyle='#1d4f86'; x2.fillRect(0,0,256,34); x2.fillRect(0,192,256,8);
-    x2.fillStyle='#fff'; x2.font='bold 22px "Microsoft JhengHei",sans-serif'; x2.textAlign='center'; x2.textBaseline='middle'; x2.fillText('送 圖 前 檢 討',128,18);
-    x2.font='112px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif'; x2.fillText(({cost:'🧮',fab:'🏭',iface:'🚚',revise:'✏️',embed:'📐',decoy:'🐟'})[st.id]||'📋',128,116);
+    x2.fillStyle='#fff'; x2.font='bold 22px "Microsoft JhengHei",sans-serif'; x2.textAlign='center'; x2.textBaseline='middle'; x2.fillText(L.office?'送 圖 前 檢 討':'工 作 項 目',128,18);
+    x2.font='112px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif'; x2.fillText(({cost:'🧮',fab:'🏭',iface:'🚚',revise:'✏️',embed:'📐',decoy:'🐟',mo:'📏',mark:'📍'})[st.id]||'📋',128,116);
     const face=std(0xffffff,{map:new THREE.CanvasTexture(c)}), bd=new THREE.Group(); bd.position.set(0,0.88,0); bd.rotation.x=-0.22;
     const pl=new THREE.Mesh(new THREE.BoxGeometry(0.36,0.3,0.02),[ink,ink,ink,ink,face,ink]); pl.castShadow=true; bd.add(pl); bd.add(box(0.38,0.02,0.03,0,-0.16,0,ink)); g.add(bd);
     g.rotation.y = L.view && L.view.theta!==undefined ? L.view.theta : 0; ly=1.22; }   // 牌面朝鏡頭；標籤放在牌子上面
