@@ -756,12 +756,12 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
     [[xa,mid-EW],[mid+EW,xb]].forEach(([a,b])=>{ P(b-a,H2,0.06, (a+b)/2,Y+H2/2,0.03, lg); P(b-a,0.4,0.12, (a+b)/2,Y+0.2,0.06, st); }); P(EW*2,H2-3.3,0.06, mid,Y+3.3+(H2-3.3)/2,0.03, lg);   /* 大片玻璃、石材踢腳：在大門那一段斷開（他 11-17：要從大門走出來） */
     [xa+0.22, xb-0.22].forEach(x=>P(0.45,H2-0.45,0.24, x,Y+(H2-0.45)/2,0.12, st));                                                  // 兩端的石材柱
     [xa+(mid-EW-xa)/2, mid-EW, mid+EW, xb-(xb-mid-EW)/2].forEach(x=>P(0.09,H2-0.45,0.16, x,Y+(H2-0.45)/2,0.09, fr)); P(len-0.9,0.07,0.16, mid,Y+3.75,0.09, fr);   // 大分割：深色的直料和一道橫料
-    const fin=(x,i)=>{ const dep=0.3+0.26*(0.5+0.5*Math.sin(i*0.8)); P(0.07,6.3,dep, x,Y+0.4+3.15,0.06+dep/2, bz); };   // 格柵：同一個古銅色，深度一深一淺排成波浪（活潑靠節奏，不靠顏色）
+    const fin=(x,i)=>{ const dep=0.3+0.26*(0.5+0.5*Math.sin(i*0.8)), z=0.06+dep/2; if(Math.abs(x-mid)<3.25){ P(0.07,3.15,dep, x,Y+0.4+1.575,z, bz); P(0.07,3.01,dep, x,Y+3.69+1.505,z, bz); } else P(0.07,6.3,dep, x,Y+0.4+3.15,z, bz); };   /* 雨庇那一段的格柵在雨庇上下斷開（他 11-17：原本格柵穿過雨庇） */   // 格柵：同一個古銅色，深度一深一淺排成波浪（活潑靠節奏，不靠顏色）
     let fi=0; [[xa+0.75, mid-EW-0.45],[mid+EW+0.45, xb-0.75]].forEach(([a,b])=>{ const n=Math.round((b-a)/0.42); for(let i=0;i<=n;i++) fin(a+(b-a)*i/n, fi++); });
     [-1,1].forEach(e=>P(0.3,3.3,0.7, mid+e*(EW-0.15),Y+1.65,0.35, tl)); P(EW*2,0.25,0.7, mid,Y+3.425,0.35, tl);                     // 出入口：凸出來的深藍色門框
     [-1,1].forEach(e=>P(EW-1.2,3.3,0.04, mid+e*(0.9+(EW-1.2)/2),Y+1.65,0.12, dg)); P(1.8,0.85,0.04, mid,Y+2.875,0.12, dg); [-0.9,0.9].forEach(a=>P(0.06,3.3,0.08, mid+a,Y+1.65,0.15, fr)); P(EW*2-0.6,0.07,0.08, mid,Y+2.45,0.15, fr);   // 兩邊固定窗、上面氣窗、門框
     LV.lobbyDoor={mid, f, o:0, leaves:[-1,1].map(e=>{ const g=new THREE.Group(); g.position.set(mid+e*0.45,Y,f+0.12); g.add(box(0.88,2.42,0.04, 0,1.21,0, dg)); g.add(box(0.04,2.42,0.08, -e*0.43,1.21,0.03, fr)); g.add(box(0.03,0.9,0.07, -e*0.33,1.2,0.055, mat.chrome)); g.userData.x0=mid+e*0.45; g.userData.e=e; LV.group.add(g); g.traverse(o=>{ if(o.isMesh){ o.userData.pick={kind:'stairs'}; LV.pick.push(o); } }); return g; })};   /* 兩扇門片（會往兩邊滑開）；點門＝走過去問要不要走樓梯回四樓 */
-    P(6.4,0.14,2.7, mid,Y+3.62,1.35, fr); P(6.4,0.2,0.06, mid,Y+3.62,2.73, bz); P(5.6,0.03,0.12, mid,Y+3.535,1.5, std(0xfff1c2,{emissive:0xffd98a}));   // 雨庇：深藍色板、古銅色的前緣、底下一條燈
+    P(6.4,0.14,2.64, mid,Y+3.62,0.06+1.32, fr);   /* 雨庇從玻璃面外面開始（原本插進玻璃 6 公分） */ P(6.4,0.2,0.06, mid,Y+3.62,2.73, bz); P(5.6,0.03,0.12, mid,Y+3.535,1.5, std(0xfff1c2,{emissive:0xffd98a}));   // 雨庇：深藍色板、古銅色的前緣、底下一條燈
     [-1,1].forEach(e=>[-1,1].forEach(g=>{ const c=cyl(0.055,3.62,'y', mid+e*2.3+g*0.36,Y+1.775,f+2.3, wh,10); c.rotation.z=-g*0.2; S(c); }));   // 雨庇的柱子：兩組古銅色的 V 字形
     P(6.4,0.04,3.2, mid,Y+0.02,1.6, std(0xcfc9bb)); P(2.4,0.02,0.9, mid,Y+0.05,0.8, fr);                                            // 門口的鋪面、踏墊
     [-1,1].forEach(e=>{ P(0.6,0.5,0.6, mid+e*2.75,Y+0.29,1.0, st); S(ball(0.4,std(0x4fb86a), mid+e*2.75,Y+0.9,f+1.0, 1,1.1,1)); });  // 兩盆樹
@@ -3110,18 +3110,24 @@ function askStairs(){ const me=LV.actors.you; if(!LV.stairPts || LV.ride || done
   showLine({who:'you', t: dn ? '（內心 OS）……樓梯間。\n走樓梯下去一樓晃一下？四層樓而已……主任應該不會發現吧。' : '（內心 OS）走樓梯回四樓吧。\n……四層樓。早知道搭電梯。'});
   const o=$('#dOpts'); o.innerHTML=''; (dn ? ['走樓梯下一樓','算了，回去做事'] : ['走樓梯回四樓','再晃一下']).forEach((t,k)=>{ const b=document.createElement('button'); b.textContent=t; b.dataset.think=k?'no':'yes';
     b.onclick=()=>{ optsOpen=false; o.innerHTML=''; endDlg(); if(!k) startStairs(dn); }; o.appendChild(b); }); }
-function startStairs(dn){ const me=LV.actors.you, P = dn ? LV.stairPts.slice() : LV.stairPts.slice().reverse(); LV.ride={stairs:true, dn, pts:P, i:0}; me.dest=null; me.onArrive=null; me.liftY=P[0].y; camGoal={theta, phi:0.8, dist:8}; }   /* 他 11-17：從四樓走樓梯到一樓大門（反過來＝回四樓）；鏡頭斜一點才看得出階梯高低 */
+function startStairs(dn){ const me=LV.actors.you, P=LV.stairPts, door=[{x:6.58,z:7.6,y:P[P.length-3].y}].concat(P.slice(-3)); me.dest=null; me.onArrive=null; LV.stairArm=false;   /* 他 11-17 09:26：走路動畫拿掉 → 畫面暗一下，人在一樓大廳門後面，等自動門打開走出來（回四樓反過來） */
+  if(dn){ LV.ride={stairs:true, dn, ph:'fade', t:0, pts:door, i:0}; $('#fade').style.opacity=1; } else { LV.ride={stairs:true, dn, ph:'walk', t:0, pts:door.slice().reverse(), i:0}; me.liftY=door[door.length-1].y; } }
 function stairY(F,z,up){   /* 樓梯：每一階踩平，踩到下一階的頭 20% 才換高度（腳不插進踏板） */
   const u=Math.min(10,Math.max(0,(z-F.zt)/(F.zb-F.zt)*10-0.35)),   /* 往高的那頭看 0.35 階：整個腳掌底下最高的那一階（上樓、下樓都一樣；他不准腳插進踏板） */ i=Math.min(9,Math.floor(u)), top=j=> j<0 ? F.yt : F.yt-(j+1)*0.18, q=Math.min(1,(u-i)/0.2), e=q*q*(3-2*q); return top(i-1)+(top(i)-top(i-1))*e; }
-function stairLift(a){ const R=LV.ride; if(!R || !R.stairs) return; const p0=R.pts[Math.max(0,R.i-1)], p1=R.pts[R.i], fl = R.dn ? p1.fl : p0.fl; a.liftY = fl ? stairY(fl,a.z,!R.dn) : Math.max(p0.y,p1.y); }   /* 人移動完才算腳的高度（不然慢一格，上樓第一階腳會插進去） */
+function stairLift(a){ const R=LV.ride; if(!R || !R.stairs || (R.ph && R.ph!=='walk') || !R.pts[R.i]) return; const p0=R.pts[Math.max(0,R.i-1)], p1=R.pts[R.i], fl = R.dn ? p1.fl : p0.fl; a.liftY = fl ? stairY(fl,a.z,!R.dn) : Math.max(p0.y,p1.y); }   /* 人移動完才算腳的高度（不然慢一格，上樓第一階腳會插進去） */
 function stairFx(dt){ const me=LV.actors.you, R=LV.ride, D=LV.lobbyDoor; if(!me) return;
   if(D){ const near = Math.hypot(me.x-D.mid, me.z-D.f)<2.6 && (LV.down || (R && R.stairs)); D.o+=((near?1:0)-D.o)*Math.min(1,dt*6); D.leaves.forEach(g=>{ g.position.x=g.userData.x0+g.userData.e*0.85*D.o; }); }   // 大門：人走近就往兩邊滑開
   if(!R || !R.stairs){ renderer.clippingPlanes=[]; if(!LV.stairPts || done || failed) return; const P=LV.stairPts, t = LV.down ? P[P.length-1] : P[0], d=Math.hypot(me.x-t.x, me.z-t.z);   // 站到四樓樓梯口、一樓大門口＝問要不要走樓梯
     if(d>1.2) LV.stairArm=true; else if(d<0.6 && LV.stairArm && !dlgOpen && !me.dest && !me.swing && !LV.ride) askStairs(); return; }
-  if(!me.dest){ R.i++; if(R.i>=R.pts.length){ const dn=R.dn; LV.ride=null; me.liftY=undefined; renderer.clippingPlanes=[]; LV.stairArm=false; if(dn){ setDown(true); camGoal={theta, phi:1.08, dist:7}; } else { setDown(false); camGoal={theta, phi:1.08, dist:12}; } return; }
+  const put=(p,y,face)=>{ me.dest=null; me.onArrive=null; me.x=p.x; me.z=p.z; me.liftY=y; me.face=me.g.rotation.y=face; me.g.position.set(p.x, y!==undefined ? y : p.y, p.z); target.set(p.x, p.y+1.1, p.z); };
+  if(R.ph==='fade'){ R.t+=dt; if(R.t<0.6) return; put(R.pts[0], R.pts[0].y, 0); theta=0; phi=1.0; dist=7; camGoal=null; R.ph='lit'; R.t=0; return; }
+  if(R.ph==='lit'){ R.t+=dt; if(R.t<0.25) return; $('#fade').style.opacity=0; R.ph='door'; R.t=0; return; }   // 換完位置，黑幕多停一下才亮（不會看到人跳過去）   // 畫面暗下來時：人已經在一樓大廳、門後面；鏡頭從外面對著大門
+  if(R.ph==='door'){ R.t+=dt; if(R.t<0.7 || (D && D.o<0.9)) return; R.ph='walk'; R.i=0; }   // 等一下，自動門打開才走出來
+  if(R.ph==='up'){ R.t+=dt; if(R.t<0.6) return; put(LV.stairPts[0], undefined, Math.PI); setDown(false); camGoal={theta, phi:1.08, dist:12}; R.ph='lit2'; R.t=0; return; }
+  if(R.ph==='lit2'){ R.t+=dt; if(R.t<0.25) return; $('#fade').style.opacity=0; LV.ride=null; return; }   // 回四樓：畫面暗下來，人已經在四樓樓梯口
+  if(!me.dest){ R.i++; if(R.i>=R.pts.length){ if(R.dn){ LV.ride=null; me.liftY=undefined; setDown(true); camGoal={theta, phi:1.08, dist:7}; } else { R.ph='up'; R.t=0; $('#fade').style.opacity=1; } return; }
     const q=R.pts[R.i]; me.dest={x:q.x, z:q.z}; me.onArrive=null; }
-  stairLift(me);
-  renderer.clippingPlanes=[new THREE.Plane(new THREE.Vector3(0,-1,0), me.liftY+2.4)]; }   /* 頭頂以上的樓層切掉，從上往下看得到人 */
+  stairLift(me); }
 function goHoist(){ const H=LV.hoist, me=LV.actors.you; if(!H || LV.ride || done) return; const t = LV.down ? {x:H.x-H.hw-0.9, z:H.z} : {x:H.x, z:H.az-0.1}; moveTo(t.x,t.z,()=>askRide()); }
 function askRide(){ const H=LV.hoist, me=LV.actors.you; if(!H || LV.ride || done || failed || dlgOpen || me.swing || (LV.chase && (!LV.chase.polite || (LV.chase.st && LV.chase.st!=='go')))) return;   /* 主管正在搭電梯下來：車廂在用 */   /* 主管殺下來了：不能搭電梯逃 */ LV.rideArm=false; const dn=!LV.down;
   dlgOpen=true; optsOpen=true; dlgQ=[]; dlgDone=null; $('#dlg').style.display='flex'; $('#dBar').style.display='none';
