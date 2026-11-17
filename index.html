@@ -1381,7 +1381,8 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
   XW(Bx(0,9.17,0.58,9.75,H,M.conc)); wob(0,9.17,0.58,9.75); Bx(0.58,9.17,0.6,9.5,H,M.wood); Bx(0.25,9.15,0.6,9.17,H,M.wood);   /* 西北角（會議室的角落）：那根柱子在室內是木紋牆包起來的，沒有紅磚（他 11-13 指正；照片 1） */
   /* 辦公區中間那根黑色鋼板柱（CAD 2.25～2.61 × 3.81～4.17）不做：他 11-13 要把這一塊空出來當任務區 */   /* 辦公區中間那根：黑色沖孔鋼板包起來的柱子 */
   /* 外牆：北、東是實牆；南、西臨街是落地窗 */
-  XW(NS(Bx(0,1.6,0.44,8.27,H-2.41,M.frame,2.41)));   /* 西邊的樑往南延伸到弧形轉角，跟弧形那一段接起來 */ XW(NS(Bx(0.25,8.27,0.44,9.15,H-2.41,M.frame,2.41)));   /* 從外面看也是黑色的樑（他 11-13 15:00 截圖畫紅框）：整支從外皮做到室內 */   /* 西邊這一排牆的上面是一整支深灰色的樑（跟老闆辦公室那支同色），從南邊的紅磚柱一路到西北角，兩根紅磚柱只到樑底（他 11-13 截圖畫紅線）；窗和大門上面到天花板那一段，外面是水泥 */
+  const BMW=[M.frame,M.conc,M.conc,M.frame,M.conc,M.conc];   /* 西邊的樑：朝外（-x）、頂面、兩端是水泥色，朝室內（+x）、底面黑色（他 11-17：外側水泥灰，黑色只有室內） */
+  XW(NS(Bx(0,1.6,0.44,8.27,H-2.41,BMW,2.41)));   /* 西邊的樑往南延伸到弧形轉角，跟弧形那一段接起來 */ XW(NS(Bx(0.25,8.27,0.44,9.15,H-2.41,BMW,2.41)));   /* 整支從外皮做到室內；他 11-13 說外面也黑，11-17 改口：外面水泥灰、只有室內黑 */   /* 西邊這一排牆的上面是一整支深灰色的樑（跟老闆辦公室那支同色），從南邊的紅磚柱一路到西北角，兩根紅磚柱只到樑底（他 11-13 截圖畫紅線）；窗和大門上面到天花板那一段，外面是水泥 */
   XW(Bx(0.58,9.55,4.04,9.75,H,M.conc)); XW(Bx(4.62,9.55,6.97,9.75,H,M.conc)); XW(Bx(7.55,9.55,7.72,9.75,H,M.conc)); XW(Bx(8.62,9.55,11.13,9.75,H,M.conc)); XW(Bx(7.72,9.55,8.62,9.75,1.45,M.conc)); XW(Bx(7.72,9.55,8.62,9.75,H-2.31,M.conc,2.31));   /* 廁所對外窗的位置開洞（他 11-13：百葉窗要真的開洞） */
   XW(NS(Bx(7.72,9.55,8.62,9.75,0.03,M.frame,1.45))); XW(NS(Bx(7.72,9.55,8.62,9.75,0.03,M.frame,2.28))); XW(NS(Bx(7.72,9.55,7.75,9.75,0.8,M.frame,1.48))); XW(NS(Bx(8.59,9.55,8.62,9.75,0.8,M.frame,1.48))); XW(NS(Bx(7.75,9.64,8.59,9.66,0.8,M.glass,1.48)));   /* 洞口四邊黑色窗框、中間一片玻璃 */   /* 北牆 */
   XW(Bx(11.51,0.58,11.71,4.68,H,M.conc)); XW(Bx(11.51,5.26,11.71,9.17,H,M.conc));   /* 東牆 */
@@ -1408,8 +1409,8 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
      鏡頭在牆的外面（平常從南邊看進來）時整面收起來、只留牆腳，才看得到裡面；鏡頭轉到裡面看（例如在黑板前面討論）就是整面牆 */
   const cuts=[], camS=()=>camera.position.z>gz(0.08), camW=()=>camera.position.x<gx(0.1);
   { const R=1.5*K, T=0.2*K, cm=M.conc.clone(); cm.side=THREE.DoubleSide; const BH=2.41, seg=(r,m,yb,h)=>{ const c=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,28,1,true,Math.PI*1.5,Math.PI/2), m); c.position.set(gx(1.6),y0+yb+h/2,gz(1.6)); return XW(stat(c)); }; seg(R+T/2,cm,0,BH); seg(R-T/2,cm,0,BH);   /* 弧形牆只到樑底 */
-    { const bm=M.frame.clone(); bm.side=THREE.DoubleSide; const Ri=(1.6-0.44)*K; seg(R+T/2,bm,BH,H-BH); seg(Ri,bm,BH,H-BH); const bot=new THREE.Mesh(new THREE.RingGeometry(Ri,R+T/2,28,1,Math.PI,Math.PI/2), bm); bot.rotation.x=-Math.PI/2; bot.position.set(gx(1.6),y0+BH,gz(1.6)); XW(stat(bot)); const top=bot.clone(); top.position.y=y0+H; XW(stat(top)); }   /* 頂面也封起來（他 11-13：從上面看是空的） */   /* 弧形牆上面也是一支深灰色的樑（他 11-13 截圖），跟西邊那支一樣深 44 公分、從外皮做到室內，沿著弧線轉過去：外面、裡面兩片＋底面 */
-    XW(NS(Bx(1.6,0,2.05,0.2,BH,M.conc))); XW(NS(Bx(0,1.6,0.2,2.38,BH,M.conc))); XW(NS(Bx(1.6,0,11.71,0.44,H-BH,M.frame,BH))); XW(NS(Bx(11.51,0.44,11.71,0.58,H-BH,M.conc,BH)));   /* 南邊整排的黑色樑：從弧形轉角一路接到東邊的牆，實心、外皮到室內（他 11-13：一路延伸到後面的牆、這一段都是黑色的樑）；東南角柱子外側剩一小塊補水泥 */   /* 兩端的直牆也只到樑底；南邊那一小段的樑接到紅磚柱 */   /* 兩端的直牆跟弧牆同厚（20 公分）、外皮都對齊建築物外緣，跟柱子外側的水泥連成一整面，不會一段一段斷開（他 11-13） */   /* 弧形轉角：一直都是整面水泥實牆，有厚度（內外兩片＋頂面），轉視角不會消失（他 11-13 指正；原本鏡頭在外面時會收成牆腳） */
+    { const bm=M.frame.clone(); bm.side=THREE.DoubleSide; const Ri=(1.6-0.44)*K; seg(R+T/2,cm,BH,H-BH); seg(Ri,bm,BH,H-BH); const bot=new THREE.Mesh(new THREE.RingGeometry(Ri,R+T/2,28,1,Math.PI,Math.PI/2), bm); bot.rotation.x=-Math.PI/2; bot.position.set(gx(1.6),y0+BH,gz(1.6)); XW(stat(bot)); const top=bot.clone(); top.material=cm; top.position.y=y0+H; XW(stat(top)); }   /* 弧形那段：朝外那片、頂面水泥色，朝室內那片、底面黑色（他 11-17） */   /* 頂面也封起來（他 11-13：從上面看是空的） */   /* 弧形牆上面也是一支深灰色的樑（他 11-13 截圖），跟西邊那支一樣深 44 公分、從外皮做到室內，沿著弧線轉過去：外面、裡面兩片＋底面 */
+    XW(NS(Bx(1.6,0,2.05,0.2,BH,M.conc))); XW(NS(Bx(0,1.6,0.2,2.38,BH,M.conc))); XW(NS(Bx(1.6,0,11.71,0.44,H-BH,[M.conc,M.conc,M.conc,M.frame,M.conc,M.frame],BH)));   /* 南邊的樑：朝外（+z）、頂面、兩端水泥色，朝室內（-z）、底面黑色（他 11-17） */ XW(NS(Bx(11.51,0.44,11.71,0.58,H-BH,M.conc,BH)));   /* 南邊整排的黑色樑：從弧形轉角一路接到東邊的牆，實心、外皮到室內（他 11-13：一路延伸到後面的牆、這一段都是黑色的樑）；東南角柱子外側剩一小塊補水泥 */   /* 兩端的直牆也只到樑底；南邊那一小段的樑接到紅磚柱 */   /* 兩端的直牆跟弧牆同厚（20 公分）、外皮都對齊建築物外緣，跟柱子外側的水泥連成一整面，不會一段一段斷開（他 11-13） */   /* 弧形轉角：一直都是整面水泥實牆，有厚度（內外兩片＋頂面），轉視角不會消失（他 11-13 指正；原本鏡頭在外面時會收成牆腳） */
     [NS(Bx(2.63,0,6.97,0.03,2.41,M.conc)), NS(Bx(2.63,0.03,6.97,0.13,2.3,M.wallD)), NS(Bx(2.63,0.03,6.97,0.42,0.11,M.wood,2.3))].forEach(XW);   /* 外皮、木飾板都頂在樑底 2.41，上面是樑 */ }   /* 南面這道牆一直都是整面實牆，轉視角不透明也不消失（他 11-13 13:42 指正；原本鏡頭在外面時會收成牆腳）。外皮一層水泥，跟柱子外側的水泥對齊成一面；室內那一面是深色牆 */   /* 牆往南退 12 公分（他 11-13：可以稍微往後退一點）；上緣的木飾板往室內凸出來，跟下面矮櫃的檯面同一個深度，深色牆退在中間（他 11-13：上面的木頭要推出來一點；照片 7） */
   { const top=0.88, kraft=std(0xd9b98a);   /* 牆腳前面一整排木頭矮櫃（他 11-13；照片 7、10），櫃門的分縫、櫃子上幾樣矮矮的雜物：一疊紙、筆筒、桌曆、橘色盒子、小盆栽、藍色盒子、紙箱 */
     Bx(2.65,0.13,6.95,0.4,0.85,M.wood); Bx(2.63,0.13,6.97,0.42,0.03,M.desk,0.85); for(let X=3.25;X<6.9;X+=0.6) NS(Bx(X,0.4,X+0.006,0.403,0.8,M.frame,0.03)); ob(2.63,0.13,6.97,0.42);
@@ -2773,7 +2774,7 @@ function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
     if(a.destRef!==a.dest){ a.destRef=a.dest; a.bestD=d; a.stuck=0; }
     if(d<0.06){ a.dest=null; const f=a.onArrive; a.onArrive=null; if(f) f(); }
     else { const s=Math.min(d,a.speed*dt); a.x+=dx/d*s; a.z+=dz/d*s; a.face = a.faceLock!==undefined ? a.faceLock : Math.atan2(dx,dz); moving=true; } }
-  else if(a.who!=='you' && LV.actors.you){ const p=LV.actors.you, free = !a.follower && !dlgOpen && !(a.lookT>performance.now()), busy = free && a.seated && Math.hypot(a.x-a.home.x,a.z-a.home.z)<0.3;
+  else if(a.who!=='you' && LV.actors.you){ const p=LV.actors.you, offSeat=L.office && a.seated && !a.follower, near=offSeat && Math.hypot(p.x-a.x,p.z-a.z)<1.4, inTalk=dlgOpen && (!offSeat || talkWho===a.who || near), free = !a.follower && !inTalk && !near && !(a.lookT>performance.now()),   /* 週一坐著的同事（他 11-17）：平常看電腦；有對話時只有講話的人、離你 1.4 公尺內的人轉頭；你走近也會回頭 */ busy = free && a.seated && Math.hypot(a.x-a.home.x,a.z-a.home.z)<0.3;
     a.atDesk=busy; a.atWork = free && !a.seated && !L.office && Math.hypot(a.x-a.home.x,a.z-a.home.z)<0.9 && Math.hypot(p.x-a.x,p.z-a.z)>1.6;                 // 工地：在自己的位置、你沒走近、沒在講話＝在忙
     a.face = busy ? a.deskFace : a.atWork ? Math.atan2(L.cx-a.x, 0.2-a.z) : a.waiting ? a.face : LV.boardLook && L.boardAt && !optsOpen ? Math.atan2(L.boardAt[0]-a.x, L.boardAt[1]-a.z) : Math.atan2(p.x-a.x,p.z-a.z); }   /* 北辦：題目的選項還開著＝同事看著你等你回答；選完了才轉去看牆上的圖（他 11-13） */   // 坐著的人平常面向螢幕，講話或被叫才轉過來
   if(LV.deckG && (a.who==='you' || (LV.chase && a.who===LV.chase.who))) deckStep(a);   /* 週二工務所二樓走廊、鐵樓梯 */
@@ -2980,7 +2981,9 @@ function docFx(){ const me=LV.actors.you; if(!me || !L || !L.office) return; con
   let n=0; L.steps.forEach(st=>{ if(!st.deliver && placed.has(st.id)) n++; }); const dl=L.steps.find(st=>st.deliver), sub=!!(dl && carry===dl.id), want=(n>0 || sub) && !(dl && placed.has(dl.id)) && !prank && !me.swing && !me.knock && !me.ko;
   if(want){ if(P.parent!==hold){ while(hold.children.length) hold.remove(hold.children[0]); hold.add(P); } P.userData.set(Math.min(6,n),sub); if(!me.carry){ me.carry='front'; me.grip=0.21; me.gripZ=0.15; hold.position.set(...POSE.front); hold.rotation.set(0,0,0); } P.visible = me.carry==='front'; }
   else { if(P.parent) P.parent.remove(P); if(me.carry==='front' && !carry) me.carry=null; }
-  const qs=Object.entries(LV.pallets).map(([id,q])=>[id,q]); if(LV.decoy) qs.push(['decoy',LV.decoy]); if(LV.tea) qs.push(['tea',LV.tea]); qs.forEach(([id,q])=>{ q.lb.visible = q.g.visible && !placed.has(id) && Math.hypot(me.x-q.x,me.z-q.z)<3.0; }); }
+  const qs=Object.entries(LV.pallets).map(([id,q])=>[id,q]); if(LV.decoy) qs.push(['decoy',LV.decoy]); if(LV.tea) qs.push(['tea',LV.tea]); qs.forEach(([id,q])=>{ q.lb.visible = q.g.visible && !placed.has(id) && Math.hypot(me.x-q.x,me.z-q.z)<3.0; });
+  if(!dlgOpen && !done && !(cut && cut.stage<2)) Object.values(LV.actors).forEach(a=>{ if(!a.seated || a.follower || a===me) return; const d=Math.hypot(me.x-a.x,me.z-a.z), now=performance.now();   /* 走到坐著的同事旁邊：他回頭、頭上冒一句；同一個人 15 秒內不重複（他 11-17） */
+    if(d<1.4 && !a.hiNear && !(a.hiT>now)){ a.hiNear=true; a.hiT=now+15000; const ls=((CAST[a.who]&&CAST[a.who].chat)||[]).concat(IDLE[a.who]||[]); if(ls.length) bubble(a.who, pickOne(ls)); } else if(d>2.0) a.hiNear=false; }); }
 function makePallet(st,x,z){ const g=new THREE.Group(); g.position.set(x,L.gy,z); const spec=ITEM[L.id+'.'+st.id]; let item=null, ly=1.12;
   if(spec){ g.add(box(0.85,0.1,0.85,0,0.05,0,mat.wood)); item=new THREE.Group(); const it=makeItem(spec), n = it.kind==='bar'||it.kind==='panel' ? 2 : 1;
     for(let i=0;i<n;i++){ const o = i ? makeItem(spec).g : it.g;
@@ -3641,7 +3644,7 @@ function tryInstall(){ if(done||dlgOpen||!carry) return; const st=need(), M=st.m
   if(st.q && !(M && multiN>0)) ask(st, ok=>{ if(ok){ if(L.boardAt && !st.deliver) boardTalk(); go(); } else spotArmed=false; }); else go(); }
 /* 答對之後：同事繼續看著黑板討論幾秒，隨機一個人講一句 */
 const DISCUSS=['這樣改比較合理。','嗯，同意。','早該這樣畫了。','記下來，下次別再犯。','這張圖我看了三次才看懂。'];
-function boardTalk(){ const until=performance.now()+9000, ws=Object.keys(LV.actors).filter(k=>k!=='you'); ws.forEach(k=>{ LV.actors[k].lookT=until; }); setTimeout(()=>{ if(L && L.boardAt && LV.boardLook && !done) bubble(pickOne(ws), pickOne(DISCUSS)); }, 2600); }
+function boardTalk(){ const until=performance.now()+9000, me=LV.actors.you, ws=Object.keys(LV.actors).filter(k=>k!=='you' && !(L.office && !LV.boardLook && me && Math.hypot(LV.actors[k].x-me.x,LV.actors[k].z-me.z)>1.6));   /* 週一找圖（沒有走去黑板）：答對後只有旁邊的人看你，其他人照樣看電腦（他 11-17） */ ws.forEach(k=>{ LV.actors[k].lookT=until; }); setTimeout(()=>{ if(L && L.boardAt && LV.boardLook && !done) bubble(pickOne(ws), pickOne(DISCUSS)); }, 2600); }
 function benchPick(id,btn){ if(done||dlgOpen||placed.has(id)) return;
   if(id!==need().id){ btn.classList.add('shake'); setTimeout(()=>btn.classList.remove('shake'),350); wrongOrder(id); return; }
   const st=need(); if(st.q) ask(st, ok=>{ if(ok) doPlace(); }); else doPlace(); }
@@ -3835,7 +3838,7 @@ const bubs={}, _v=new THREE.Vector3();
 function bubble(who,text,mad,pen){ const obj = who && typeof who==='object' ? who : null, a = obj ? null : LV.actors[who]; if(!a && !obj) return; const key = obj ? 'o'+obj.uuid : who;   /* who 也可以直接給一個人（背景工人） */
   let b=bubs[key]; if(!b){ b=bubs[key]={el:document.createElement('div')}; $('#bubbles').append(b.el); } b.obj=obj;
   b.el.className='bub'+(mad?' mad':''); b.el.textContent=fill(text); if(pen){ const s=document.createElement('span'); s.className='pen'; s.textContent=pen; b.el.append(s); }
-  b.el.style.display='block'; b.until=performance.now()+Math.max(4500, 2200+b.el.textContent.length*260); if(a) a.lookT=b.until; /* 照字數算：至少 4.5 秒，每多一個字多 0.26 秒 */ b.el.style.animation='none'; void b.el.offsetWidth; b.el.style.animation=''; }
+  b.el.style.display='block'; b.until=performance.now()+Math.max(4500, 2200+b.el.textContent.length*260); if(a && !(L && L.office && a.seated && !a.follower && LV.actors.you && Math.hypot(a.x-LV.actors.you.x,a.z-LV.actors.you.z)>1.6)) a.lookT=b.until;   /* 週一坐著、離你遠的同事自言自語：照樣看電腦（他 11-17） */ /* 照字數算：至少 4.5 秒，每多一個字多 0.26 秒 */ b.el.style.animation='none'; void b.el.offsetWidth; b.el.style.animation=''; }
 // 背景工人的隨機垃圾話（黑色幽默）：每 5～10 秒，挑一個畫面裡看得到、沒被敲倒的人講一句
 const CREW_TALK = { all:['檳榔加菸，法力無邊。','今天又是充實的一天，充實到想離職。','老闆說今年會加薪，我笑了一整個早上。','安全帽戴好，頭殼壞掉公司不賠的。','這進度喔，要嘛加班，要嘛加班。','聽說隔壁工地發年終，我們發便當。','主任說安全第一，進度第零。','我腰椎跟這棟樓一樣，都還在施工中。','中午吃什麼？吃土啦。','圖上畫的跟現場的，只有名字一樣。','這根柱子歪了嗎？……不要問，問了就要拆。','再撐一下就退休了。（今年二十五歲）','加班費？那是什麼？可以吃嗎？','聽說要評鑑，連廁所都要掃三遍。','工期是用來超的，預算是用來追加的。','檳榔一顆，力氣十倍，牙齒剩一半。','設計部的又下來了，八成圖又改了。','我在這做三年了，還是不知道這棟要蓋幾樓。','休息十分鐘，結果琳姊走過來了。'],
   tie:['綁一個結一塊錢的話，我早就財富自由了。','手綁到抽筋，主任還說太慢。','鋼筋綁到我晚上都夢到自己被綁。'],
