@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="80b86c95a933", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
