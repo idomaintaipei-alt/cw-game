@@ -119,7 +119,7 @@
   #patFill { display:block; height:100%; width:100%; background:var(--ok); transition:width .25s, background .25s; }
   #fail { position:fixed; inset:0; z-index:10; display:none; align-items:center; justify-content:center; padding:20px; background:radial-gradient(ellipse at center, rgba(70,8,8,.84), rgba(8,0,0,.97)); animation:failIn .6s ease-out; }
   @keyframes failIn { from { opacity:0; } }
-  #fail .inner { width:560px; max-width:100%; text-align:center; }
+  #fail .inner { width:560px; max-width:100%; text-align:center; margin:auto; }   #fail { overflow-y:auto; align-items:flex-start; }   /* 內容比畫面高（手機橫拿）：可以上下捲，不會切掉標題和按鈕；放得下時 margin:auto 一樣置中（他 11-17） */
   #fail .f1 { font-size:54px; font-weight:900; letter-spacing:10px; color:#ff4b3e; text-shadow:0 0 24px rgba(255,60,40,.55); }
   #fail .f2 { font-size:16px; color:#f3d6d2; margin-top:8px; line-height:1.6; }
   #fail .fq { display:flex; gap:14px; align-items:center; text-align:left; margin:22px auto 6px; padding:12px; border-top:1px solid #6b2a25; border-bottom:1px solid #6b2a25; }
@@ -183,6 +183,7 @@
     #dFace { width:56px; height:56px; } #dName { font-size:13px; } #dText { font-size:13px; line-height:1.45; min-height:0; } #dGloss { font-size:12px; padding:4px 7px; margin-top:4px; } #dSrc { font-size:11px; }
     #dOpts button { margin-top:4px; padding:5px 8px; font-size:13px; } #dBar { margin-top:3px; }
     #toasts { top:auto; bottom:30%; }
+    #fail { padding:8px 12px; } #fail .f1 { font-size:30px; letter-spacing:6px; } #fail .f2 { font-size:13px; margin-top:2px; line-height:1.4; } #fail .fq { margin:6px auto 2px; padding:6px; gap:10px; } #fail canvas { width:48px; height:48px; } #failLine { font-size:13px; line-height:1.4; } #failWho { font-size:11px; } #fail .f3 { font-size:11px; margin-top:4px; } #fail .row { margin-top:6px; } #fail .row button { padding:6px 8px; font-size:13px; }   /* 手機橫拿：任務失敗那頁縮小，一頁放得下（他 11-17 iPhone Safari 截圖） */
     #testTag { bottom:6px !important; left:auto !important; right:256px !important; font-size:10px !important; }
   }
 </style>
@@ -3897,9 +3898,9 @@ function crewChat(dt){ crewTalk(dt); if(!L || dlgOpen || (cut && cut.stage<2) ||
   bubble(o, pickOne(pool)); const u=o.userData, w=u.crew||{};
   if(!w.carry && !u.talk){ const arm = w.kind==='hammer' || w.kind==='phone' ? u.armL : u.armR, el=arm.userData.elbow; u.talk={left:3, t:0, arm, sd: arm===u.armL?-1:1, rx:arm.rotation.x, rz:arm.rotation.z, ex:el?el.rotation.x:0}; (LV.talkers=LV.talkers||[]).push(o); } }   /* 講的時候手比劃 3 秒 */
 function clearBubbles(){ Object.keys(bubs).forEach(k=>{ bubs[k].el.remove(); delete bubs[k]; }); }
-function placeBubbles(now){ for(const k in bubs){ const b=bubs[k], a=b.obj ? null : LV.actors[k]; if((!a && !(b.obj && b.obj.parent)) || now>b.until){ b.el.style.display='none'; continue; }
+function placeBubbles(now){ { const h=document.querySelector('header'); placeBubbles.hb = h ? h.getBoundingClientRect().bottom : 0; } for(const k in bubs){ const b=bubs[k], a=b.obj ? null : LV.actors[k]; if((!a && !(b.obj && b.obj.parent)) || now>b.until){ b.el.style.display='none'; continue; }
   if(b.obj){ b.obj.getWorldPosition(_v); _v.y+=(b.obj.userData.bubY||2.45)*b.obj.scale.y; _v.project(camera); if(_v.z>1){ b.el.style.display='none'; continue; } b.el.style.display='block'; } else   /* 背景工人：泡泡跟著他的頭；在鏡頭後面就不顯示 */
-  _v.set(a.x, gyAt(a.x,a.z)+2.32, a.z).project(camera); b.el.style.left=((_v.x+1)/2*vw())+'px'; b.el.style.top=((1-_v.y)/2*vh())+'px'; } }
+  _v.set(a.x, gyAt(a.x,a.z)+2.32, a.z).project(camera); b.el.style.left=((_v.x+1)/2*vw())+'px'; b.el.style.top=Math.max((1-_v.y)/2*vh(), (placeBubbles.hb||0)+b.el.offsetHeight+4)+'px'; } }   /* 泡泡最高只到上面資訊列的下緣（他 11-17：手機橫拿時泡泡跑到資訊列底下被蓋住） */
 let patience=100, failed=false, warned=false, patShown=100;
 function patUI(){ patShown=patience; const f=$('#patFill'); f.style.width=Math.round(patience)+'%'; f.style.background = patience>55 ? 'var(--ok)' : patience>28 ? '#ffd166' : 'var(--bad)'; }
 function thud(){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); const t0=actx.currentTime;   // 揮棒打到的聲音：一聲悶響加一聲金屬響
