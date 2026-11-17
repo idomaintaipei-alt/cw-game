@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="6321bfbd4d77", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="4f406afaa004", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -224,6 +224,22 @@
   #menu .mBg { background:radial-gradient(75% 95% at 0% 100%, rgba(50,74,158,.26), rgba(50,74,158,0) 62%), radial-gradient(55% 65% at 12% 12%, rgba(109,134,221,.20), rgba(109,134,221,0) 70%), radial-gradient(60% 70% at 88% 12%, rgba(50,74,158,.18), rgba(50,74,158,0) 70%),
     linear-gradient(100deg, #d6e0f4 0%, #e6edf9 22%, #f6f9ff 48%, #eef3fc 72%, #e0e8f8 100%); }
   #menu .mBg .mGold { display:block; left:-10vw; top:-20vh; bottom:auto; width:46vw; height:150vh; background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.55) 50%, rgba(255,255,255,0)); transform:rotate(18deg); }   /* 左邊一道斜的淡光帶 */
+
+  /* 選關背景：還是太白（他 11-17 17:02）→ 左邊週年藍、慢慢變淡到右邊 */
+  #menu .mBg { background:radial-gradient(60% 80% at 0% 100%, rgba(27,42,99,.55), rgba(27,42,99,0) 65%), radial-gradient(55% 60% at 90% 10%, rgba(50,74,158,.16), rgba(50,74,158,0) 70%),
+    linear-gradient(112deg, #2b3d7e 0%, #324a9e 18%, #5670c4 34%, #9fb2e6 50%, #d7e1f5 64%, #eef3fc 80%, #e3eaf8 100%); }
+  #menu .mBg::before { background:repeating-linear-gradient(90deg, rgba(255,255,255,.07) 0 1px, transparent 1px 48px), repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 1px, transparent 1px 48px); -webkit-mask-image:none; mask-image:none; }
+  #menu .mBg .mGold { background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.18) 50%, rgba(255,255,255,0)); }
+  #menu .mTop { width:auto; align-self:center; background:rgba(255,255,255,.92); border:1px solid rgba(50,74,158,.12); border-radius:0 0 16px 16px; padding:12px 22px 12px; margin-bottom:16px; }   /* 標誌墊白底（從最上緣垂下來的一塊） */
+  #menu .mHero { color:#fff; }
+  #menu .mHero small { color:#fff; border-color:rgba(255,255,255,.55); }
+  #menu .mHero h1 { color:#fff; }
+  #menu .mHero h1 span { background:linear-gradient(135deg, #dfe7ff, #9fb4f2); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  #menu .mHero p { color:rgba(255,255,255,.85); } #menu .mHero p::before { background:#fff; }
+  #menu .box { background:rgba(255,255,255,.95); }
+  #menu .mFoot { color:rgba(27,36,64,.55); }
+  @media (max-width:700px){ #menu .mTop { padding:10px 14px; border-radius:0 0 14px 14px; margin-bottom:12px; } }
+  @media (max-height:500px) and (orientation:landscape){ #menu .mTop { padding:5px 16px; margin-bottom:8px; border-radius:0 0 12px 12px; } }
   .lv { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px; border:1px solid var(--line); border-radius:6px; margin-top:8px; }
   .lv .n { font-size:15px; } .lv .d { font-size:12px; color:var(--dim); margin-top:3px; line-height:1.4; } .lv .best { font-size:12px; color:var(--ok); margin-top:3px; }
   .lv button { flex:none; padding:8px 14px; }
