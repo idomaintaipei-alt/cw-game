@@ -2710,7 +2710,7 @@ function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
   if(LV.down && a.who==='you' && a.liftY===undefined){ if(occBlocked(a.x,a.z,-0.02) && !occBlocked(a.px0,a.pz0,-0.02)){   /* 原本就站在擋路格子裡（他 11-16：打人後不能動）：讓他走出來，不拉回 */ if(!occBlocked(a.x,a.pz0,-0.02)) a.z=a.pz0; else if(!occBlocked(a.px0,a.z,-0.02)) a.x=a.px0; else { a.x=a.px0; a.z=a.pz0; } } }   /* 在外面：撞到東西沿著邊滑 */
   else if(!(a.who==='you' && LV.ride && LV.ride.stairs)) pushOut(a, moving, seatR(a));   /* 走樓梯：照路線走，不被四樓的東西推開 */   /* 坐著的人被推離座位：用椅子的大小擋，人和椅子不會插進桌子 */
   if(a.who==='you' && !LV.down && insideOK() && (a.x<2.75 || a.x>4.5) && a.z<0.85 && a.z>-0.15){ if(a.px0>=2.75 && a.px0<=4.5 || (a.pz0<0.85 && a.pz0>-0.15)) a.x=Math.min(4.5,Math.max(2.75,a.x)); else a.z = a.pz0>0.35 ? 0.85 : -0.15; }   /* 週二樓板門口：每一步踩到牆線就推回通道邊（斜切轉角不擦門框；他 11-16） */
-  if(a.follower && a.liftY===undefined) for(const k in LV.actors){ const o=LV.actors[k]; if(o===a || o.liftY!==undefined || !o.g.visible) continue; const dx=a.x-o.x, dz=a.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ const fx=a.x, fz=a.z; a.x+=dx/d*(0.55-d); a.z+=dz/d*(0.55-d); pushOut(a); const c=clampXZ(a.x,a.z,{x:fx,z:fz}); a.x=c.x; a.z=c.z; } }   /* 被擠開也不會擠到牆的位置上；小弟走完這一步，跟任何人都保持 55 公分（走路途中也不會擦撞） */
+  if(a.follower && a.liftY===undefined && !LV.escort) for(const k in LV.actors){   /* 開場迎接時（人在一樓）不用四樓範圍推（他 11-17：小弟一格跳上四樓） */ const o=LV.actors[k]; if(o===a || o.liftY!==undefined || !o.g.visible) continue; const dx=a.x-o.x, dz=a.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ const fx=a.x, fz=a.z; a.x+=dx/d*(0.55-d); a.z+=dz/d*(0.55-d); pushOut(a); const c=clampXZ(a.x,a.z,{x:fx,z:fz}); a.x=c.x; a.z=c.z; } }   /* 被擠開也不會擠到牆的位置上；小弟走完這一步，跟任何人都保持 55 公分（走路途中也不會擦撞） */
   if(moving && a.dest){ const d=Math.hypot(a.dest.x-a.x,a.dest.z-a.z); if(d<a.bestD-0.015){ a.bestD=d; a.stuck=0; } else if(!(LV.gates && LV.gates.some(g=>g.on && rectDist(g,a.x,a.z).d<PR+0.06))) a.stuck+=dt;   /* 被還沒開好的拉門擋著＝在等門開，不算卡住（不然等 0.4 秒就放棄不走了） */
     if(a.stuck>0.4){ a.dest=null; a.restUntil=t+0.9; moving=false; const f=a.onArrive; a.onArrive=null; if(f) f(); } }   // 一直沒有更靠近目標＝被擋住：停下，不要原地踏步
   { const want=a.speed*dt, got=Math.hypot(a.x-a.px0,a.z-a.pz0), r = moving && want>1e-6 ? Math.min(1,got/want) : 0; a.gait=(a.gait||0)+(r-(a.gait||0))*Math.min(1,dt*14); }   /* gait＝實際走了幾成（0～1）：對著牆或門一直走、被擋住走不動，就不再原地踏步（原本腳照樣前後擺，腳尖會插進門和牆；他 11-13 指正） */
@@ -3246,7 +3246,8 @@ function entryPath(kind){ const H=LV.hoist, ps=parkSpot(), door = kind==='walk' 
 function setupEscort(rd){ const fs=Object.values(LV.actors).filter(a=>a.follower); if(!fs.length) return; const kind=rd.slice(2), heli=kind==='heli', P=entryPath(kind), y=yardY();
   const a=P[0], b=P[1], L1=Math.hypot(b.x-a.x,b.z-a.z), d={x:(b.x-a.x)/L1, z:(b.z-a.z)/L1}, n={x:d.z, z:-d.x}, side = heli ? 1.1 : 0.85, E={fs, kind, P, started:false};
   const back = heli && L.yard!==undefined ? 2.4 : 0.6;   /* 直升機那條路的終點貼著樓的轉角：小弟往回站一點，不會站進牆裡 */
-  fs.forEach((f,i)=>{ const e=i?1:-1; f.x=b.x-d.x*back+n.x*side*e; f.z=b.z-d.z*back+n.z*side*e; f.g.position.set(f.x,y,f.z); f.face=Math.atan2(-d.x,-d.z); f.waiting=true; f.dest=null; f.bow=0; });
+  fs.forEach((f,i)=>{ const e=i?1:-1; f.x=b.x-d.x*back+n.x*side*e; f.z=b.z-d.z*back+n.z*side*e; f.g.position.set(f.x,y,f.z); f.face=Math.atan2(-d.x,-d.z); f.waiting=true; f.dest=null; f.bow=0;
+    if(L.yard!==undefined && LV.deckG){ const D=LV.deckG, sx=L.cx-20.75+4.1+(i?0.3:-0.3), wait={x:f.x, z:f.z, face:f.face}; f.x=sx; f.z=D.fz+0.75; f.g.position.set(f.x,y,f.z); f.face=0; f.waiting=false; f.run={wp:[{x:sx, z:D.fz+D.cd+0.9}, wait], wait, go:false}; } });   /* 他 11-17：小弟一開始在工務所門口，主角出現才跑過來（原本直接站在電梯口，沒有進場交代） */
   if(heli){ const gold=std(0xe8b923,{emissive:0x4a3500}), red=std(0xb3141c), W=new THREE.Group(), S=m=>{ W.add(m); return m; }, segs=[];
     { const LL=L1+0.7, g=new THREE.Group(); g.position.set(a.x,y,a.z); g.rotation.y=Math.atan2(d.x,d.z);                                    // 紅地毯：一整條，從機門鋪到電梯門口（一開始捲著）。做成 5 公分厚的一塊，壓在路面上面
       const m=box(1.0,0.05,LL, 0,0.045,LL/2, mat.carpet); m.castShadow=false; g.add(m); [-0.44,0.44].forEach(e=>{ const r=box(0.06,0.052,LL, e,0.045,LL/2, mat.carpetEdge); r.castShadow=false; g.add(r); }); g.scale.z=0.001; W.add(g); segs.push({g, L:LL}); }
@@ -3264,6 +3265,9 @@ function escortFx(dt,t){ const E=LV.escort; if(!E) return; const me=LV.actors.yo
   const C=E.carpet; if(C && C.go){ C.t+=dt; let left=C.t*8; C.segs.forEach(s=>{ s.g.scale.z=Math.max(0.001,Math.min(1,left/s.L)); left-=s.L; });   // 紅地毯從機門滾出去
     if(C.conf){ C.conf.forEach(q=>{ q.m.position.y=Math.max(y+0.06,q.m.position.y-dt*q.v); q.m.rotation.x+=dt*q.r; q.m.rotation.z+=dt*q.r*0.7; q.m.position.x+=Math.sin(t*2+q.r)*dt*0.3; }); } }
   E.fs.forEach((f,i)=>{ const sd=i?0.55:-0.55;
+    if(f.run){ const R=f.run; if(H && H.board){ f.run=null; if(f.speed0) f.speed=f.speed0; }   // 主角已經在電梯口了：直接跟進電梯
+      else { if(!me.g.visible){ f.dest=null; return; } if(!R.go){ R.go=true; f.speed0=f.speed; f.speed=4.0; if(i===0) bubble(f.who,'學長！等我一下！',true); }   // 主角一出現：喊一聲，從工務所跑出來
+        if(!f.dest){ const w=R.wp.shift(); if(w) f.dest={x:w.x, z:w.z}; else { f.run=null; f.speed=f.speed0||f.speed; f.face=R.wait.face; f.waiting=true; } } return; } }   // 先跑出走廊底下，再轉向電梯口站好
     if(f.waiting){ f.dest=null; if(me.g.visible && Math.hypot(me.x-f.x,me.z-f.z)<2.2){ f.waiting=false; f.bow=0.9; if(!E.hi){ E.hi=true; bubble(f.who, E.kind==='heli' ? '恭迎學長！紅地毯鋪好了！' : '學長早！我們陪你上去！', true); } } else return; }
     if(f.bow>0){ f.bow=Math.max(0,f.bow-dt); f.dest=null; return; }   // 鞠躬（姿勢在 stepActor 裡擺：從腰彎）
     if(H && H.board){ const bx=H.x+(i?0.35:-0.95), bz=H.z+0.25; if(Math.hypot(f.x-bx,f.z-bz)>0.05) f.dest={x:bx,z:bz}; return; }                  // 走進電梯
@@ -3271,7 +3275,7 @@ function escortFx(dt,t){ const E=LV.escort; if(!E) return; const me=LV.actors.yo
     if(f.liftY!==undefined && f.z<8.45) f.liftY=undefined;
     const tx=me.x-Math.sin(me.face)*0.8+Math.cos(me.face)*sd, tz=me.z-Math.cos(me.face)*0.8-Math.sin(me.face)*sd; if(Math.hypot(f.x-tx,f.z-tz)>0.3) f.dest={x:tx,z:tz}; });   // 跟在主角後面
   E.fs.forEach(f=>{ if(f.liftY!==undefined) return; Object.values(LV.actors).forEach(o=>{ if(o===f || o.liftY!==undefined || !o.g.visible) return; const dx=f.x-o.x, dz=f.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ f.x+=dx/d*(0.55-d); f.z+=dz/d*(0.55-d); } }); pushOut(f); });   /* 小弟跟任何人都保持 55 公分，不會撞在一起、也不會撞到同事 */
-  if(H && H.board){ H.bt+=dt; if(H.bt>1.2 || E.fs.every(f=>!f.waiting && Math.hypot(f.x-(H.x+(f===E.fs[0]?-0.95:0.35)),f.z-(H.z+0.25))<0.08)){ H.board=false; hoistGo(); } }   // 小弟都進來了（或等了 3 秒）就開
+  if(H && H.board){ H.bt+=dt; if(H.bt>10 || E.fs.every(f=>!f.waiting && Math.hypot(f.x-(H.x+(f===E.fs[0]?-0.95:0.35)),f.z-(H.z+0.25))<0.08)){ H.board=false; hoistGo(); } }   // 小弟都進來了（或等了 3 秒）就開
   if(E.started && (!cut || cut.stage>=2)){ E.fs.forEach(f=>{ f.liftY=undefined; f.waiting=false; f.bow=0; f.g.rotation.x=0; }); LV.escort=null; } }
 function heliWelcome(){ const E=LV.escort; if(!E || !E.carpet) return; const C=E.carpet, y=yardY(), P=E.P; C.go=true; chime('platinum');   // 直升機落地：紅地毯滾出去、彩帶、號角
   const cols=[0xff3b3b,0xffd21f,0x3bb7ff,0x3bff6e,0xff4fd8,0xffffff]; C.conf=[]; for(let k=0;k<90;k++){ const m=new THREE.Mesh(new THREE.PlaneGeometry(0.09,0.05), new THREE.MeshBasicMaterial({color:cols[k%cols.length], side:THREE.DoubleSide}));
