@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="b74710a6d14e", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="c0ce3ab711dc", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -2234,7 +2234,7 @@ const LEVELS = [
   ] },
 
 // ---------- 週五 ----------
-{ id:'L5', name:'週一　新案承接', short:'週一', office:true, roastAt:3, view:{t:[0.3,0.8,0.9], theta:-0.14, phi:0.55, dist:17.5},
+{ id:'L5', name:'週一　新案承接', short:'週一', office:true, roastAt:3, view:{t:[0.3,0.8,0.9], theta:-0.14, phi:0.55, dist:11},   /* 他 11-17：固定視角太遠 → 17.5 拉近到 11 */
   boardAt:[BB.x(SCR.X),BB.z(SCR.Y)], boardCam:{theta:Math.PI, phi:1.15, dist:5.6},   /* 黑板的位置；走到黑板前面時鏡頭轉到北邊看板面 */
   area:{x0:BB.x(0), x1:BB.x(11.71), z0:BB.z(9.75), z1:BB.z(0)},   /* 走得到的範圍：整棟。牆、玻璃、家具各自當障礙物；會議室、老闆辦公室、茶水間都走得進去（他 11-13），左邊的原有廁所門關著 */
   decoyAt:[BB.x(8.55),BB.z(6.85)], teaAt:[BB.x(9.97),BB.z(4.40)],   /* 茶水間那疊也是假的（他 11-17：跟廁所一樣的陷阱） */   /* 假的那疊：廁所洗手台上（原本是立牌，站在廁所中間） */   /* 假的檢討立牌：在廁所裡面，騙人進去（他 11-13） */
@@ -3137,7 +3137,7 @@ cvs.addEventListener('pointermove',e=>{ if(!touches.has(e.pointerId)) return; to
   if(pinch.mode==='zoom'){ dist=Math.min(maxD,Math.max(minD,pinch.dist*pinch.d/d)); if(talkCam) talkCam.zoomed=true; } else panBy(mx-pinch.mx, my-pinch.my); pinch.mx=mx; pinch.my=my; });
 ['pointerup','pointercancel'].forEach(ev=>cvs.addEventListener(ev,e=>{ touches.delete(e.pointerId); if(touches.size<2) pinch=null; }));
 const offLock=()=>!!(L && L.office && camHome && !(cut && cut.stage<2) && !LV.animBusy);   /* 週一：鏡頭高度、遠近固定（他 11-17：一直拉近拉遠會頭昏） */
-let camHome=null; function camReset(){ if(!camHome) return; carryT=performance.now(); userCamT=0; target.set(...camHome.t); camGoal={theta:camHome.theta, phi:camHome.phi, dist:camHome.dist}; }   // 鏡頭回正
+let camHome=null; function camReset(){ if(!camHome) return; carryT=performance.now(); userCamT=0; target.set(...camHome.t); if(L && L.office && LV.actors.you){ target.x=LV.actors.you.x; target.z=LV.actors.you.z; }   /* 週一：回正＝回到主角身上 */ camGoal={theta:camHome.theta, phi:camHome.phi, dist:camHome.dist}; }   // 鏡頭回正
 cvs.addEventListener('pointermove',e=>{ if(!pd) return; let dx=e.clientX-pd.x, dy=e.clientY-pd.y; if(!dragged && Math.hypot(dx,dy)<(pd.touch?12:5)) return; dragged=true; camGoal=null; userCamT=performance.now(); if(talkCam) talkCam.free=true;
   if(pd.touch){ if(!pd.axis) pd.axis = Math.abs(dx)>=Math.abs(dy) ? 'h' : 'v'; if(pd.axis==='h') dy=0; else dx=0; dx*=0.8; dy*=0.8; }   /* 手機：一次只轉左右或上下，轉慢一點 */
   if(pd.pan && camHome){ const k=dist*0.0016, sn=Math.sin(theta), cs=Math.cos(theta), lim=(v,c)=>{ const R0 = L && L.yard!==undefined ? 32 : 18; return Math.min(c+R0,Math.max(c-R0,v)); };   /* 平移範圍：週二工地大，放寬 */                   // 平移：畫面跟著滑鼠走，離原位最多 18 公尺
@@ -3823,6 +3823,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
   $('#camBtns').classList.toggle('offHide', !!L.office);
   if(LV.room) maxD=Math.min(maxD,15);
   if(vw()<vh() && LV.room) phi=Math.min(phi,0.78);   // 手機直著拿：畫面窄，鏡頭拉遠一點；室內被牆擋住拉不遠，就改成從高一點往下看
+  if(L.office && L.startAt) target.set(L.startAt[0], target.y, L.startAt[1]);   /* 週一鏡頭拉近了：一開場畫面中心放在主角身上 */
   camHome={t:[target.x,target.y,target.z], theta, phi, dist};
   if(typeof touchHud==='function') touchHud();
   $('#lvTitle').textContent=L.name; $('#stepN').textContent=L.steps.length; hideDayEnd(); $('#menu').style.display='none';
