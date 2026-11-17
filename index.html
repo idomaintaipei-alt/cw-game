@@ -2738,7 +2738,7 @@ function seatR(a){ return a.seated && !a.dest && Math.hypot(a.x-a.home.x,a.z-a.h
 function pushOut(a,slide,R=PR){ const G=LV.gates && LV.gates.filter(g=>g.on); for(const o of (G && G.length ? LV.obs.concat(G) : (LV.obs||[]))){   /* 還沒開好的拉門也擋人 */ const q=rectDist(o,a.x,a.z); if(q.d>=R) continue; let nx, nz;                      // 把人推出障礙物外
     if(q.d>1e-4){ nx=q.ex/q.d; nz=q.ez/q.d; a.x+=nx*(R-q.d); a.z+=nz*(R-q.d); }
     else { const px=o.hx-Math.abs(q.dx), pz=o.hz-Math.abs(q.dz); if(px<pz){ nx=Math.sign(q.dx)||1; nz=0; a.x=o.x+nx*(o.hx+R); } else { nx=0; nz=Math.sign(q.dz)||1; a.z=o.z+nz*(o.hz+R); } }
-    if(slide && a.dest && !o.set){ const tx=-nz, tz=nx, sg=(tx*(a.dest.x-a.x)+tz*(a.dest.z-a.z))>=0 ? 1 : -1; a.x+=tx*sg*0.03; a.z+=tz*sg*0.03; } } }   // 撞上就沿著邊滑過去
+    if(slide && a.dest && !o.set){ const tx=-nz, tz=nx, tp=tx*(a.dest.x-a.x)+tz*(a.dest.z-a.z), sl=Math.min(0.03,Math.abs(tp)), sg=tp>=0 ? 1 : -1; a.x+=tx*sg*sl; a.z+=tz*sg*sl; }   /* 沿著邊滑：最多滑到目標正前方那一點（他 11-17：原本固定滑 3 公分，目標在桌子、牆正後面時會滑過頭再滑回來，人一直左右抖） */ } }   // 撞上就沿著邊滑過去
 function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
   if(a.dest){ const dx=a.dest.x-a.x, dz=a.dest.z-a.z, d=Math.hypot(dx,dz);
     if(a.destRef!==a.dest){ a.destRef=a.dest; a.bestD=d; a.stuck=0; }
@@ -3601,6 +3601,7 @@ function tryPick(id){ if(done||dlgOpen||placed.has(id)) return; if(prank){ say([
   if(spec){ const it=makeItem(spec), bb=new THREE.Box3().setFromObject(it.g); me.grip=Math.min(bb.max.x,-bb.min.x); me.gripZ=-bb.min.z;   /* 料的背面離手掌中心多遠（L 型固定片前後不對稱） */   /* 手握的寬度：兩邊比較窄的那邊（矽利康管一頭有尖嘴） */ hold.add(it.g); hold.position.set(...POSE[it.pose]); hold.rotation.set(0, it.pose==='side' ? Math.PI/2 : 0, it.pose==='overhead'||it.pose==='upright' ? Math.PI/2 : 0);   /* 大板立起來夾在身側；直料放倒，跟橫料一樣兩手握兩端 */ me.carry=it.pose; LV.pallets[id].item.visible=false; } else me.carry=null;
   fan('offer',0.4); if(L.office && LV.pallets[id]) LV.pallets[id].g.visible=false;   /* 週一：桌上那疊拿走了 */
   const st=need(); spot.position.set(st.spot[0], gyAt(st.spot[0],st.spot[1]), st.spot[1]); spot.visible=true; spotArmed=true; showGhost(id); setGoal();
+  if(L.office && st.deliver){ say([{who:L.boss, t:'施工圖都在這了！整疊抱去**大門口**送審，藍圈那邊。'}], ()=>{ talkCam=null; const me=LV.actors.you; target.set((me.x+spot.position.x)/2, target.y, (me.z+spot.position.z)/2); if(camHome) camGoal={theta:camHome.theta, phi:camHome.phi, dist:camHome.dist}; userCamT=performance.now(); }); LV.onPhone=true; }   /* 他 11-17：點了施工圖那疊沒反應（藍圈在很遠的大門口，畫面上看不到）→ 小安講一句，講完鏡頭退回平常的角度、畫面中心放在你和大門口藍圈中間，兩個都看得到；講話時鏡頭不拉去小安那邊 */
   if(st.in) camGoal={theta:2.7, phi:0.95, dist:9.5}; buildSpotOcc(); ensureSpotVisible(); }                                 // 室內側的工作：鏡頭轉到室內看
 let multiN=0;                                                                         // 要放好幾個位置的步驟（預埋件）：現在放到第幾個
 function tryInstall(){ if(done||dlgOpen||!carry) return; const st=need(), M=st.multi;
