@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="2941b041551e", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="fbc4d9ad68c0", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -3891,7 +3891,7 @@ const CARD = {
   L4:['週五', '工地的最後一天。隔壁廠房，三明治板外牆。', '據說今天可以準時下班。', '這是你這禮拜聽過最好笑的笑話。'],
 };
 const cardSeen=new Set(); let cardNext=null;
-function showCard(lines, then){ const el=$('#card'), tx=$('#cardTxt'); tx.innerHTML=''; el.style.display='flex'; requestAnimationFrame(()=>el.classList.add('on')); let i=0, timer=null, closing=false;
+function showCard(lines, then, instant){ const el=$('#card'), tx=$('#cardTxt'); tx.innerHTML=''; el.style.display='flex'; if(instant){ el.style.transition='none'; el.classList.add('on'); void el.offsetWidth; el.style.transition=''; } else requestAnimationFrame(()=>el.classList.add('on'));   /* instant＝一出來就全黑（進關卡：他 11-17 說淡入的時候場景會先露出一兩秒） */ let i=0, timer=null, closing=false;
   const finish=()=>{ if(closing) return; closing=true; clearTimeout(timer); cardNext=null; el.classList.remove('on'); setTimeout(()=>{ el.style.display='none'; then(); }, 500); };
   const step=()=>{ clearTimeout(timer); if(i>=lines.length){ finish(); return; } const d=document.createElement('div'), ln=fill(lines[i]).replace(/。$/,''), mm=i>0 && /^(\d+) (.+)$/.exec(ln); if(mm && !/　\d/.test(ln)){ d.className='step'; const b=document.createElement('b'); b.textContent=mm[1]; const sp=document.createElement('span'); phrases(sp, mm[2]); d.append(b,sp); } else phrases(d, ln); if(i===0) d.className='big';   /* 一行一步：編號一欄、內容靠左（他 11-16） */   /* 旁白每行最後不加句號 */ tx.append(d); i++; timer=setTimeout(step, i>=lines.length ? 2200 : d.className==='step' ? 900 : 1500); };
   cardNext=step; step(); }
@@ -3950,7 +3950,7 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
   if(Object.values(LV.actors).some(a=>a.follower)) award('misc.fan');
   const go=()=>{ t0=Date.now(); lastAct=performance.now(); say(intro, ()=>{ fan('hello',1); if(L.zoomIn) camGlide(L.zoomIn); }); }, ride=skinState().ride;
   const begin=()=>{ if(!L.bench && !L.office && !L.indoor && ride!=='r_walk') runEntrance(ride.slice(2), go); else if(L.yard!==undefined){ cut={kind:'walk', t:0, stage:0, then:go}; climbIn(); } else go(); };
-  if(CARD[L.id] && !cardSeen.has(L.id)){ cardSeen.add(L.id); showCard(CARD[L.id], begin); } else begin(); }      // 過場字卡每一關只播一次，重玩不再播
+  if(CARD[L.id] && !cardSeen.has(L.id)){ cardSeen.add(L.id); showCard(CARD[L.id], begin, true); } else begin(); }      // 過場字卡每一關只播一次，重玩不再播
 
 // ===================== 點擊與鍵盤 =====================
 const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(), gplane=new THREE.Plane(new THREE.Vector3(0,1,0),0), hitPt=new THREE.Vector3();
