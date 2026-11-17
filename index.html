@@ -317,6 +317,9 @@ const CAST = {
   lin:{ name:'琳姊', role:'品管兼勞安', helmet:0xf2f2f2, vest:0xe6df3c, skin:0xf3d1b0, feat:{glasses:true, ponytail:true, bangs:true},
     bio:'永遠夾著一塊板夾。開異常單不眨眼，但每一張都寫得讓你心服口服。', quote:'「我不是找你麻煩，我是在找麻煩。」',
     chat:['沒事不要靠近我，我的筆會自己動。','異常單不是罰單，是下一個人的保命符。','你做對的時候，我其實都有看到。'] },
+  awei:{ name:'阿偉', role:'廠務', helmet:0xf2f2f2, vest:0x3f7f86, shirt:0xeef3f7, skin:0xf2d2b6, feat:{glasses:true},   /* 他 11-17：管工廠的同事，男生，戴書生眼鏡的斯文男 */
+    bio:'說話慢慢的，戴一副細框眼鏡。每一張圖他都會先問一句：這個，工廠做得出來嗎？', quote:'「圖畫得出來，機器不一定做得出來。」',
+    chat:['型材要怎麼加工、怎麼組，圖上要看得懂。','設備做不到的，畫再漂亮也沒用。','有問題先來問我，比做壞了再改便宜。'] },
   an:{ name:'小安', role:'設計部學姊', helmet:0xf2f2f2, vest:0x8a5bd6, skin:0xf5d3b5, feat:{glasses:true, bob:true, bangs:true},
     bio:'大你兩屆。Revit 快捷鍵用得比筷子熟。曾把鋁料切成一百多段再黏回去，白做兩天，從此立誓。', quote:'「直的永遠贏。」',
     chat:['交接的地方有縫，十次有九次是有人一刀切平。','我的螢幕上貼著一張紙：不准切碎。','加油，我當年比你慘多了。'] },
@@ -324,18 +327,20 @@ const CAST = {
     bio:'話少，手穩。一片板放上去，不用量也知道歪多少。但他還是每一片都量。', quote:'「第一片歪，後面全歪。」',
     chat:['……嗯。','……板，要輕放。','……（遞給你一瓶水）'] },
 };
-const PRAISE = { tie:['嗯，還行。','答對。但是不會加薪。','算你有讀書。讀書也沒有比較好賺。'], lin:['很好，這張我不用開了。先留著，下次用。','可以。','答對。我今天的業績又少一張。'], an:['對！就是這樣！可惜答對沒有獎金。','沒錯沒錯！','你懂了！懂了也是領一樣的錢。'], kun:['……嗯。（點頭）','……對。','……可以。'] };
+const PRAISE = { awei:['對，工廠做得出來就好辦。','嗯，這樣我回去好交代。','謝謝，你有在想工廠。'], tie:['嗯，還行。','答對。但是不會加薪。','算你有讀書。讀書也沒有比較好賺。'], lin:['很好，這張我不用開了。先留著，下次用。','可以。','答對。我今天的業績又少一張。'], an:['對！就是這樣！可惜答對沒有獎金。','沒錯沒錯！','你懂了！懂了也是領一樣的錢。'], kun:['……嗯。（點頭）','……對。','……可以。'] };
 const NCRBARK = ['品質異常單，一張。從你的考績扣，不是從公司的獲利扣。','簽名，這裡。這張會跟著你到退休，如果你退得了的話。','我寫字很快的喔。公司只有這件事有效率。','筆已經在動了。它比你的薪水動得快。'];
 // 撞到同事的反應：[第一次提醒, 第二三次生氣, 第四次起爆炸＋扣分]
 const BUMP = {
   tie:[['欸，看路。','借過不會講喔？'], ['是在撞三小！','靠北，我的腰！','你是推土機喔？'], ['靠北啊！再撞一次你去掃廁所！','幹！我的涼的灑了啦！']],
   lin:[['……借過要說。','小心一點。'], ['手放哪？！你在幹嘛！','欸！推什麼推！'], ['手摸哪！你在幹嘛！','再碰一次，我連你去年的圖都翻出來查。']],
+  awei:[['啊，抱歉抱歉。','小心喔。'], ['欸……你撞到我了。','走路要看前面喔。'], ['我的圖都被你撞歪了……','再撞，我要跟小安講了喔。']],
   an:[['哎唷！','嚇我一跳！'], ['欸！你故意的齁！','很痛欸！走路看路啦！'], ['手摸哪啦！我要跟鐵叔講！','{P}！！你完蛋了！']],
   kun:[['……。','……嗯？'], ['……嘖。','……（瞪）'], ['……再撞，板子你自己扛。','……（默默捲起袖子）']],
   di:[['學長小心！','啊，學長對不起！'], ['學長……你撞到我了啦。','學長是故意的嗎……'], ['學長！我也是有脾氣的！','學長，我要跟小安姊講喔！']],   // 小弟：週一坐在位子上，被撞到也會講話
   hao:[['學長好！（被撞）','欸欸，學長慢走。'], ['學長，我的筆記掉了啦！','學長你今天火氣好大……'], ['學長，我不幫你占位置了喔！','學長！！我筆記都寫歪了！']],
 };
 const IDLE = {
+  awei:['這支料的模具，工廠還沒開。','（推了一下眼鏡）','加工圖要寫清楚，工廠才不會打電話來。','今天工廠又來問尺寸了。'],
   tie:['年終？那是傳說。','我三十年前也以為，做五年就能買房。','便當又漲十塊，薪水沒有。','腰好痠。勞保不知道賠不賠。'],
   lin:['異常單不會讓我升官，但會讓你記得我。','（筆在板夾上敲）','零缺點是口號，缺點是日常。','我都有在看喔。這是我唯一的樂趣。'],
   an:['下班？那是什麼，能吃嗎？','Ctrl+S、Ctrl+S……存檔比存錢容易。','責任制的意思是，責任都在你。','好想喝珍奶。月底了，喝水。'],
@@ -349,7 +354,7 @@ const NAG = { tie:'發呆喔？公司不是請你來看風景的。', lin:'發�
 const FINAL = { tie:'{P}！最後一次警告。再鬧，你就回家。', lin:'最後警告。下一張不是異常單，是停工單。', an:'{P}，不要再鬧了，鐵叔在看了啦！', kun:'……最後一次。' };
 const KICK_HIT = { lin:'{V}已經送醫院了。{P}，你完了。{V}的家人已經決定告到底，公司這邊即刻資遣。職場霸凌，零容忍！', tie:'{V}送醫院了！{P}，你完了！{V}的家人已經決定告到底了！職場霸凌，零容忍！', an:'{V}被救護車載走了……{P}，你完了。{V}的家人已經決定告到底了……你保重。', kun:'……{V}送醫院了。你完了。他家人，要告到底。' };   /* 他 11-13 15:45：是被打的人的家人要告到底，不是講話的人要去告 */   /* 他 11-13 14:41：要戲劇化——資遣、貸款告到底、職場霸凌零容忍 */   /* 拿球棒敲了人：被敲的那個人已經送醫院，由別的同事出來講（他 11-13 指正） */
 const KICK = { tie:'夠了！{P}，東西收一收，今天不用做了。', lin:'行為異常，停工處分。請你離開工地。', an:'我真的要跟鐵叔講了。……鐵叔！！', kun:'……出去。' };
-const ANNOY = { tie:'你很閒喔？去做事！', lin:'聊天也算工時嗎？', an:'好啦好啦，先做事啦～', kun:'……（指了指棧板）' };
+const ANNOY = { awei:'……我手上這張還沒看完喔。', tie:'你很閒喔？去做事！', lin:'聊天也算工時嗎？', an:'好啦好啦，先做事啦～', kun:'……（指了指棧板）' };
 const WHY = { bump:'你一直撞同事，被請出工地。', long:'你扛著料撞到人，被請出工地。', chat:'你一直纏著同事聊天，被請出工地。' };
 // 小弟的名字和造型：每次開遊戲隨機抽兩個（不重複）
 const FAN_LOOK = { '阿志':{feat:{glasses:true, towel:true}}, '阿志弟':{feat:{glasses:true, bangs:true}}, '阿豪':{feat:{shades:true, stubble:true}}, '志龍':{feat:{mullet:true, floral:true, belt:true, flare:true, whiteshoes:true}},   // 《艋舺》李志龍：狼尾頭、花襯衫、白腰帶、喇叭褲、白布鞋
@@ -1254,11 +1259,32 @@ function label(text,color,x,y,z,h=0.3){ const c=document.createElement('canvas')
   g.fillStyle=color; g.fillRect(0,0,w,110); g.fillStyle='#fff'; g.font='bold 52px "Microsoft JhengHei",sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,w/2,58);
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c)})); sp.scale.set(h*w/110,h,1); sp.position.set(x,y,z); return sp; }
 
+/* 會照出東西的鏡子（他 11-17：廁所的鏡子要照得出走過去的人，不能只是灰灰一片）：照 three.js r128 範例的 Reflector，
+   從鏡子另一邊對稱的位置再拍一次畫面貼到鏡面上；近裁切面斜切到鏡面上（Lengyel 的 oblique near-plane clipping），鏡子後面的牆不會被拍進去。
+   每格多拍一次畫面比較吃效能：你在 near 公尺內才每格拍，離得遠每 15 格拍一次 */
+function makeMirror(w,h,near=4){ const rt=new THREE.WebGLRenderTarget(512, Math.round(512*h/w), {minFilter:THREE.LinearFilter, magFilter:THREE.LinearFilter, format:THREE.RGBFormat}), tm=new THREE.Matrix4();
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.ShaderMaterial({ uniforms:{ tDiffuse:{value:rt.texture}, textureMatrix:{value:tm} },
+    vertexShader:'uniform mat4 textureMatrix; varying vec4 vUv; void main(){ vUv=textureMatrix*vec4(position,1.0); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+    fragmentShader:'uniform sampler2D tDiffuse; varying vec4 vUv; void main(){ vec3 c=texture2DProj(tDiffuse,vUv).rgb; gl_FragColor=vec4(c*0.9+vec3(0.025,0.035,0.045),1.0); }' }));   /* 照出來的畫面稍微暗一點、帶一點點冷色，看得出是鏡子 */
+  const vc=new THREE.PerspectiveCamera(), N=new THREE.Vector3(), P=new THREE.Vector3(), C=new THREE.Vector3(), R=new THREE.Matrix4(), look=new THREE.Vector3(), V=new THREE.Vector3(), T=new THREE.Vector3(), pl=new THREE.Plane(), cp=new THREE.Vector4(), q=new THREE.Vector4();
+  let n=0, done=false; m.userData.mirror=true; m.castShadow=false; m.receiveShadow=false;
+  m.onBeforeRender=(renderer,scene,camera)=>{ if(m.userData.busy) return; const me=LV.actors && LV.actors.you; P.setFromMatrixPosition(m.matrixWorld);
+    if(done && !(me && Math.hypot(me.x-P.x,me.z-P.z)<near) && (++n)%15) return;   /* 離得遠：每 15 格才拍一次 */
+    C.setFromMatrixPosition(camera.matrixWorld); R.extractRotation(m.matrixWorld); N.set(0,0,1).applyMatrix4(R); V.subVectors(P,C); if(V.dot(N)>0) return;   /* 從鏡子背面看：不用拍 */
+    V.reflect(N).negate().add(P); R.extractRotation(camera.matrixWorld); look.set(0,0,-1).applyMatrix4(R).add(C); T.subVectors(P,look).reflect(N).negate().add(P);
+    vc.position.copy(V); vc.up.set(0,1,0).applyMatrix4(R).reflect(N); vc.lookAt(T); vc.far=camera.far; vc.updateMatrixWorld(); vc.projectionMatrix.copy(camera.projectionMatrix);
+    tm.set(0.5,0,0,0.5, 0,0.5,0,0.5, 0,0,0.5,0.5, 0,0,0,1); tm.multiply(vc.projectionMatrix); tm.multiply(vc.matrixWorldInverse); tm.multiply(m.matrixWorld);
+    pl.setFromNormalAndCoplanarPoint(N,P); pl.applyMatrix4(vc.matrixWorldInverse); cp.set(pl.normal.x,pl.normal.y,pl.normal.z,pl.constant); const e=vc.projectionMatrix.elements;
+    q.x=(Math.sign(cp.x)+e[8])/e[0]; q.y=(Math.sign(cp.y)+e[9])/e[5]; q.z=-1; q.w=(1+e[10])/e[14]; cp.multiplyScalar(2/cp.dot(q)); e[2]=cp.x; e[6]=cp.y; e[10]=cp.z+1; e[14]=cp.w;
+    const rt0=renderer.getRenderTarget(), sh=renderer.shadowMap.autoUpdate; m.visible=false; m.userData.busy=true; renderer.shadowMap.autoUpdate=false; renderer.setRenderTarget(rt); renderer.state.buffers.depth.setMask(true); if(renderer.autoClear===false) renderer.clear();
+    renderer.render(scene,vc); renderer.setRenderTarget(rt0); renderer.shadowMap.autoUpdate=sh; m.userData.busy=false; m.visible=true; done=true; };
+  return m; }
+
 // ===================== 關卡容器 =====================
 const LV = { group:null, parts:{}, refs:{}, pallets:{}, pick:[], actors:{} };
 const anims = [];
 function resetGroup(){ if(LV.group){ scene.remove(LV.group); LV.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.talkers=[]; LV.obs=[]; LV.raise=null; LV.cuts=null; LV.dog=null; LV.gates=null; combo=null; LV.wc=null; LV.boardTurned=false; LV.decoy=null; LV.animBusy=false; LV.chase=null; LV.duel=null;   /* 北辦的台階、收起來的牆、恰恰：換關要清掉，不然別關的地面會在同一個位置被墊高 */ LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.down=false; LV.occ=null; LV.smash=null; LV.call=null; LV.ride=null; LV.rideArm=true; LV.myRide=null; LV.smashRects=[]; LV.bribed=new Set(); LV.cash=null; LV.cashFx=false; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
+  LV.group=new THREE.Group(); scene.add(LV.group); LV.host=null; LV.talkers=[]; LV.obs=[]; LV.raise=null; LV.cuts=null; LV.dog=null; LV.gates=null; combo=null; LV.wc=null; LV.boardTurned=false; LV.decoy=null; LV.tea=null; LV.tc=null; LV.animBusy=false; LV.chase=null; LV.duel=null;   /* 北辦的台階、收起來的牆、恰恰：換關要清掉，不然別關的地面會在同一個位置被墊高 */ LV.parts={}; LV.refs={}; LV.pallets={}; LV.pranks={}; LV.down=false; LV.occ=null; LV.smash=null; LV.call=null; LV.ride=null; LV.rideArm=true; LV.myRide=null; LV.smashRects=[]; LV.bribed=new Set(); LV.cash=null; LV.cashFx=false; LV.orbit=null; LV.room=null; LV.fx=[]; LV.hoist=null; LV.hoisting=false; LV.welcome=null; LV.escort=null; LV.holdKeep=null; LV.holdCache=null; if(typeof occOn!=='undefined') occOn.clear(); if(typeof hsCache!=='undefined') hsCache=null; LV.pick=[]; talkCam=null; talkWho=null; LV.actors={}; anims.length=0; }
 function part(id){ return LV.parts[id] || (LV.parts[id]={meshes:[],ghosts:[]}); }
 function ghostOf(id, mesh){ if(mesh.isSprite) return; const gh=new THREE.Mesh(mesh.geometry, mat.ghost); gh.position.copy(mesh.position); gh.rotation.copy(mesh.rotation); gh.visible=false; (LV.host||LV.group).add(gh); part(id).ghosts.push(gh); }
 function add(id, mesh){ mesh.visible=false; mesh.userData.home=mesh.position.clone(); (LV.host||LV.group).add(mesh); part(id).meshes.push(mesh); ghostOf(id,mesh); return mesh; }
@@ -1407,10 +1433,10 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
   Bx(1.13,9.44,2.62,9.5,0.86,M.frame,0.93); NS(Bx(1.17,9.43,2.58,9.445,0.78,std(0x16263a,{emissive:0x0c1a2c}),0.97)); NS(Bx(1.6,9.43,2.15,9.5,0.07,M.paint,1.82)); NS(Bx(1.18,9.26,2.57,9.5,0.32,M.white,2.2)); NS(Bx(1.24,9.25,2.51,9.262,0.03,M.paint,2.22));   /* 冷氣跟電視差不多寬、掛在電視正上方（他 11-13） */   /* 大電視（約 65 吋）、上面的視訊鏡頭、冷氣 */
   /* 老闆辦公室（植栽那一間；分機 1801、1802、1803）：植栽櫃、主機、兩張桌子；北邊一排高櫃 */
   Bx(3.46,5.18,3.54,6.26,H,M.conc); Bx(3.54,5.18,4.12,5.26,H,M.conc); Bx(5.39,5.18,6.97,5.26,2.41,M.conc); XW(Bx(6.97,5.26,7.09,9.17,H,M.conc));   /* 廁所西牆：擋到人也不變透明（他 11-13：面壁思過不能有透視） */
-  XW(NS(Bx(4.12,4.68,6.97,5.3,H-2.41,M.frame,2.41)));
-  { const bk=std(0x1b1d22); stat(box(0.2,0.1,0.16, gx(6.78),y0+2.55,gz(4.5), bk)); stat(box(0.03,0.3,0.03, gx(6.78),y0+2.75,gz(4.5), bk)); stat(box(0.1,0.01,0.1, gx(6.78),y0+H-0.005,gz(4.5), bk)); stat(box(0.05,0.004,0.01, gx(6.78),y0+2.498,gz(4.5)+0.06, std(0x8a8f96)));   /* 喇叭往下吊（他 11-13：整顆露出來，不要切一半）：吊桿 30 公分，喇叭在樑底下一點 */   /* 喇叭（他 11-13 拍的照片）：黑色小方盒直接固定在天花板上，在辦公區這側、樑和東邊紅磚柱交會的角落旁，放音樂給大家聽 */
-    [0,0.022,0.044].forEach(d=>stat(cyl(0.009,(6.97-6.0)*K,'x',gx(6.485),y0+H-0.012-d,gz(4.68)+0.012,bk,6)));   /* 旁邊天花板一個圓形灑水頭／偵測器；三條黑色電線沿著樑邊走到柱頂 */
-    NS(Bx(7.15,4.666,7.27,4.68,0.13,M.white,1.45)); NS(Bx(7.17,4.662,7.25,4.666,0.05,std(0x9aa59a),1.51)); }   /* 紅磚柱正面：白色的冷氣控制面板 */   /* 樑斷在紅磚柱的西面（他 11-13 截圖畫紅框）：往西到玄關牆那一小段拿掉 */ XW(NS(Bx(6.97,4.68,7.51,5.26,H-2.41,M.frame,2.41)));   /* 樑擋到主角也不變透明（他 11-13：黑色樑在某一視角會突然消失） */   /* 這面牆上面是一整根黑色的梁，跨在兩根紅磚柱上面，柱子只到梁底（他 11-13：影印機上面的梁是全黑的、柱頂到梁；照片 13）。顏色跟辦公區中間那根鋼板柱一樣的深灰：試過純黑，他說太黑 */
+  /* 他 11-17 13:33：兩根紅磚柱中間那根黑色的樑、吊著的喇叭、沿著樑的電線都拿掉 */
+  {   /* 喇叭往下吊（他 11-13：整顆露出來，不要切一半）：吊桿 30 公分，喇叭在樑底下一點 */   /* 喇叭（他 11-13 拍的照片）：黑色小方盒直接固定在天花板上，在辦公區這側、樑和東邊紅磚柱交會的角落旁，放音樂給大家聽 */
+      /* 旁邊天花板一個圓形灑水頭／偵測器；三條黑色電線沿著樑邊走到柱頂 */
+    NS(Bx(7.15,4.666,7.27,4.68,0.13,M.white,1.45)); NS(Bx(7.17,4.662,7.25,4.666,0.05,std(0x9aa59a),1.51)); }   /* 紅磚柱正面：白色的冷氣控制面板 */   /* 樑斷在紅磚柱的西面（他 11-13 截圖畫紅框）：往西到玄關牆那一小段拿掉 */   /* 這面牆上面是一整根黑色的梁，跨在兩根紅磚柱上面，柱子只到梁底（他 11-13：影印機上面的梁是全黑的、柱頂到梁；照片 13）。顏色跟辦公區中間那根鋼板柱一樣的深灰：試過純黑，他說太黑 */
   NS(Bx(4.49,5.185,5.39,5.27,0.06,M.conc,2.35));   /* 老闆辦公室的門口：紅磚柱到米色拉門之間這一格是開著的（照片 13、11-13 的影片：看得到裡面的龜背芋和層板，沒有玻璃）；上面一條淺色門框，再上面是黑梁。原本做成一片玻璃，人進不去、身體還會插進玻璃 */
   { const dr=NS(Bx(5.39,5.11,6.45,5.17,2.35,std(0xdccfb6))); NS(Bx(5.47,5.095,5.5,5.115,0.5,M.frame,0.85)); NS(Bx(4.49,5.1,6.97,5.18,0.05,M.frame,2.35)); }   /* 門口右邊：米色拉門（他 11-13 說那一片是米色拉門），平常推開停在這裡；黑色把手、上面的軌道 */
   /* 老闆辦公室北邊（照他 11-13 給的照片 Allent辦公室）：左邊一格有燈的開放書架 → 紅磚柱（他確認過是紅磚）→ 右邊大書櫃：下面是有門的矮櫃＋檯面（放一疊疊圖紙），中間兩層有燈的開放層板（檔案夾、書、相框、小盆栽），最上面一排深色格子 */
@@ -1487,6 +1513,9 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
   LV.fx.push(dt=>{ const me=LV.actors.you; if(!me || done || failed) return; const X=me.x/K+5.855, Y=4.875-me.z/K, w=LV.wc||(LV.wc={t:0,n:0}); if(!(X>7.09 && X<8.86 && Y>6.36 && Y<9.55)){ w.t=0; w.n=0; return; } w.t+=dt;   /* 躲在廁所：連續待 25 秒＝任務失敗（他 11-13） */
     if(w.n===0 && w.t>1){ w.n=1; bubble('you','（全公司唯一沒有 KPI 的地方。）',true); } if(w.n===1 && w.t>10){ w.n=2; bubble('you','（外面好像有人在叫我的名字……再五分鐘。）',true); } if(w.n===2 && w.t>18){ w.n=3; bubble('you','（手機剩 3%。這是一種訊號。）',true); }
     if(w.t>25){ w.t=-1e9; award('misc.toilet'); failMission(null,'toilet'); } });
+  LV.fx.push(dt=>{ const me=LV.actors.you; if(!me || done || failed || !L.teaAt) return; const X=me.x/K+5.855, Y=4.875-me.z/K, w=LV.tc||(LV.tc={t:0,n:0}); if(!(X>9.0 && X<11.51 && Y>4.02 && Y<6.53)){ w.t=0; w.n=0; return; } w.t+=dt;   /* 窩在茶水間：連續待 25 秒＝任務失敗（他 11-17：跟廁所一樣的陷阱） */
+    if(w.n===0 && w.t>1){ w.n=1; bubble('you','（咖啡的味道，比圖好聞多了。）',true); } if(w.n===1 && w.t>10){ w.n=2; bubble('you','（再一杯就好。……這是第三杯了。）',true); } if(w.n===2 && w.t>18){ w.n=3; bubble('you','（外面好像有人在找我……先把這杯喝完。）',true); }
+    if(w.t>25){ w.t=-1e9; award('misc.tea'); failMission(null,'tea'); } });
   wob(7.09,6.31,7.17,7.11); ob(8.4,6.36,8.86,7.06); ob(8.3,6.35,8.56,6.42); ob(8.7,7.58,8.86,8.57); ob(8.2,8.76,8.86,9.24); obw(7.28,8.98,0.13);   /* 洗手台、擦手紙盒、小便斗＋置物架、馬桶（水箱靠北牆）、垃圾桶 */   /* 廁所裡面擋路：門開到底靠著西牆、洗手台、小便斗、馬桶、垃圾桶 */
   XW(Bx(7.09,6.23,7.89,6.35,H-2.3,M.conc,2.3)); XW(Bx(7.89,6.23,8.86,6.35,H,M.conc)); NS(Bx(7.965,6.224,8.055,6.23,0.15,std(0x4a4f57),1.28)); NS(Bx(7.972,6.218,8.048,6.224,0.136,M.white,1.287)); [7.98,8.012].forEach(X=>NS(Bx(X,6.212,X+0.028,6.218,0.07,std(0x9aa0a8),1.32))); NS(Bx(8.0,6.21,8.008,6.212,0.008,std(0xff8a1f,{emissive:0xb04a00}),1.4));   /* 加大、深灰外框、兩顆灰色翹板、一顆橘色指示燈（他 11-13：要明顯一點） */   /* 廁所門邊的電燈開關（他 11-13）：門東邊的牆上，離墊高的地板 1.2 公尺 */ XW(Bx(8.86,5.34,8.98,9.55,H,M.paint)); Bx(8.98,6.65,11.51,9.17,H,M.paint); Bx(8.98,9.17,11.13,9.55,H,M.paint);   /* 封起來的這一塊要讓開右上角的柱子：原本疊在柱子上、頂面又一樣高，柱子頂面會一直閃（他 11-13 截圖；T.flickerScan 在查） */   /* 右上角那一塊（右邊的原有廁所、後面走道、後門）平常上班不會去：不建置，整塊封起來（他 11-13 在平面圖上打黃色叉叉） */
   { const W=M.white, Yt=8.64, Yu=7.73;   /* 廁所三件（照 CAD 的位置）：馬桶靠東牆、面向西；小便斗掛在東牆上；洗手台在東南角。他 11-13：馬桶與小便斗太抽象，重建 */
@@ -1516,7 +1545,7 @@ function office(){ const y0=L.gy, H=BB.H, K=BB.K, gx=BB.x, gz=BB.z, WP=0.14;   /
     Bx(8.42,6.46,8.84,7.04,0.6,W,0.14); [[8.45,6.49],[8.81,6.49],[8.45,7.01],[8.81,7.01]].forEach(([X,Y])=>NS(Bx(X-0.015,Y-0.015,X+0.015,Y+0.015,0.14,M.steel))); NS(Bx(8.418,6.6,8.42,6.9,0.03,std(0xcfd3d8),0.55));   /* 洗手台（照片）：白色櫃子、四支金屬腳、抽屜把手 */
     Bx(8.4,6.44,8.84,7.06,0.16,W,0.74); NS(Bx(8.46,6.5,8.74,7.0,0.004,std(0xe6edf0),0.9)); stat(cyl(0.018,0.1,'y',gx(8.78),y0+0.95,gz(6.75),M.steel,10)); NS(Bx(8.68,6.735,8.78,6.765,0.018,M.steel,0.99)); stat(cyl(0.035,0.16,'y',gx(8.78),y0+0.98,gz(6.97),M.white,12)); stat(cyl(0.012,0.02,'y',gx(8.78)-0.03,y0+1.02,gz(6.97),std(0x9aa0a6),8));   /* 小米自動給皂機：在洗手台北邊（他 11-13：在另一側），前面一個感應窗 */   /* 方形白色臉盆、水龍頭、白色給皂機 */
     { const slat=std(0xb5742f), mir=std(0xcfe3ea,{metalness:0.6, roughness:0.15}), gls=std(0xcfe6f0,{transparent:true,opacity:0.45}); for(let Y=6.36;Y<7.3;Y+=0.1) NS(Bx(8.84,Y,8.86,Y+0.085,2.45,slat));   /* 洗手台後面那段牆：直條的木棧板裝飾（他 11-13：部份的木棧板裝飾） */
-      NS(Bx(8.832,6.51,8.84,6.99,0.55,mir,1.12));   /* 鏡子在洗手台正上方（他 11-13） */ NS(Bx(8.74,6.38,8.84,6.64,0.01,gls,1.0)); NS(Bx(8.74,6.41,8.83,6.6,0.015,std(0xf0a8b8),1.01)); NS(Bx(8.73,6.41,8.738,6.6,0.09,std(0xf0a8b8),0.925));   /* 毛巾垂下來的那段改短，不插進臉盆（T.flickerScan） */ stat(cyl(0.03,0.12,'y',gx(8.8),y0+1.07,gz(6.45),std(0x5a2e1e),10)); [-0.01,0.01].forEach(d=>{ const st=cyl(0.002,0.16,'y',gx(8.8)+d,y0+1.2,gz(6.45),M.blk,4); st.rotation.z=d*15; stat(st); });   /* 鏡子在北邊；小玻璃架（粉紅毛巾、擴香瓶）在鏡子南邊、靠門那側（他 11-13：位置相反了） */   /* 木板上的鏡子、小玻璃架上粉紅毛巾和擴香瓶 */
+      NS(Bx(8.832,6.51,8.84,6.99,0.55,mir,1.12));   /* 鏡子在洗手台正上方（他 11-13） */ { const mr=makeMirror((6.99-6.51)*K,0.55); mr.rotation.y=-Math.PI/2; mr.position.set(gx(8.832)-0.002, y0+1.12+0.275, gz(6.75)); stat(mr); }   /* 鏡面：真的照得出東西（他 11-17） */ NS(Bx(8.74,6.38,8.84,6.64,0.01,gls,1.0)); NS(Bx(8.74,6.41,8.83,6.6,0.015,std(0xf0a8b8),1.01)); NS(Bx(8.73,6.41,8.738,6.6,0.09,std(0xf0a8b8),0.925));   /* 毛巾垂下來的那段改短，不插進臉盆（T.flickerScan） */ stat(cyl(0.03,0.12,'y',gx(8.8),y0+1.07,gz(6.45),std(0x5a2e1e),10)); [-0.01,0.01].forEach(d=>{ const st=cyl(0.002,0.16,'y',gx(8.8)+d,y0+1.2,gz(6.45),M.blk,4); st.rotation.z=d*15; stat(st); });   /* 鏡子在北邊；小玻璃架（粉紅毛巾、擴香瓶）在鏡子南邊、靠門那側（他 11-13：位置相反了） */   /* 木板上的鏡子、小玻璃架上粉紅毛巾和擴香瓶 */
       Bx(8.3,6.35,8.56,6.42,0.2,M.blk,1.42); NS(Bx(8.36,6.42,8.5,6.43,0.05,M.white,1.38)); NS(Bx(8.6,6.35,8.7,6.355,0.06,std(0xb9bec4),1.2)); } }   /* 南牆（門的東邊）：黑色擦手紙盒、插座（他 11-13：洗手台旁有擦手紙） */
   /* 茶水間（REF＝冰箱、水槽、檯面、吊櫃）；地板比外面高 15 公分（CAD 標 +15） */
   Bx(7.51,3.9,8.86,6.23,0.15,M.floor); Bx(7.09,5.26,7.51,6.23,0.15,M.floor); Bx(8.98,4.02,11.51,6.53,0.15,M.floor); Bx(8.86,4.56,8.98,5.34,0.15,M.floor);   /* 墊高的地板只鋪在牆裡面＋門口那一小段（原本鋪到牆的外皮，跟牆腳同一個面，會閃） */
@@ -2145,12 +2174,12 @@ const LEVELS = [
 { id:'L5', name:'週一　新案承接', short:'週一', office:true, roastAt:3, view:{t:[0.3,0.8,0.9], theta:-0.14, phi:0.55, dist:17.5},
   boardAt:[BB.x(SCR.X),BB.z(SCR.Y)], boardCam:{theta:Math.PI, phi:1.15, dist:5.6},   /* 黑板的位置；走到黑板前面時鏡頭轉到北邊看板面 */
   area:{x0:BB.x(0), x1:BB.x(11.71), z0:BB.z(9.75), z1:BB.z(0)},   /* 走得到的範圍：整棟。牆、玻璃、家具各自當障礙物；會議室、老闆辦公室、茶水間都走得進去（他 11-13），左邊的原有廁所門關著 */
-  decoyAt:[BB.x(8.55),BB.z(6.85)],   /* 假的那疊：廁所洗手台上（原本是立牌，站在廁所中間） */   /* 假的檢討立牌：在廁所裡面，騙人進去（他 11-13） */
-  standAt:{ rfi:[BB.x(1.8),BB.z(7.3)], cost:[BB.x(5.15),BB.z(7.6)], fab:[BB.x(11.29),BB.z(6.12)], iface:[BB.x(5.55),BB.z(3.1)], revise:[BB.x(2.1),BB.z(3.1)], embed:[BB.x(6.55),BB.z(4.6)], submit:[BB.x(7.85),BB.z(2.65)] },   /* 他 11-17（團隊）：不要立牌，改成一疊疊 A3 圖放在家具上：會議桌、老闆辦公桌、茶水間流理台的東端（水槽、爐子的右邊）、鐵叔桌的北端、小安那排桌子的北端、印表機上、主角座位旁的黑色矮櫃（都量過：不碰隔板和螢幕、站的位置離同事 1 公尺以上；小安和主角自己的桌面放不下） */
-  docs:{ rfi:{t:0.07, top:'發包圖・標單', mark:'q'}, cost:{rot:1, t:0.06, top:'系統圖', mark:'note'}, fab:{rot:1, ly:0.42, stand:[BB.x(10.75),BB.z(5.58)], t:0.06, top:'系統圖', mark:'ring'},   /* ly＝名牌離那疊圖多高（預設 0.6）；流理台上面是抽油煙機，放低一點。stand＝走過去拿的時候站哪裡：流理台東端前面是梯子和垃圾桶，站在爐子前面伸手拿 */ iface:{rot:1, t:0.06, top:'系統圖'}, revise:{rot:1, t:0.07, top:'系統圖 修正版', mark:'red'}, embed:{t:0.05, top:'預埋圖'}, submit:{t:0.13, top:'施工圖', mark:'stamp'}, decoy:{rot:1, t:0.05, top:'摸魚計畫'} },   /* 每一疊：rot＝轉 90 度放、t＝厚度、top＝最上面那張圖的圖名、mark＝紅問號／估價單／咖啡杯印／紅筆和便利貼／送審章 */   /* 成本檢討＝老闆辦公室門口、安裝運送＝大門口、圖面修改＝辦公區中間、預埋圖＝西邊走道、加工方法＝茶水間（東邊走道太窄走不到；廁所前面會擋到廁所門） */
+  decoyAt:[BB.x(8.55),BB.z(6.85)], teaAt:[BB.x(11.29),BB.z(6.12)],   /* 茶水間那疊也是假的（他 11-17：跟廁所一樣的陷阱） */   /* 假的那疊：廁所洗手台上（原本是立牌，站在廁所中間） */   /* 假的檢討立牌：在廁所裡面，騙人進去（他 11-13） */
+  standAt:{ rfi:[BB.x(1.8),BB.z(7.3)], cost:[BB.x(5.15),BB.z(7.6)], fab:[BB.x(9.9),BB.z(1.55)], iface:[BB.x(5.55),BB.z(3.1)], revise:[BB.x(2.1),BB.z(3.1)], submit:[BB.x(7.85),BB.z(2.65)] },   /* 他 11-17（團隊）：不要立牌，改成一疊疊 A3 圖放在家具上：會議桌、老闆辦公桌、最東邊那組桌子（阿偉的位子旁邊）、鐵叔桌的北端、小安那排桌子的北端、主角座位旁的黑色矮櫃（他 11-17 13:31：預埋圖不另外一件，印表機上那疊拿掉）（都量過：不碰隔板和螢幕、站的位置離同事 1 公尺以上；小安和主角自己的桌面放不下） */
+  docs:{ rfi:{t:0.07, top:'發包圖・標單', mark:'q'}, cost:{rot:1, t:0.06, top:'系統圖', mark:'note'}, fab:{rot:1, t:0.06, top:'系統圖', mark:'ring'}, tea:{rot:1, ly:0.42, stand:[BB.x(10.75),BB.z(5.58)], t:0.05, top:'飲料團購單'},   /* ly＝名牌離那疊圖多高（預設 0.6）；流理台上面是抽油煙機，放低一點。stand＝走過去拿的時候站哪裡：流理台東端前面是梯子和垃圾桶，站在爐子前面伸手拿 */ iface:{rot:1, t:0.06, top:'系統圖'}, revise:{rot:1, t:0.07, top:'系統圖 修正版', mark:'red'}, submit:{t:0.13, top:'施工圖', mark:'stamp'}, decoy:{rot:1, t:0.05, top:'摸魚計畫'} },   /* 每一疊：rot＝轉 90 度放、t＝厚度、top＝最上面那張圖的圖名、mark＝紅問號／估價單／咖啡杯印／紅筆和便利貼／送審章 */   /* 成本檢討＝老闆辦公室門口、安裝運送＝大門口、圖面修改＝辦公區中間、預埋圖＝西邊走道、加工方法＝茶水間（東邊走道太窄走不到；廁所前面會擋到廁所門） */
   trayAt:[[0.95,4.2],[1.67,4.2],[2.39,4.2],[3.11,4.2],[3.83,4.2]].map(([X,Y])=>[BB.x(X),BB.z(Y)]), startAt:[BB.x(1.15),BB.z(5.9)], batAt:[BB.x(0.62),BB.z(1.95)],   /* 球棒箱搬到西南角、第一組桌子後面靠西牆（他 11-13 14:43：放在不那麼明顯的位置；原本在門口台座上，一進門就看到） */   /* 五塊立牌都擺在入口前面這一塊任務區（他 11-13：黑柱子刪掉、任務區空出來、在這邊執行；排成一列（他 11-13：不要分成兩列），從右邊繞得過去，離藍圈也夠遠不會一拿就跳題），黑板在兩組桌子中間走道的南端；討論的站位在走道口（小安、鐵叔那一排後面，不用擠進兩排座位中間：走道中間只剩 46 公分，鍵盤、搖桿容易蹭到坐著的同事）；你從入口（ENTRY）進來，站在門口的小台座上；球棒和傘桶放在門口那根紅磚柱的東邊（他 11-13 指定）；你的起點往北挪到離球棒超過 75 公分，才不會一開場就跳內心獨白 */
-  seats:[[BB.x(3.34),BB.z(2.63),-Math.PI/2,1813],[BB.x(5.0),BB.z(2.63),Math.PI/2,1815],[BB.x(6.81),BB.z(1.30),-Math.PI/2,1818]], fanSeats:[['di',BB.x(3.34),BB.z(1.30),-Math.PI/2,1814],['hao',BB.x(5.0),BB.z(1.30),Math.PI/2,1816]],   /* 小安 1813、鐵叔 1815、琳姊 1818、兩個同梯 1814／1816；你的位子是 1817（他 11-13 指定：琳姊坐裡面，空位給新人） */ desc:'到職第一天，在設計部。公司剛接下一個新案，你跟著學姊，把「新案承接」從頭跑一遍。今天有七件事。', trDone:'圖送出去了，鍋也是',
-  gy:-0.25, cx:1.2, boss:'an', npcs:['an','tie','lin'],
+  seats:[[BB.x(3.34),BB.z(2.63),-Math.PI/2,1813],[BB.x(5.0),BB.z(2.63),Math.PI/2,1815],[BB.x(6.81),BB.z(1.30),-Math.PI/2,1818],[BB.x(10.29),BB.z(0.89),-Math.PI/2,1822]]   /* 阿偉 1822（他 11-17：管工廠的同事坐最東邊那組） */, fanSeats:[['di',BB.x(3.34),BB.z(1.30),-Math.PI/2,1814],['hao',BB.x(5.0),BB.z(1.30),Math.PI/2,1816]],   /* 小安 1813、鐵叔 1815、琳姊 1818、兩個同梯 1814／1816；你的位子是 1817（他 11-13 指定：琳姊坐裡面，空位給新人） */ desc:'到職第一天，在設計部。公司剛接下一個新案，你跟著學姊，把「新案承接」從頭跑一遍。今天有六件事。', trDone:'圖送出去了，鍋也是',
+  gy:-0.25, cx:1.2, boss:'an', npcs:['an','tie','lin','awei'],
   build(){
     office();
     const scr=new THREE.Group(), SS=SCR.S, zP=BB.z(SCR.Y), D=SCR.dir; scr.scale.set(SS,SS,0.1); scr.rotation.y=D<0?Math.PI:0; scr.position.set(BB.x(SCR.X)-D*SS*1.2, L.gy+SCR.yc-SS*1.556, zP+D*0.045); LV.group.add(scr); LV.host=scr;   /* 圖縮小貼在黑板上（原本是整面牆）；黑板面向北邊，整張圖轉 180 度 */   // 以下零件都掛在螢幕上：整面牆壓扁成一張立面圖
@@ -2164,8 +2193,8 @@ const LEVELS = [
     add('cost', board(['成本 OK'], -1.5,2.6,0.45,0,1.2,'#15803d','#ffffff')); add('fab', board(['工廠 OK'], 3.7,2.6,0.45,0,1.2,'#15803d','#ffffff'));   /* 平的綠色標籤貼在圖上（像蓋章）：轉視角不會插進螢幕 */
     [1.0,2.6].forEach(y=>add('iface', at(new THREE.Mesh(new THREE.TorusGeometry(0.2,0.025,8,28), mat.mark), -0.05,y,0.34)));
     [0.9,2.7].forEach(y=>add('revise', box(0.34,0.34,0.3, 1.2,y,0.3, mat.good)));
-    [0,1.2,2.4].forEach(x=>add('embed', at(new THREE.Mesh(new THREE.TorusGeometry(0.2,0.025,8,28), mat.mark), x,-0.1,0.34))); add('embed', board(['預埋圖 OK'], 3.7,1.2,0.45,0,1.4,'#15803d','#ffffff')); add('submit', board(['施工圖 OK'], 3.7,0.4,0.45,0,1.4,'#15803d','#ffffff')); LV.host=null;
-    const PIN={rfi:0x8b5cf6, submit:0x14b8a6, embed:0xe23b3b, cost:0xf2c21b, iface:0x2fa84f, revise:0x2f6fd0, fab:0xf08a1c}, pins={}, ZF=zP+D*0.005, PS=SS/0.98, yTop=L.gy+SCR.yc+2.0*SS-0.04;   // 圖釘：每一項一個顏色
+    add('submit', board(['施工圖 OK'], 3.7,0.4,0.45,0,1.4,'#15803d','#ffffff')); LV.host=null;
+    const PIN={rfi:0x8b5cf6, submit:0x14b8a6, cost:0xf2c21b, iface:0x2fa84f, revise:0x2f6fd0, fab:0xf08a1c}, pins={}, ZF=zP+D*0.005, PS=SS/0.98, yTop=L.gy+SCR.yc+2.0*SS-0.04;   // 圖釘：每一項一個顏色
     LV.fx.push(dt=>{ Object.keys(PIN).forEach(id=>{ const pt=LV.parts[id]; if(!pt || !pt.meshes.length) return;
       if(!pins[id] && pt.meshes[0].visible){ const v=new THREE.Vector3(); pt.meshes[0].getWorldPosition(v); const g=new THREE.Group(); g.add(ball(0.1,std(PIN[id],{roughness:0.35}),0,0,0.16)); g.add(cyl(0.022,0.08,'z',0,0,0.07,std(PIN[id]),8)); g.add(cyl(0.006,0.07,'z',0,0,0.0,mat.chrome,6));   /* 圓頭大一點，平常的鏡頭看得到 */   // 圓頭、頸、針
         g.position.set(v.x-D*0.3*PS, Math.min(v.y+0.3*PS, yTop), ZF); g.rotation.y=D<0?Math.PI:0; g.scale.setScalar(PS); g.userData.t=0; stat(g); pins[id]=g; }
@@ -2174,7 +2203,7 @@ const LEVELS = [
     LV.fx.push(docFx);
     LV.fx.push(()=>{ const front=(camera.position.z-zP)*D>0.2; scr.visible=front; LV.boardG.visible=front; LV.boardGhost.visible=!front; Object.values(pins).forEach(g=>g.visible=front); });   /* 鏡頭在黑板背面：板面、圖、圖釘都收起來，只留外框（不然一塊黑板擋在畫面最前面） */   // 從前面飛過來、釘進去、彈一下
   },
-  tray:['embed','cost','rfi','submit','iface','revise','fab'],
+  tray:['cost','rfi','submit','iface','revise','fab'],
   intro:[
     {who:'an', t:'{P}，早！我是小安，大你兩屆。今天是你到職第一天。', mood:'smile'},
     {who:'an', t:'後面黑板上貼的是新案轉角的**系統圖**，就是這個案子的標準做法，組裡最資深的學長畫的。**標準部分**，一定是最有經驗的人畫。'},
@@ -2184,10 +2213,10 @@ const LEVELS = [
     {who:'tie', t:'你以後也要畫圖。畫圖的人自己裝過，才知道**圖上少一條線，現場要多幾個工**。'},
     {who:'an', t:'對了，旁邊那兩個是'+FAN_PICK[0]+'跟'+FAN_PICK[1]+'，平常跟著鐵叔跑工地，今天回來幫忙整理圖。'},
     {who:'di', t:'你也是新來的？這禮拜我們也要跑工地，一起加油！', mood:'smile'},
-    {who:'an', t:'今天要跑七件事。少一件，就是把麻煩送給現場。七疊圖散在辦公室各處：會議室桌上、老闆辦公室、茶水間、鐵叔桌上、我這排的桌角、印表機上，最後一疊在你座位旁邊的矮櫃上。走近才看得出是哪一疊。第一件一定是**清圖**（正式叫釋疑），在會議室。**成本、工廠、工地這三個檢討不分先後**；其他的順序自己想。'} ],
-  outroGood:[ {who:'an', t:'七件事都過了，零異常！', mood:'smile'}, {who:'an', t:'施工圖過了，接下來再拆成**加工圖**，審過沒問題才發給工廠。'}, {who:'an', t:'對了，下班時間是六點。……我是說表定。'},
+    {who:'an', t:'今天要跑六件事。少一件，就是把麻煩送給現場。六疊圖散在辦公室各處：會議室桌上、老闆辦公室、最東邊阿偉那組桌子、鐵叔桌上、我這排的桌角，最後一疊在你座位旁邊的矮櫃上。走近才看得出是哪一疊。第一件一定是**清圖**（正式叫釋疑），在會議室。**成本、工廠、工地這三個檢討不分先後**；其他的順序自己想。'} ],
+  outroGood:[ {who:'an', t:'六件事都過了，零異常！', mood:'smile'}, {who:'an', t:'施工圖過了，接下來再拆成**加工圖**，審過沒問題才發給工廠。'}, {who:'an', t:'對了，下班時間是六點。……我是說表定。'},
     {who:'tie', t:'照規矩，**風雨試驗**沒過，**工地不准開始安裝**。我們會去風雨試驗室，做一片樣品牆，用風跟水去打，看漏不漏。過了，工廠才正式下料，工地才開始組裝。這個案子上個月過了，所以你逃不掉。', src:SRC.wind}, {who:'an', t:'另外還有一個叫**視覺模型**的：做一小片實體樣品，給建築師和業主確認外觀和顏色。它看的是好不好看；風雨試驗看的是漏不漏。', src:SRC.yj5b}, {who:'tie', t:'明天早上七點，工地見，看圖上畫的東西裝不裝得起來。'}, {who:'you', t:'（吞口水）……好。'} ],
-  outroBad:[ {who:'an', t:'七件事是跑完了，不過有 {N} 張異常單……'}, {who:'lin', t:'我幫你夾好了。明天帶去工地，對著現場看。'}, {who:'an', t:'施工圖過了，接下來再拆成**加工圖**，審過沒問題才發給工廠。'},
+  outroBad:[ {who:'an', t:'六件事是跑完了，不過有 {N} 張異常單……'}, {who:'lin', t:'我幫你夾好了。明天帶去工地，對著現場看。'}, {who:'an', t:'施工圖過了，接下來再拆成**加工圖**，審過沒問題才發給工廠。'},
     {who:'tie', t:'照規矩，**風雨試驗**沒過，**工地不准開始安裝**。我們會去風雨試驗室，做一片樣品牆，用風跟水去打，看漏不漏。過了，工廠才正式下料，工地才開始組裝。這個案子上個月過了，所以你逃不掉。', src:SRC.wind}, {who:'an', t:'另外還有一個叫**視覺模型**的：做一小片實體樣品，給建築師和業主確認外觀和顏色。它看的是好不好看；風雨試驗看的是漏不漏。', src:SRC.yj5b}, {who:'tie', t:'明天早上七點，工地見。'} ],
   onPlace:{ rfi(){ LV.refs.qm.forEach(m=>m.visible=false); },
     revise(){ LV.refs.clash.forEach(m=>m.visible=false); } },
@@ -2200,8 +2229,8 @@ const LEVELS = [
       q:{ by:'an', title:'業務部回話了：圖上有一支料跟估價單寫的不一樣，會超出預算。你怎麼辦？', body:'業務部門拿成交報告和估價單，對圖上的成本。', src:SRC.yj2, opts:[
         {t:'先照圖做，結案再一起算', ok:false, exp:'有超出預算、或跟估價單不同的地方，要**即時反應業務單位**，不能拖到最後。'},
         {t:'馬上跟業務部門講，一起檢討', ok:true, exp:'業務部門依成交報告和估價單，確認設計圖的成本符不符合預算；有超出或不同的地方，設計要**即時反應**。'} ] } },
-    { id:'fab', name:'工廠檢討', tr:'工廠說做得出來', any:'review', spot:[BB.x(4.17),BB.z(1.0)], hint:'廠務部門看**工廠**：型材怎麼加工、怎麼組裝、設備做不做得到（三關**不分先後**）。廠務看的那疊忘在**茶水間**。',
-      q:{ by:'lin', title:'我剛從工廠過來。廠務說：轉角這支料的加工方法，工廠以前沒做過。什麼時候談？', body:'廠務部門看圖，檢討加工和組裝做不做得到。', src:SRC.yj2, opts:[
+    { id:'fab', name:'工廠檢討', tr:'工廠說做得出來', any:'review', spot:[BB.x(4.17),BB.z(1.0)], hint:'廠務部門看**工廠**：型材怎麼加工、怎麼組裝、設備做不做得到（三關**不分先後**）。那疊圖在廠務**阿偉**桌上（最東邊那組桌子）。',
+      q:{ by:'awei', title:'我是廠務阿偉。轉角這支料的加工方法，工廠以前沒做過。你覺得什麼時候談？', body:'廠務部門看圖，檢討加工和組裝做不做得到。', src:SRC.yj2, opts:[
         {t:'現在就跟工廠檢討，必要時先做樣品', ok:true, exp:'非標準的部分、工廠以前沒做過的加工方法，更要**提前檢討**，必要時做樣品模型。工廠有更好的做法，會建議設計修改。'},
         {t:'等加工圖出了，工廠自己會想辦法', ok:false, exp:'工廠以前沒做過的加工方法，要**提前跟工廠檢討**，不能等加工圖出了才發現做不出來。'} ] } },
     { id:'iface', name:'工地檢討', tr:'逐顆查', any:'review', spot:[BB.x(4.17),BB.z(1.0)], hint:'工務部門看**工地**：安裝順序、施工空間、現場組不組得起來。轉角、柱邊、梁下的每顆螺絲都要查（三關**不分先後**）。那疊圖在**鐵叔**桌上。',
@@ -2212,13 +2241,10 @@ const LEVELS = [
       q:{ by:'an', title:'三個部門的意見都回來了。你怎麼處理？', body:'業務、廠務、工務各有幾條建議。', src:SRC.yj3+'；'+SRC.flow22, opts:[
         {t:'挑好改的改一改，其他的不用回', ok:false, exp:'每一條意見都要看過。改或不改，都要**回報給提的部門**。'},
         {t:'整合起來一條一條看，該改的改，再回報各部門怎麼處理', ok:true, exp:'三個部門的意見**整合起來一條一條看**，該改的就修正系統圖。改了什麼、沒改什麼，都要**回報給提的部門**。'} ] } },
-    { id:'embed', name:'預埋圖送審', tr:'先喬再畫', spot:[BB.x(4.17),BB.z(1.0)], hint:'工地四樓明天綁板筋。**預埋圖**要照工地的樓層進度給。剛印出來，還在**印表機**上。',
-      q:{ by:'tie', title:'四樓的預埋圖要給工地了。給之前，先找誰談？', body:'預埋件要埋在樓板裡，位置畫在預埋圖上。', src:SRC.yj5d+'；'+SRC.flow23, opts:[
-        {t:'照立面分割畫好就送，現場自己配合', ok:false, exp:'預埋方式要**先跟工地的營造廠協商**，不是畫好就丟過去。'},
-        {t:'先跟工地的營造廠談：樓板鋼筋怎麼排、固定點、混凝土強度', ok:true, exp:'預埋方式要**先跟工地營造協商**：樓板 RC 排筋位置、焊接點或固定點、RC 強度、結構尺寸差異。**預埋圖**照工地樓層的施作進度提供。公司原則上用**預埋件**，不要事後才在現場鑽孔。預埋圖要附**結構計算**，**審過了**才能加工、進場。'} ] } },
-    { id:'submit', name:'施工圖送審', tr:'改到過為止', deliver:true, spot:[BB.x(1.2),BB.z(5.5)], hint:'預埋圖過了，才開始大量畫**施工圖**：照系統圖和分割圖畫，尺寸、材料、收邊、防水排水都要交代清楚。最厚的那一疊在**你座位旁邊的矮櫃**上，抱到**大門口**送審。',
-      q:{ by:'an', title:'圖送出去了。……沒多久就被退回來，審查意見寫了一大串。你怎麼辦？', body:'施工圖是照系統圖和立面分割圖畫的。', src:SRC.flow24, opts:[
-        {t:'照審查意見一條一條改，再送，改到過為止', ok:true, exp:'施工圖送審後，要**照審查意見改到過為止**。分割、接縫這些外觀的東西，要先畫**立面分割圖**給業主和建築師看過。施工圖過了，才能拆加工圖。'},
+    { id:'submit', name:'施工圖送審', tr:'改到過為止', deliver:true, spot:[BB.x(1.2),BB.z(5.5)], hint:'系統圖改好，就開始大量畫**施工圖**：照系統圖和分割圖畫，尺寸、材料、收邊、防水排水，還有樓板裡的**預埋件**，都要交代清楚。最厚的那一疊在**你座位旁邊的矮櫃**上，抱到**大門口**送審。',
+      q:{ by:'an', title:'圖送出去了。……沒多久就被退回來，審查意見寫了一大串，其中一條是「**預埋件**位置跟結構不符」。你怎麼辦？', body:'施工圖是照系統圖和立面分割圖畫的，預埋件的圖也在裡面。', src:SRC.flow24+'；'+SRC.flow23+'；'+SRC.yj5d, opts:[   /* 他 11-17 13:31：預埋圖不另外一件，併進這題的選項 */
+        {t:'預埋的先跟工地營造廠喬好、附結構計算；其他意見一條一條改，改到過為止', ok:true, exp:'施工圖送審後，要**照審查意見改到過為止**。**預埋件**要先跟工地的營造廠喬好：樓板鋼筋怎麼排、固定點、混凝土強度，預埋的圖照工地樓層的進度給，要附**結構計算**。分割、接縫這些外觀的東西，要先畫**立面分割圖**給業主和建築師看過。施工圖過了，才能拆加工圖。'},
+        {t:'預埋的到現場再打化學錨栓就好，先改別的', ok:false, exp:'公司原則上用**預埋件**，綁板筋的時候就要放進去。**化學錨栓是沒埋到才補救**，不是做法。預埋要先跟工地的營造廠喬好。'},
         {t:'挑簡單的先改，其他的到現場再說', ok:false, exp:'審查意見每一條都要處理，**改到過為止**，不能留到現場。'} ] },
       after:[{who:'an', t:'建築師又回覆了：「分格線再往左兩公分。」……這是第三次了。'}] },   /* 他 11-17 11:19：新增這一步 */
   ] },
@@ -2238,6 +2264,7 @@ TROPHY['misc.name']={ name:'人如其名？', grade:'bronze', desc:'名字取太
 TROPHY['misc.prank']={ name:'手很癢', grade:'bronze', desc:'拿起不是施工用的東西' };
 TROPHY['misc.bat']={ name:'全壘打', grade:'silver', desc:'拿球棒敲同事。任務失敗，警衛已經在樓下' };
 TROPHY['misc.toilet']={ name:'薪水小偷', grade:'silver', desc:'上班躲廁所太久，任務失敗。你在馬桶上的產值，創下全公司新高' };   /* 他 11-13：一直躲廁所不做事 */
+TROPHY['misc.tea']={ name:'茶水間常客', grade:'silver', desc:'上班窩在茶水間太久，任務失敗。全公司這個月的咖啡豆，你一個人喝掉一半' };   /* 他 11-17：茶水間的陷阱 */
 TROPHY['misc.duel']={ name:'雙雙出局', grade:'gold', desc:'先把拿球棒衝下來的鐵叔打倒，剛好被老闆從大門口看到。兩個人一起記大過' };   /* 他 11-17 */
 TROPHY['misc.penta']={ name:'五連殺 PENTAKILL', grade:'gold', desc:'用球棒連續打倒 5 個人（每一個都在前一個之後 10 秒內）。任務失敗，警察已經到場' };   /* 他 11-13：名字借《英雄聯盟》的 PENTAKILL（一次連續擊殺五人） */
 TROPHY['misc.bribe']={ name:'有錢能使鬼推磨', grade:'silver', desc:'開豪車來上班，拿十萬現金請帶班的人「幫忙看一下」' };
@@ -2738,7 +2765,7 @@ function seatR(a){ return a.seated && !a.dest && Math.hypot(a.x-a.home.x,a.z-a.h
 function pushOut(a,slide,R=PR){ const G=LV.gates && LV.gates.filter(g=>g.on); for(const o of (G && G.length ? LV.obs.concat(G) : (LV.obs||[]))){   /* 還沒開好的拉門也擋人 */ const q=rectDist(o,a.x,a.z); if(q.d>=R) continue; let nx, nz;                      // 把人推出障礙物外
     if(q.d>1e-4){ nx=q.ex/q.d; nz=q.ez/q.d; a.x+=nx*(R-q.d); a.z+=nz*(R-q.d); }
     else { const px=o.hx-Math.abs(q.dx), pz=o.hz-Math.abs(q.dz); if(px<pz){ nx=Math.sign(q.dx)||1; nz=0; a.x=o.x+nx*(o.hx+R); } else { nx=0; nz=Math.sign(q.dz)||1; a.z=o.z+nz*(o.hz+R); } }
-    if(slide && a.dest && !o.set){ const tx=-nz, tz=nx, tp=tx*(a.dest.x-a.x)+tz*(a.dest.z-a.z), sl=Math.min(0.03,Math.abs(tp)), sg=tp>=0 ? 1 : -1; a.x+=tx*sg*sl; a.z+=tz*sg*sl; }   /* 沿著邊滑：最多滑到目標正前方那一點（他 11-17：原本固定滑 3 公分，目標在桌子、牆正後面時會滑過頭再滑回來，人一直左右抖） */ } }   // 撞上就沿著邊滑過去
+    if(slide && a.dest && !o.set){ const tx=-nz, tz=nx, tp=tx*(a.dest.x-a.x)+tz*(a.dest.z-a.z), corner=Math.abs(q.dx)>o.hx && Math.abs(q.dz)>o.hz; let sg=tp>=0 ? 1 : -1, sl=Math.min(0.03,Math.abs(tp)); if(corner){ if(Math.abs(tp)<0.01 && a.slideSg) sg=a.slideSg; a.slideSg=sg; sl=0.03; } a.x+=tx*sg*sl; a.z+=tz*sg*sl; }   /* 頂到平的牆面：最多滑到目標正前方（正對著就停，不會滑過頭再滑回來抖）；擦到外凸的角：照原本推 3 公分繞過去，方向沿用上一次的，不換邊（他 11-17） */   /* 沿著邊滑：最多滑到目標正前方那一點（他 11-17：原本固定滑 3 公分，目標在桌子、牆正後面時會滑過頭再滑回來，人一直左右抖） */ } }   // 撞上就沿著邊滑過去
 function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
   if(a.dest){ const dx=a.dest.x-a.x, dz=a.dest.z-a.z, d=Math.hypot(dx,dz);
     if(a.destRef!==a.dest){ a.destRef=a.dest; a.bestD=d; a.stuck=0; }
@@ -2951,7 +2978,7 @@ function docFx(){ const me=LV.actors.you; if(!me || !L || !L.office) return; con
   let n=0; L.steps.forEach(st=>{ if(!st.deliver && placed.has(st.id)) n++; }); const dl=L.steps.find(st=>st.deliver), sub=!!(dl && carry===dl.id), want=(n>0 || sub) && !(dl && placed.has(dl.id)) && !prank && !me.swing && !me.knock && !me.ko;
   if(want){ if(P.parent!==hold){ while(hold.children.length) hold.remove(hold.children[0]); hold.add(P); } P.userData.set(Math.min(6,n),sub); if(!me.carry){ me.carry='front'; me.grip=0.21; me.gripZ=0.15; hold.position.set(...POSE.front); hold.rotation.set(0,0,0); } P.visible = me.carry==='front'; }
   else { if(P.parent) P.parent.remove(P); if(me.carry==='front' && !carry) me.carry=null; }
-  const qs=Object.entries(LV.pallets).map(([id,q])=>[id,q]); if(LV.decoy) qs.push(['decoy',LV.decoy]); qs.forEach(([id,q])=>{ q.lb.visible = q.g.visible && !placed.has(id) && Math.hypot(me.x-q.x,me.z-q.z)<3.0; }); }
+  const qs=Object.entries(LV.pallets).map(([id,q])=>[id,q]); if(LV.decoy) qs.push(['decoy',LV.decoy]); if(LV.tea) qs.push(['tea',LV.tea]); qs.forEach(([id,q])=>{ q.lb.visible = q.g.visible && !placed.has(id) && Math.hypot(me.x-q.x,me.z-q.z)<3.0; }); }
 function makePallet(st,x,z){ const g=new THREE.Group(); g.position.set(x,L.gy,z); const spec=ITEM[L.id+'.'+st.id]; let item=null, ly=1.12;
   if(spec){ g.add(box(0.85,0.1,0.85,0,0.05,0,mat.wood)); item=new THREE.Group(); const it=makeItem(spec), n = it.kind==='bar'||it.kind==='panel' ? 2 : 1;
     for(let i=0;i<n;i++){ const o = i ? makeItem(spec).g : it.g;
@@ -3579,7 +3606,8 @@ function duoCarry(o, done){ const me=LV.actors.you, h=LV.actors.di, q=LV.pallets
         const fin=()=>{ free(); bubble('di', o.bye||'好了！我回去顧雷射。'); crewWalk(h, h.station.x, h.station.z, ()=>laserPose(h)); done(); }; if(o.after) o.after(fin); else fin(); } }
     if(ph>=1 && ph<5){ grip(me); grip(h); } };
   LV.fx.push(f); }
-function goDecoy(){ const d=LV.decoy; if(!d) return; const s=standNear(d.x,d.z,0.9,d.obs); moveTo(s.x,s.z,()=>bubble('you', pickOne(['（背面用原子筆寫著：「這塊是假的。」……誰放的？）','（摸魚計畫檢討……原來摸魚也要開會檢討。好，那我先在這裡檢討一下。）','（立牌背面貼著一張便利貼：「上班時間請勿久留。——人資」）']), true)); }   /* 假立牌：走過去才發現被騙；在廁所待太久照樣任務失敗 */
+function goDecoy(id){ if(id==='tea'){ const d=LV.tea; if(!d) return; const st=L.docs && L.docs.tea && L.docs.tea.stand; moveTo(st?st[0]:d.x, st?st[1]:d.z, ()=>bubble('you', pickOne(['（第一張寫著：珍奶半糖少冰 ×12……這也要檢討？）','（最下面壓著一張便利貼：「茶水間不是會議室。——人資」）','（下午茶團購檢討……好，那我先在這裡檢討一杯。）']), true)); return; }   /* 茶水間的假圖：走過去才發現被騙；待太久照樣任務失敗 */
+  const d=LV.decoy; if(!d) return; const s=standNear(d.x,d.z,0.9,d.obs); moveTo(s.x,s.z,()=>bubble('you', pickOne(['（背面用原子筆寫著：「這塊是假的。」……誰放的？）','（摸魚計畫檢討……原來摸魚也要開會檢討。好，那我先在這裡檢討一下。）','（立牌背面貼著一張便利貼：「上班時間請勿久留。——人資」）']), true)); }   /* 假立牌：走過去才發現被騙；在廁所待太久照樣任務失敗 */
 function goPallet(id){ const q=LV.pallets[id]; if(!q||placed.has(id)) return; if(L.anim && L.anim[id] && need() && need().id===id && !carry && !prank){ tryPick(id); return; }   /* 有小動畫的步驟（週四量 MO、劃間距）：點了直接開始，不用先走到立牌 */ const D=L.docs && L.docs[id], s = D && D.stand ? {x:D.stand[0], z:D.stand[1]} : standNear(q.x,q.z,0.9,q.obs);   /* 週一的圖可以指定站的位置（茶水間流理台東端：四周都被擋住，自動找的站點會落在檯面裡） */ moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(rectDist(q.obs,p.x,p.z).d<0.9) tryPick(id); }); }   // 真的走到旁邊才拿
 function goSpot(){ spotArmed=true; moveTo(spot.position.x, spot.position.z, ()=>{ const p=LV.actors.you; if(Math.hypot(p.x-spot.position.x,p.z-spot.position.z)<1.1) tryInstall(); }); }
 function goNpc(who){ const a=LV.actors[who]; const s=standNear(a.x,a.z,1.0); moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(dlgOpen||failed||Math.hypot(p.x-a.x,p.z-a.z)>1.9) return; a.chats=(a.chats||0)+1;
@@ -3683,7 +3711,8 @@ function startLevel(i,quiet){ li=i; L=LEVELS[i]; cur=0; score=100; ncr=0; placed
     $('#help').textContent = TOUCH ? '點工具盤＝做那一步　一指拖曳＝轉視角　兩指捏合＝縮放　兩指一起移＝平移　右邊＋－＝放大、縮小' : '點右邊工具盤＝做那一步　拖曳＝轉視角　右鍵拖曳＝平移　滾輪＝縮放　C＝鏡頭回正'; }
   else { const n=L.tray.length, per=Math.ceil(n/2);
     if(L.office) L.tray.forEach((id,k)=>{ const at=(L.standAt&&L.standAt[id])||L.trayAt[k]; makePallet(stepOf(id), at[0], at[1]); });
-    if(L.office && L.decoyAt){ makePallet({id:'decoy', name:'摸魚計畫檢討'}, L.decoyAt[0], L.decoyAt[1]); const d=LV.decoy=LV.pallets.decoy; delete LV.pallets.decoy; d.g.traverse(o=>{ if(o.userData.pick) o.userData.pick={kind:'decoy'}; }); }   /* 假立牌：長得跟真的一樣，但不在五件事裡 */   /* 北辦：五個立牌分散在辦公室各處（他 11-13：順便認識場景） */                                 // 辦公室：立牌在你面前排成一排，跟螢幕在同一個畫面
+    if(L.office && L.decoyAt){ makePallet({id:'decoy', name:'摸魚計畫檢討'}, L.decoyAt[0], L.decoyAt[1]); const d=LV.decoy=LV.pallets.decoy; delete LV.pallets.decoy; d.g.traverse(o=>{ if(o.userData.pick) o.userData.pick={kind:'decoy'}; }); }
+    if(L.office && L.teaAt){ makePallet({id:'tea', name:'下午茶團購檢討'}, L.teaAt[0], L.teaAt[1]); const d=LV.tea=LV.pallets.tea; delete LV.pallets.tea; d.g.traverse(o=>{ if(o.userData.pick) o.userData.pick={kind:'decoy', id:'tea'}; }); }   /* 茶水間的假圖（他 11-17：跟廁所一樣的陷阱） */   /* 假立牌：長得跟真的一樣，但不在五件事裡 */   /* 北辦：五個立牌分散在辦公室各處（他 11-13：順便認識場景） */                                 // 辦公室：立牌在你面前排成一排，跟螢幕在同一個畫面
     else if(per<=6) L.tray.forEach((id,k)=>{ const row=k<per?0:1, j=row?k-per:k, cnt=row?n-per:per; makePallet(stepOf(id), L.cx+(j-(cnt-1)/2)*1.5+(row && cnt===per ? 0.75 : 0), 3.4+row*1.9); });   // 兩排拉開、錯開半格，長料才不會頭尾相接
     else [L.tray.slice(0,per), L.tray.slice(per)].forEach((ids,row)=>{ ids.forEach(id=>makePallet(stepOf(id), 0, 3.4+row*1.9)); const ps=ids.map(id=>LV.pallets[id]), GAP=0.6, tot=ps.reduce((t,q)=>t+2*q.obs.hx,0)+GAP*(ps.length-1); let x=L.cx-tot/2;   // 一排超過六個：照每個棧板實際的寬度排，中間固定留 60 公分讓人走
       ps.forEach(q=>{ x+=q.obs.hx; q.x=q.obs.x=x; q.g.position.x=x; x+=q.obs.hx+GAP; }); });   // 兩排拉開、錯開半格，長料才不會頭尾相接
@@ -3726,7 +3755,7 @@ function onClick(e){ if(dlgOpen){ advance(); return; } if(LV.animBusy) return; i
   const HITS=ray.intersectObjects(LV.pick,false), PER=HITS.find(h=>{ const q=h.object.userData.pick; return q && q.kind==='smash' && q.s && q.s.kind==='person'; });   /* 這一條線上有師傅：打師傅（工務所看不見的點擊盒子會擋在前面） */
   for(const h of HITS){ const p0=h.object.userData.pick; if(!p0) continue; const p = p0.kind==='smash' && p0.s && p0.s.kind!=='person' && PER ? PER.object.userData.pick : p0;
     if(p.kind==='pallet'){ if(done||placed.has(p.id)) continue; goPallet(p.id); return; }
-    if(p.kind==='decoy'){ if(!done) goDecoy(); return; }
+    if(p.kind==='decoy'){ if(!done) goDecoy(p.id); return; }
     if(p.kind==='spot'){ if(!spot.visible) continue; goSpot(); return; }
     if(p.kind==='prank'){ if(!done) goPrank(p.id); return; }
     if(p.kind==='hoist'){ if(!done) goHoist(); return; }
@@ -3841,7 +3870,8 @@ function hurt(cost,a,why){ if(done||failed) return; patience=Math.max(0,patience
   if(patience<=28 && !warned){ warned=true; setTimeout(()=>{ if(!failed) bubble(L.boss, FINAL[L.boss], true); }, 1000); } }
 function failWhySet(t){ const el=$('#failWhy'); el.textContent=''; String(t).split(/(?<=[。！？])/).filter(x=>x.trim()).forEach(sn=>{ const d=document.createElement('div'); phrases(d,sn); el.append(d); }); }   /* 一句一行，每句只在標點後面換行（他 11-16：「人資已／收到通知」斷在中間） */
 function failMission(a,why){ failed=true; done=true; const p=LV.actors.you; if(p){ p.dest=null; p.onArrive=null; } award('misc.fail');
-  setTimeout(()=>{ if(why==='toilet'){ failSound(); failWhySet('上班時間躲在廁所太久。人資已收到通知。'); drawFace($('#failFace'),'lin','mad'); $('#failLine').textContent='「'+fill('{P}，你在廁所待了一整個早上。公司幫你算過了：你今天的薪水，有七成是坐在馬桶上領的。下個月起廁所改計件制，衛生紙從你的薪水扣。')+'」'; $('#failWho').textContent='—— 琳姊，'+CAST.lin.role; $('#fail').style.display='flex'; return; }   /* 躲廁所：薪水小偷（他 11-13：黑色幽默） */
+  setTimeout(()=>{ if(why==='tea'){ failSound(); failWhySet('上班時間窩在茶水間太久。人資已收到通知。'); drawFace($('#failFace'),'tie','mad'); $('#failLine').textContent='「'+fill('{P}，你在茶水間泡了一整個早上，咖啡喝得比圖還多。明天開始，全公司的咖啡豆你負責買。')+'」'; $('#failWho').textContent='—— 鐵叔，'+CAST.tie.role; $('#fail').style.display='flex'; return; }   /* 窩茶水間（他 11-17：跟廁所一樣的陷阱） */
+    if(why==='toilet'){ failSound(); failWhySet('上班時間躲在廁所太久。人資已收到通知。'); drawFace($('#failFace'),'lin','mad'); $('#failLine').textContent='「'+fill('{P}，你在廁所待了一整個早上。公司幫你算過了：你今天的薪水，有七成是坐在馬桶上領的。下個月起廁所改計件制，衛生紙從你的薪水扣。')+'」'; $('#failWho').textContent='—— 琳姊，'+CAST.lin.role; $('#fail').style.display='flex'; return; }   /* 躲廁所：薪水小偷（他 11-13：黑色幽默） */
     if(why==='duel'){ failSound(); failWhySet('兩個人一起記大過。'+WHY.duel+'人資已收到通知。'); const cv=$('#failFace'), g=cv.getContext('2d'); g.clearRect(0,0,cv.width,cv.height); g.font=Math.round(cv.height*0.72)+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('🧑‍💼',cv.width/2,cv.height*0.54);
       $('#failLine').textContent='「'+fill('……我難得下來看一次工地，就看到我的主任跟新人在大門口拿球棒互毆。{P}，你跟鐵叔，明天一起去人資報到。記大過，一人一支，誰也別想跑。')+'」'; $('#failWho').textContent='—— 老闆，爆肝營造'; $('#fail').style.display='flex'; return; }   /* 雙雙出局：出來講話的是老闆（他 11-17） */
     if(why==='police'){ failSound(); failWhySet('有人報案：10 秒內 5 個人被球棒打倒。'); const cv=$('#failFace'), g=cv.getContext('2d'); g.clearRect(0,0,cv.width,cv.height); g.font=Math.round(cv.height*0.72)+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('👮',cv.width/2,cv.height*0.54);
@@ -3887,7 +3917,7 @@ function crowd(dt,now){ const p=LV.actors.you; if(!p) return;
       else if(Math.hypot(f.x-tx,f.z-tz)>(hj?0.2:0.45)){ const w=plan(f, clampXZ(tx,tz))[0]; if(!f.dest || Math.hypot(f.dest.x-w.x,f.dest.z-w.z)>0.3) f.dest=w; }
       for(const k2 in LV.actors){ const o=LV.actors[k2]; if(o===f||o===p||o.holdAim!==undefined) continue; const dx=f.x-o.x, dz=f.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ f.x+=dx/d*(0.55-d); f.z+=dz/d*(0.55-d); } } const fc=clampXZ(f.x,f.z); f.x=fc.x; f.z=fc.z; pushOut(f); }   // 被擠開之後再確認一次：不出界、不站在牆上、不進障礙物
     for(const k in LV.actors){ const a=LV.actors[k]; if(a===p) continue; const dx=a.x-p.x, dz=a.z-p.z, d=Math.hypot(dx,dz)||0.001;
-      if(d<0.55 && (a.helping || L.office) && !(prank && p.hitWho===a.who)){   /* 週一辦公室找圖也一樣（他 11-17） */ const ex=p.x-a.x, ez=p.z-a.z, e=Math.hypot(ex,ez)||0.001; if(e<0.5){ p.x=a.x+ex/e*0.5; p.z=a.z+ez/e*0.5; pushOut(p); } continue; }   /* 幫忙的小弟（週四顧雷射、焊接；他 11-16：會一直撞到他）：你走過去只會被擋下來，不推他、不算撞人 */
+      if(d<0.55 && (a.helping || L.office) && !(prank && p.hitWho===a.who)){   /* 週一辦公室找圖也一樣（他 11-17） */ const ex=p.x-a.x, ez=p.z-a.z, e=Math.hypot(ex,ez)||0.001; if(e<0.5){ p.x=a.x+ex/e*0.5; p.z=a.z+ez/e*0.5; if(p.dest && p.keyDest){ const tx=-ez/e, tz=ex/e, tp=tx*(p.dest.x-p.x)+tz*(p.dest.z-p.z); let sg=tp>=0 ? 1 : -1; if(Math.abs(tp)<0.01 && p.slideSg) sg=p.slideSg; p.slideSg=sg; p.x+=tx*sg*0.03; p.z+=tz*sg*0.03; }   /* 按著方向鍵被同事擋住：往旁邊推 3 公分繞過去，方向沿用上一次的（他 11-17：原本會卡死在同事前面）。點滑鼠走的路線本來就會繞開同事，不推（推了會左右抖：週四小弟） */ pushOut(p); } continue; }   /* 幫忙的小弟（週四顧雷射、焊接；他 11-16：會一直撞到他）：你走過去只會被擋下來，不推他、不算撞人 */
       if(d<0.55){ const side = a.dest && !moving ? 0.03 : 0;   // 同事走回原位被你擋到：往旁邊滑開，不要卡住
         const ax0=a.x, az0=a.z, c=clampXZ(a.x+dx/d*(0.55-d)-dz/d*side, a.z+dz/d*(0.55-d)+dx/d*side); a.x=c.x; a.z=c.z; pushOut(a,false,a.seated?RS:PR);
         if(a.seated && (Math.hypot(a.x-a.home.x,a.z-a.home.z)>0.9 || Object.values(LV.actors).some(o=>o!==a && o!==p && Math.hypot(o.x-a.x,o.z-a.z)<0.85))){ a.x=ax0; a.z=az0; }   /* 坐著的人最多被推離座位 90 公分、也不會被推去擠別的同事（原本可以一路推著走，人和椅子插進桌子、擠到隔壁；他 11-13 指正） */
@@ -3932,9 +3962,9 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
       if(jOn && !prank){ const m0=Math.hypot(fx,fz)||1; fx/=m0; fz/=m0;                                    // 搖桿快碰到站著的同事：往他那邊的分量拿掉，貼著他滑過去（不會硬撞上去被扣分）
         for(const k in LV.actors){ const a=LV.actors[k]; if(a===p || a.follower || a.dest || !a.g.visible) continue; const dx=a.x-p.x, dz=a.z-p.z, d=Math.hypot(dx,dz); if(d>1.0 || d<0.001) continue;
           const nx=dx/d, nz=dz/d, into=fx*nx+fz*nz; if(into>0){ const w=Math.min(1,(1.0-d)/0.35); fx-=nx*into*w; fz-=nz*into*w; } } }
-      const m=Math.hypot(fx,fz); if(m>0.05){ p.dest=clampXZ(p.x+fx/m*0.5, p.z+fz/m*0.5, p); p.onArrive=null; lastAct=now;
+      const m=Math.hypot(fx,fz); if(m>0.05){ p.dest=clampXZ(p.x+fx/m*0.5, p.z+fz/m*0.5, p); p.onArrive=null; p.keyDest=true; lastAct=now;
         if(L.plant && !LV.down){ const ux=p.x+fx/m*0.5, uz=p.z+fz/m*0.5, out=Math.abs(ux-p.dest.x)>0.2 || uz-p.dest.z>0.2; LV.edgeP = out ? (LV.edgeP||0)+dt : 0; if(out) LV.edgeDir={x:fx/m, z:fz/m}; } }   /* 週五：一直往工作區外面推＝想出去（往廠房那邊推不算） */
-      else { if(jOn) p.dest=null; LV.edgeP=0; } }
+      else { if(jOn) p.dest=null; LV.edgeP=0; p.keyDest=false; p.slideSg=0; } }   /* 放開按鍵：剩下那一步照點滑鼠的方式滑 */
     Object.values(LV.actors).forEach(a=>{ if(a.who==='you' && dlgOpen) { const d=a.dest; a.dest=null; stepActor(a,dt,t); a.dest=d; } else stepActor(a,dt,t); });
     Object.values(LV.actors).forEach(a=>{ const fx=a.g.userData.fx; if(fx) fx.forEach(f=>{ if(f.halo) f(t); }); });   /* 大家都走完再量一次光圈（不然小弟走進來那一格光圈慢一格才縮） */
     /* 手機：鏡頭一直跟著角色（一指轉視角、兩指縮放都是繞著角色轉，不會把角色甩出畫面）；電腦：角色在走才跟，你正在拖鏡頭的時候不跟 */
