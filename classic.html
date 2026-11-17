@@ -218,6 +218,11 @@
     #menu .lv .n { font-size:13px; } #menu .lv .d { font-size:11px; margin-top:1px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; } #menu .lv .best { font-size:11px; margin-top:1px; }
     #menu .lv button { padding:6px 12px; font-size:12px; } #menu .row { margin-top:8px; } #menu .row button { padding:6px 8px; font-size:12px; } #menu .mFoot { padding-top:6px; font-size:9px; } }
   @media (prefers-reduced-motion:reduce){ #menu[style*="flex"] .mTop, #menu[style*="flex"] .mHero, #menu[style*="flex"] > .box, #menu[style*="flex"] .lv, #menu[style*="flex"] .mFoot { animation:none; } }
+
+  /* 選關背景：左邊有層次的漸層，慢慢過渡到右邊（他 11-17 16:58：左側太白） */
+  #menu .mBg { background:radial-gradient(75% 95% at 0% 100%, rgba(50,74,158,.26), rgba(50,74,158,0) 62%), radial-gradient(55% 65% at 12% 12%, rgba(109,134,221,.20), rgba(109,134,221,0) 70%), radial-gradient(60% 70% at 88% 12%, rgba(50,74,158,.18), rgba(50,74,158,0) 70%),
+    linear-gradient(100deg, #d6e0f4 0%, #e6edf9 22%, #f6f9ff 48%, #eef3fc 72%, #e0e8f8 100%); }
+  #menu .mBg .mGold { display:block; left:-10vw; top:-20vh; bottom:auto; width:46vw; height:150vh; background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.55) 50%, rgba(255,255,255,0)); transform:rotate(18deg); }   /* 左邊一道斜的淡光帶 */
   .lv { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px; border:1px solid var(--line); border-radius:6px; margin-top:8px; }
   .lv .n { font-size:15px; } .lv .d { font-size:12px; color:var(--dim); margin-top:3px; line-height:1.4; } .lv .best { font-size:12px; color:var(--ok); margin-top:3px; }
   .lv button { flex:none; padding:8px 14px; }
