@@ -301,6 +301,7 @@ const SRC = {
   ifc90:'International Firestop Council 圖說（©2004 IFC，睿怡實業提供）；窗間牆 90 公分：科鐽工程顧問簡報講義第 5 頁',
   wind:'佑捷設計 林文昌〈淺談帷幕牆設計作業順序及方法〉5.a 風雨試驗圖；風雨試驗室流程：現場做法（2026/11/11 口述）', yj5b:'佑捷設計 林文昌〈淺談帷幕牆設計作業順序及方法〉5.b 視覺模型圖',
   yj2:'佑捷設計 林文昌〈淺談帷幕牆設計作業順序及方法〉1.3、1.4、2.1～2.3', yj3:'佑捷設計 林文昌〈淺談帷幕牆設計作業順序及方法〉3. 圖面修改', yj5d:'佑捷設計 林文昌〈淺談帷幕牆設計作業順序及方法〉5.d 預埋圖',
+  flow1:'公司設計部〈新案承接作業流程〉第一階段：新案資料確認及提出釋疑（2026/11/17）', flow22:'公司設計部〈新案承接作業流程〉第二階段 1. 系統圖設計及檢討、2. 立面分割圖送審（2026/11/17）', flow23:'公司設計部〈新案承接作業流程〉第二階段 3. 預埋件施工圖繪製及送審（2026/11/17）',
   pkd15:'科鐽工程顧問 陳郁潔〈帷幕牆設計與工程〉（臺北市建築師公會講堂，2024/03/25）講義第 15 頁：放樣與繫件', pkd16:'科鐽工程顧問 陳郁潔〈帷幕牆設計與工程〉（臺北市建築師公會講堂，2024/03/25）講義第 16 頁：框架式',
   atas5:'ATAS Isoleren 三明治板安裝手冊 第 5 頁', atas6:'ATAS Isoleren 三明治板安裝手冊 第 6 頁', atas7:'ATAS Isoleren 三明治板安裝手冊 第 7 頁',
 };
@@ -309,7 +310,7 @@ const SRC = {
 // 安全帽顏色（工地慣例）：一般人員黃色、勞安紅色、主管白色
 const CAST = {
   you:{ name:()=>playerName||(isF()?'小晴':'小新'), hero:true, role:'設計部新人', helmet:0xf2f2f2, vest:0x2f6fd0, skin:0xf0c8a0, feat:{},
-    bio:'到職第一週。週一跟著學姊跑施工圖檢討，接著被帶去工地四天。圖畫得很快，但還沒摸過真的料。', quote:'（CAD 沒有教這個啊……）' },
+    bio:'到職第一週。週一跟著學姊跑新案承接，接著被帶去工地四天。圖畫得很快，但還沒摸過真的料。', quote:'（CAD 沒有教這個啊……）' },
   tie:{ name:'鐵叔', role:'工地主任', helmet:0xf2f2f2, vest:0xf07a1a, skin:0xd9a577, feat:{mustache:true},
     bio:'做外牆三十年。嗓門大，罵完會偷偷買飲料放你桌上。最恨「圖上可以、現場不行」。', quote:'「圖上畫得出來，不代表手伸得進去。」',
     chat:['看我幹嘛？料在後面，自己去拿。','我年輕的時候，一張圖要用手描三天。你們現在按一下就出來，更要想清楚再按。','中午便當我訂雞腿。你那份我也訂了，別客氣。'] },
@@ -2130,24 +2131,29 @@ const LEVELS = [
   ] },
 
 // ---------- 週五 ----------
-{ id:'L5', name:'週一　施工圖檢討', short:'週一', office:true, roastAt:3, view:{t:[0.3,0.8,0.9], theta:-0.14, phi:0.55, dist:17.5},
+{ id:'L5', name:'週一　新案承接', short:'週一', office:true, roastAt:3, view:{t:[0.3,0.8,0.9], theta:-0.14, phi:0.55, dist:17.5},
   boardAt:[BB.x(SCR.X),BB.z(SCR.Y)], boardCam:{theta:Math.PI, phi:1.15, dist:5.6},   /* 黑板的位置；走到黑板前面時鏡頭轉到北邊看板面 */
   area:{x0:BB.x(0), x1:BB.x(11.71), z0:BB.z(9.75), z1:BB.z(0)},   /* 走得到的範圍：整棟。牆、玻璃、家具各自當障礙物；會議室、老闆辦公室、茶水間都走得進去（他 11-13），左邊的原有廁所門關著 */
   decoyAt:[BB.x(7.35),BB.z(8.3)],   /* 假的檢討立牌：在廁所裡面，騙人進去（他 11-13） */
-  standAt:{ cost:[BB.x(5.3),BB.z(6.4)], iface:[BB.x(1.0),BB.z(5.0)], revise:[BB.x(6.6),BB.z(4.0)], embed:[BB.x(1.9),BB.z(3.8)], fab:[BB.x(10.1),BB.z(5.3)] },   /* 成本檢討＝老闆辦公室門口、安裝運送＝大門口、圖面修改＝辦公區中間、預埋圖＝西邊走道、加工方法＝茶水間（東邊走道太窄走不到；廁所前面會擋到廁所門） */
+  standAt:{ rfi:[BB.x(3.0),BB.z(6.95)],   /* 釋疑＝會議室裡（門進去右手邊、會議桌尾端旁的空地） */ cost:[BB.x(5.3),BB.z(6.4)], iface:[BB.x(1.0),BB.z(5.0)], revise:[BB.x(6.6),BB.z(4.0)], embed:[BB.x(1.9),BB.z(3.8)], fab:[BB.x(10.1),BB.z(5.3)] },   /* 成本檢討＝老闆辦公室門口、安裝運送＝大門口、圖面修改＝辦公區中間、預埋圖＝西邊走道、加工方法＝茶水間（東邊走道太窄走不到；廁所前面會擋到廁所門） */
   trayAt:[[0.95,4.2],[1.67,4.2],[2.39,4.2],[3.11,4.2],[3.83,4.2]].map(([X,Y])=>[BB.x(X),BB.z(Y)]), startAt:[BB.x(1.15),BB.z(5.9)], batAt:[BB.x(0.62),BB.z(1.95)],   /* 球棒箱搬到西南角、第一組桌子後面靠西牆（他 11-13 14:43：放在不那麼明顯的位置；原本在門口台座上，一進門就看到） */   /* 五塊立牌都擺在入口前面這一塊任務區（他 11-13：黑柱子刪掉、任務區空出來、在這邊執行；排成一列（他 11-13：不要分成兩列），從右邊繞得過去，離藍圈也夠遠不會一拿就跳題），黑板在兩組桌子中間走道的南端；討論的站位在走道口（小安、鐵叔那一排後面，不用擠進兩排座位中間：走道中間只剩 46 公分，鍵盤、搖桿容易蹭到坐著的同事）；你從入口（ENTRY）進來，站在門口的小台座上；球棒和傘桶放在門口那根紅磚柱的東邊（他 11-13 指定）；你的起點往北挪到離球棒超過 75 公分，才不會一開場就跳內心獨白 */
-  seats:[[BB.x(3.34),BB.z(2.63),-Math.PI/2,1813],[BB.x(5.0),BB.z(2.63),Math.PI/2,1815],[BB.x(6.81),BB.z(1.30),-Math.PI/2,1818]], fanSeats:[['di',BB.x(3.34),BB.z(1.30),-Math.PI/2,1814],['hao',BB.x(5.0),BB.z(1.30),Math.PI/2,1816]],   /* 小安 1813、鐵叔 1815、琳姊 1818、兩個同梯 1814／1816；你的位子是 1817（他 11-13 指定：琳姊坐裡面，空位給新人） */ desc:'到職第一天，在設計部。學長畫好的施工圖要送出去，你跟著學姊，把公司內部的檢討跑一遍。送出去之前有五件事。', trDone:'圖送出去了，鍋也是',
+  seats:[[BB.x(3.34),BB.z(2.63),-Math.PI/2,1813],[BB.x(5.0),BB.z(2.63),Math.PI/2,1815],[BB.x(6.81),BB.z(1.30),-Math.PI/2,1818]], fanSeats:[['di',BB.x(3.34),BB.z(1.30),-Math.PI/2,1814],['hao',BB.x(5.0),BB.z(1.30),Math.PI/2,1816]],   /* 小安 1813、鐵叔 1815、琳姊 1818、兩個同梯 1814／1816；你的位子是 1817（他 11-13 指定：琳姊坐裡面，空位給新人） */ desc:'到職第一天，在設計部。公司剛接下一個新案，你跟著學姊，把「新案承接」從頭跑一遍。開始大量畫圖之前有六件事。', trDone:'圖送出去了，鍋也是',
   gy:-0.25, cx:1.2, boss:'an', npcs:['an','tie','lin'],
   build(){
     office();
     const scr=new THREE.Group(), SS=SCR.S, zP=BB.z(SCR.Y), D=SCR.dir; scr.scale.set(SS,SS,0.1); scr.rotation.y=D<0?Math.PI:0; scr.position.set(BB.x(SCR.X)-D*SS*1.2, L.gy+SCR.yc-SS*1.556, zP+D*0.045); LV.group.add(scr); LV.host=scr;   /* 圖縮小貼在黑板上（原本是整面牆）；黑板面向北邊，整張圖轉 180 度 */   // 以下零件都掛在螢幕上：整面牆壓扁成一張立面圖
     cornerWall((id,m)=>stat(m), false, 'none');
     LV.refs.clash=[0.9,2.7].map(y=>stat(box(0.34,0.34,0.3, 1.2,y,0.3, mat.clash)));                                                 // 紅色方塊：各部門圈出來要改的地方
-    add('cost', board(['成本 OK'], -1.5,2.6,0.45,0,1.2,'#15803d','#ffffff')); add('fab', board(['加工 OK'], 3.7,2.6,0.45,0,1.2,'#15803d','#ffffff'));   /* 平的綠色標籤貼在圖上（像蓋章）：轉視角不會插進螢幕 */
+    { const stk=(bg,x,y,ok)=>{ const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'); g.fillStyle=bg; g.beginPath(); g.arc(64,64,58,0,Math.PI*2); g.fill(); g.strokeStyle='#ffffff'; g.lineWidth=7; g.stroke();   /* 圓形小貼紙：紅底問號（有疑義）、綠底打勾（已釋疑） */
+        if(ok){ g.lineWidth=15; g.lineCap='round'; g.lineJoin='round'; g.beginPath(); g.moveTo(34,66); g.lineTo(56,88); g.lineTo(96,42); g.stroke(); } else { g.fillStyle='#ffffff'; g.font='bold 86px "Microsoft JhengHei","Noto Sans TC",sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('？',64,70); }
+        const m=new THREE.Mesh(new THREE.PlaneGeometry(0.58,0.58), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c), transparent:true})); m.position.set(x,y,0.46); return m; }, QM=[[0.55,1.9],[1.95,1.9],[-0.95,0.45]];
+      LV.refs.qm=QM.map(([x,y])=>stat(stk('#dc2626',x,y,false)));   // 發包圖上對不起來的地方：三個紅色問號（釋疑做完才消失）
+      add('rfi', board(['釋疑 OK'], -1.5,1.2,0.45,0,1.2,'#15803d','#ffffff')); QM.forEach(([x,y])=>add('rfi', stk('#15803d',x,y,true))); }
+    add('cost', board(['成本 OK'], -1.5,2.6,0.45,0,1.2,'#15803d','#ffffff')); add('fab', board(['工廠 OK'], 3.7,2.6,0.45,0,1.2,'#15803d','#ffffff'));   /* 平的綠色標籤貼在圖上（像蓋章）：轉視角不會插進螢幕 */
     [1.0,2.6].forEach(y=>add('iface', at(new THREE.Mesh(new THREE.TorusGeometry(0.2,0.025,8,28), mat.mark), -0.05,y,0.34)));
     [0.9,2.7].forEach(y=>add('revise', box(0.34,0.34,0.3, 1.2,y,0.3, mat.good)));
     [0,1.2,2.4].forEach(x=>add('embed', at(new THREE.Mesh(new THREE.TorusGeometry(0.2,0.025,8,28), mat.mark), x,-0.1,0.34))); add('embed', board(['預埋圖 OK'], 3.7,1.2,0.45,0,1.4,'#15803d','#ffffff')); LV.host=null;
-    const PIN={embed:0xe23b3b, cost:0xf2c21b, iface:0x2fa84f, revise:0x2f6fd0, fab:0xf08a1c}, pins={}, ZF=zP+D*0.005, PS=SS/0.98, yTop=L.gy+SCR.yc+2.0*SS-0.04;   // 圖釘：每一項一個顏色
+    const PIN={rfi:0x8b5cf6, embed:0xe23b3b, cost:0xf2c21b, iface:0x2fa84f, revise:0x2f6fd0, fab:0xf08a1c}, pins={}, ZF=zP+D*0.005, PS=SS/0.98, yTop=L.gy+SCR.yc+2.0*SS-0.04;   // 圖釘：每一項一個顏色
     LV.fx.push(dt=>{ Object.keys(PIN).forEach(id=>{ const pt=LV.parts[id]; if(!pt || !pt.meshes.length) return;
       if(!pins[id] && pt.meshes[0].visible){ const v=new THREE.Vector3(); pt.meshes[0].getWorldPosition(v); const g=new THREE.Group(); g.add(ball(0.1,std(PIN[id],{roughness:0.35}),0,0,0.16)); g.add(cyl(0.022,0.08,'z',0,0,0.07,std(PIN[id]),8)); g.add(cyl(0.006,0.07,'z',0,0,0.0,mat.chrome,6));   /* 圓頭大一點，平常的鏡頭看得到 */   // 圓頭、頸、針
         g.position.set(v.x-D*0.3*PS, Math.min(v.y+0.3*PS, yTop), ZF); g.rotation.y=D<0?Math.PI:0; g.scale.setScalar(PS); g.userData.t=0; stat(g); pins[id]=g; }
@@ -2155,43 +2161,48 @@ const LEVELS = [
         g.position.z=ZF+D*(fly*fly*0.9+bounce*PS); g.scale.setScalar(PS*(1+(k>0.55&&k<0.7?0.25:0))); } }); });
     LV.fx.push(()=>{ const front=(camera.position.z-zP)*D>0.2; scr.visible=front; LV.boardG.visible=front; LV.boardGhost.visible=!front; Object.values(pins).forEach(g=>g.visible=front); });   /* 鏡頭在黑板背面：板面、圖、圖釘都收起來，只留外框（不然一塊黑板擋在畫面最前面） */   // 從前面飛過來、釘進去、彈一下
   },
-  tray:['embed','cost','iface','revise','fab'],
+  tray:['embed','cost','rfi','iface','revise','fab'],
   intro:[
     {who:'an', t:'{P}，早！我是小安，大你兩屆。今天是你到職第一天。', mood:'smile'},
-    {who:'an', t:'後面那面黑牆上貼的是一面轉角帷幕牆的圖，組裡最資深的學長畫的。**標準部分**，一定是最有經驗的人畫。'},
-    {who:'an', t:'你今天的工作：圖送出去之前，跟著我把公司內部的檢討跑一遍。'},
-    {who:'tie', t:'我是鐵叔，這個案子的工地主任。旁邊這位是品管兼勞安的琳姊。圖送出去之前，業務要看**成本**，工廠要看**加工**，工務要看**安裝跟運送**。'},
-    {who:'tie', t:'先講清楚：平常設計不用下來扛料，現場是工務的事。但是這張圖送出去之後，接下來四天你跟我去工地，自己裝一次。'},
+    {who:'an', t:'後面黑板上貼的是新案轉角的**系統圖**，就是這個案子的標準做法，組裡最資深的學長畫的。**標準部分**，一定是最有經驗的人畫。'},
+    {who:'an', t:'你今天的工作：跟著我把新案承接的流程跑一遍。實際上不是一天跑得完的，今天帶你走快轉版。'},
+    {who:'tie', t:'我是鐵叔，這個案子的工地主任。旁邊這位是品管兼勞安的琳姊。大量畫施工圖之前，系統圖要先過三關：業務看**成本**，廠務看**工廠**，工務看**工地**。'},
+    {who:'tie', t:'先講清楚：平常設計不用下來扛料，現場是工務的事。但是今天跑完，接下來四天你跟我去工地，自己裝一次。'},
     {who:'tie', t:'你以後也要畫圖。畫圖的人自己裝過，才知道**圖上少一條線，現場要多幾個工**。'},
     {who:'an', t:'對了，旁邊那兩個是'+FAN_PICK[0]+'跟'+FAN_PICK[1]+'，平常跟著鐵叔跑工地，今天回來幫忙整理圖。'},
     {who:'di', t:'你也是新來的？這禮拜我們也要跑工地，一起加油！', mood:'smile'},
-    {who:'an', t:'送出去之前有五件事。少一件，就是把麻煩送給現場。五個立牌散在辦公室各處：老闆辦公室門口、大門口、辦公區中間、西邊走道、茶水間。成本、加工、安裝運送這三個檢討不分先後；其他的順序自己想。'} ],
-  outroGood:[ {who:'an', t:'五件事都過了，零異常。圖可以送了！', mood:'smile'}, {who:'an', t:'對了，下班時間是六點。……我是說表定。'},
+    {who:'an', t:'開始大量畫圖之前有六件事。少一件，就是把麻煩送給現場。六個立牌散在辦公室各處：會議室、老闆辦公室門口、大門口、辦公區中間、西邊走道、茶水間。第一件一定是**釋疑**，在會議室。成本、工廠、工地這三個檢討不分先後；其他的順序自己想。'} ],
+  outroGood:[ {who:'an', t:'六件事都過了，零異常！', mood:'smile'}, {who:'an', t:'預埋圖核可了，接下來才是大量畫**施工圖**、送審、改到核可。核可的施工圖再拆成**加工圖**，審核沒問題才發給工廠。', src:SRC.flow23}, {who:'an', t:'對了，下班時間是六點。……我是說表定。'},
     {who:'tie', t:'照規矩，**風雨試驗**沒過，**工地不准開始安裝**。我們會去風雨試驗室，做一片樣品牆，用風跟水去打，看漏不漏。過了，工廠才正式下料，工地才開始組裝。這個案子上個月過了，所以你逃不掉。', src:SRC.wind}, {who:'an', t:'另外還有一個叫**視覺模型**的：做一小片實體樣品，給建築師和業主確認外觀和顏色。它看的是好不好看；風雨試驗看的是漏不漏。', src:SRC.yj5b}, {who:'tie', t:'明天早上七點，工地見，看圖上畫的東西裝不裝得起來。'}, {who:'you', t:'（吞口水）……好。'} ],
-  outroBad:[ {who:'an', t:'圖是送出去了，不過有 {N} 張異常單……'}, {who:'lin', t:'我幫你夾好了。明天帶去工地，對著現場看。'},
+  outroBad:[ {who:'an', t:'六件事是跑完了，不過有 {N} 張異常單……'}, {who:'lin', t:'我幫你夾好了。明天帶去工地，對著現場看。'}, {who:'an', t:'預埋圖核可了，接下來才是大量畫**施工圖**、送審、改到核可。核可的施工圖再拆成**加工圖**，審核沒問題才發給工廠。', src:SRC.flow23},
     {who:'tie', t:'照規矩，**風雨試驗**沒過，**工地不准開始安裝**。我們會去風雨試驗室，做一片樣品牆，用風跟水去打，看漏不漏。過了，工廠才正式下料，工地才開始組裝。這個案子上個月過了，所以你逃不掉。', src:SRC.wind}, {who:'an', t:'另外還有一個叫**視覺模型**的：做一小片實體樣品，給建築師和業主確認外觀和顏色。它看的是好不好看；風雨試驗看的是漏不漏。', src:SRC.yj5b}, {who:'tie', t:'明天早上七點，工地見。'} ],
-  onPlace:{ revise(){ LV.refs.clash.forEach(m=>m.visible=false); } },
+  onPlace:{ rfi(){ LV.refs.qm.forEach(m=>m.visible=false); },
+    revise(){ LV.refs.clash.forEach(m=>m.visible=false); const lv=LV; let t=0; const f=dt=>{ if(LV!==lv) return; if(dlgOpen){ t=0; return; } t+=dt; if(t>0.6){ LV.fx.splice(LV.fx.indexOf(f),1); bubble('an','建築師回覆了：「分格線再往左兩公分。」……這是第三次了。',true); } }; LV.fx.push(f); } },   /* 分割圖送審：對話關掉後小安補一句 */
   steps:[
-    { id:'cost', name:'成本檢討', tr:'業務的計算機', any:'review', spot:[BB.x(4.17),BB.z(1.0)], hint:'圖送出去之前，業務、廠務、工務三個部門都要看（**不分先後**）：業務部門看成本。',
+    { id:'rfi', name:'釋疑', tr:'不懂就問，用寫的', spot:[BB.x(4.17),BB.z(1.0)], hint:'新案第一步不是畫圖，是**釋疑**：標單、發包圖、施工規範拿到手，先找出對不起來的地方。立牌在**會議室**。',
+      q:{ by:'an', title:'標單寫的數量跟發包圖對不起來，鋼構夠不夠固定帷幕也看不出來。你怎麼辦？', body:'手上有工程標單、發包圖說、施工規範。', src:SRC.flow1, opts:[
+        {t:'先照自己的判斷畫，有問題現場再說', ok:false, exp:'有疑義不能自己猜。要**彙整疑義、提出正式釋疑文件**，並追蹤回覆。'},
+        {t:'把疑義彙整起來，提正式釋疑文件，追蹤到有回覆', ok:true, exp:'標單跟圖不符、圖跟規範衝突、要不要加抗風樑或抗風柱、跟其他工種的介面，全部**彙整成正式釋疑文件，並追蹤回覆結果**。'} ] } },   /* 他 11-17：公司流程第一階段，原本整段沒有 */
+    { id:'cost', name:'成本檢討', tr:'業務的計算機', any:'review', spot:[BB.x(4.17),BB.z(1.0)], hint:'系統圖定案之前要過三關（**不分先後**）。業務部門看**成本**：材料用量、型材規格、五金、加工成本。',
       q:{ by:'an', title:'業務部回話了：圖上有一支料跟估價單寫的不一樣，會超出預算。你怎麼辦？', body:'業務部門拿成交報告和估價單，對圖上的成本。', src:SRC.yj2, opts:[
         {t:'先照圖做，結案再一起算', ok:false, exp:'有超出預算、或跟估價單不同的地方，要**即時反應業務單位**，不能拖到最後。'},
         {t:'馬上跟業務部門講，一起檢討', ok:true, exp:'業務部門依成交報告和估價單，確認設計圖的成本符不符合預算；有超出或不同的地方，設計要**即時反應**。'} ] } },
-    { id:'fab', name:'加工方法檢討', tr:'工廠說做得出來', any:'review', spot:[BB.x(4.17),BB.z(1.0)], hint:'廠務部門看：工廠做不做得出來、組不組得起來（三個部門**不分先後**）。',
+    { id:'fab', name:'工廠檢討', tr:'工廠說做得出來', any:'review', spot:[BB.x(4.17),BB.z(1.0)], hint:'廠務部門看**工廠**：型材怎麼加工、怎麼組裝、設備做不做得到（三關**不分先後**）。',
       q:{ by:'lin', title:'我剛從工廠過來。廠務說：轉角這支料的加工方法，工廠以前沒做過。什麼時候談？', body:'廠務部門看圖，檢討加工和組裝做不做得到。', src:SRC.yj2, opts:[
         {t:'現在就跟工廠檢討，必要時先做樣品', ok:true, exp:'非標準的部分、工廠以前沒做過的加工方法，更要**提前檢討**，必要時做樣品模型。工廠有更好的做法，會建議設計修改。'},
         {t:'等加工圖出了，工廠自己會想辦法', ok:false, exp:'工廠以前沒做過的加工方法，要**提前跟工廠檢討**，不能等加工圖出了才發現做不出來。'} ] } },
-    { id:'iface', name:'安裝運送檢討', tr:'逐顆查', any:'review', spot:[BB.x(4.17),BB.z(1.0)], hint:'工務部門看：運不運得到、裝不裝得上去。轉角、柱邊、梁下的每顆螺絲都要查（三個部門**不分先後**）。',
+    { id:'iface', name:'工地檢討', tr:'逐顆查', any:'review', spot:[BB.x(4.17),BB.z(1.0)], hint:'工務部門看**工地**：安裝順序、施工空間、現場組不組得起來。轉角、柱邊、梁下的每顆螺絲都要查（三關**不分先後**）。',
       q:{ by:'tie', title:'轉角這幾張詳圖是委外畫的。工務要看安裝，你怎麼審？', body:'外包公司交來的圖，尺寸規格都對。', src:SRC.rule3, opts:[
         {t:'尺寸規格對就好，外包會負責', ok:false, exp:'**委外交圖同樣要逐顆查**，不可只看尺寸與規格。HM2 那批就是委外畫的。'},
         {t:'照樣逐顆查：每顆螺絲工具伸不伸得進去', ok:true, exp:'**委外交圖同樣依三條檢核**，不可只看尺寸與規格。'} ] } },
-    { id:'revise', name:'圖面修改', tr:'有改有回報', spot:[BB.x(4.17),BB.z(1.0)], hint:'牆上那張圖的紅色方塊＝各部門圈出來要改的地方。',
-      q:{ by:'an', title:'三個部門的意見都回來了。你怎麼處理？', body:'業務、廠務、工務各有幾條建議。', src:SRC.yj3, opts:[
-        {t:'挑好改的改一改，其他的不用回', ok:false, exp:'每一條建議都要檢討。改或不改，都要**回報給提的部門**。'},
-        {t:'一條一條檢討，該改的改，再回報各部門怎麼處理', ok:true, exp:'根據各部門的建議檢討，必要時修改設計圖，並**回報各部門**建議事項和處理方式。'} ] } },
-    { id:'embed', name:'預埋圖', tr:'先喬再畫', spot:[BB.x(4.17),BB.z(1.0)], hint:'工地四樓明天綁板筋。**預埋圖**要照工地的樓層進度給。',
-      q:{ by:'tie', title:'四樓的預埋圖要給工地了。給之前，先找誰談？', body:'預埋件要埋在樓板裡，位置畫在預埋圖上。', src:SRC.yj5d, opts:[
+    { id:'revise', name:'修正系統・分割圖送審', tr:'外觀先過關', spot:[BB.x(4.17),BB.z(1.0)], hint:'三關的意見回來了，黑板上的紅色方塊＝要修正的地方。每一條都要檢討、回報提的部門。系統改好之後，先別急著大量畫圖。',
+      q:{ by:'an', title:'系統圖照三個檢討修正好了，也都回報各部門了。可以開始大量畫施工圖了嗎？', body:'業務、廠務、工務的建議都處理完了。', src:SRC.flow22, opts:[
+        {t:'先畫立面分割圖，送業主、建築師確認外觀', ok:true, exp:'分割方式、板材尺寸、接縫、分格線、外觀比例，要**送業主、建築師確認**。系統圖和分割圖定了，才是後面大量繪圖的依據。'},
+        {t:'可以，趕快畫，時間很趕', ok:false, exp:'外觀還沒確認。要先畫**立面分割圖**，送業主和建築師確認，再大量畫施工圖。'} ] } },
+    { id:'embed', name:'預埋圖送審', tr:'先喬再畫', spot:[BB.x(4.17),BB.z(1.0)], hint:'工地四樓明天綁板筋。**預埋圖**要照工地的樓層進度給。',
+      q:{ by:'tie', title:'四樓的預埋圖要給工地了。給之前，先找誰談？', body:'預埋件要埋在樓板裡，位置畫在預埋圖上。', src:SRC.yj5d+'；'+SRC.flow23, opts:[
         {t:'照立面分割畫好就送，現場自己配合', ok:false, exp:'預埋方式要**先跟工地的營造廠協商**，不是畫好就丟過去。'},
-        {t:'先跟工地的營造廠談：樓板鋼筋怎麼排、固定點、混凝土強度', ok:true, exp:'預埋方式要**先跟工地營造協商**：樓板 RC 排筋位置、焊接點或固定點、RC 強度、結構尺寸差異。**預埋圖**照工地樓層的施作進度提供。'} ] } },
+        {t:'先跟工地的營造廠談：樓板鋼筋怎麼排、固定點、混凝土強度', ok:true, exp:'預埋方式要**先跟工地營造協商**：樓板 RC 排筋位置、焊接點或固定點、RC 強度、結構尺寸差異。**預埋圖**照工地樓層的施作進度提供。公司原則上用**預埋件**，避免事後在現場鑽孔；預埋圖要附**結構計算**，**審查核可後**才能加工、進場。'} ] } },
   ] },
 ];
 
@@ -2898,11 +2909,11 @@ function makePallet(st,x,z){ const g=new THREE.Group(); g.position.set(x,L.gy,z)
   else { const ink=std(0x2b2f36), chrome=std(0xc9ced6);   /* 純動作：立牌（他 11-13：原本一根木棒看不出是什麼）＝圓底座、立桿、往後仰的牌面，牌面畫這件事的圖示 */
     g.add(cyl(0.17,0.03,'y',0,0.015,0,ink,28)); g.add(cyl(0.05,0.02,'y',0,0.04,0,chrome,16)); g.add(cyl(0.016,0.72,'y',0,0.39,0,chrome,12));
     const c=document.createElement('canvas'); c.width=256; c.height=200; const x2=c.getContext('2d'); x2.fillStyle='#f7f8fa'; x2.fillRect(0,0,256,200); x2.fillStyle='#1d4f86'; x2.fillRect(0,0,256,34); x2.fillRect(0,192,256,8);
-    x2.fillStyle='#fff'; x2.font='bold 22px "Microsoft JhengHei",sans-serif'; x2.textAlign='center'; x2.textBaseline='middle'; x2.fillText(L.office?'送 圖 前 檢 討':'工 作 項 目',128,18);
+    x2.fillStyle='#fff'; x2.font='bold 22px "Microsoft JhengHei",sans-serif'; x2.textAlign='center'; x2.textBaseline='middle'; x2.fillText(L.office?'新 案 承 接':'工 作 項 目',128,18);
     x2.font='112px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif'; if(st.id==='layout'){ const g2=x2; g2.save(); g2.strokeStyle='rgba(229,57,53,0.25)'; g2.lineWidth=12; g2.beginPath(); g2.moveTo(18,96); g2.lineTo(238,96); g2.moveTo(128,44); g2.lineTo(128,186); g2.stroke(); g2.strokeStyle='#e53935'; g2.lineWidth=4; g2.stroke();   /* 放樣：雷射墨線儀打出紅色十字線（他 11-17：原本是板夾，看不出是放樣） */
       g2.strokeStyle='#3a3f47'; g2.lineWidth=5; [[-30,40],[0,46],[30,40]].forEach(([dx,dy])=>{ g2.beginPath(); g2.moveTo(128,132); g2.lineTo(128+dx,132+dy); g2.stroke(); });   // 腳架
       g2.fillStyle='#f2c230'; g2.strokeStyle='#8a6a10'; g2.lineWidth=3; g2.beginPath(); g2.roundRect(98,72,60,62,10); g2.fill(); g2.stroke(); g2.fillStyle='#2b2f36'; g2.beginPath(); g2.roundRect(112,84,32,22,5); g2.fill(); g2.fillStyle='#ff5252'; g2.beginPath(); g2.arc(128,95,5,0,Math.PI*2); g2.fill(); g2.fillStyle='#2b2f36'; g2.fillRect(118,62,20,12); g2.restore(); }   // 機身、出光窗、上面的旋鈕
-    else x2.fillText(({cost:'🧮',fab:'🏭',iface:'🚚',revise:'✏️',embed:'📐',decoy:'🐟',mo:'📏',mark:'📍',pour:'📱'})[st.id]||'📋',128,116);   /* 聯絡灌漿廠：手機（他 11-17） */
+    else x2.fillText(({cost:'🧮',fab:'🏭',iface:'🚚',revise:'✏️',embed:'📐',decoy:'🐟',mo:'📏',mark:'📍',pour:'📱',rfi:'❓'})[st.id]||'📋',128,116);   /* 聯絡灌漿廠：手機（他 11-17） */
     const face=std(0xffffff,{map:new THREE.CanvasTexture(c)}), bd=new THREE.Group(); bd.position.set(0,0.88,0); bd.rotation.x=-0.22;
     const pl=new THREE.Mesh(new THREE.BoxGeometry(0.36,0.3,0.02),[ink,ink,ink,ink,face,ink]); pl.castShadow=true; bd.add(pl); bd.add(box(0.38,0.02,0.03,0,-0.16,0,ink)); g.add(bd);
     g.rotation.y = L.view && L.view.theta!==undefined ? L.view.theta : 0; ly=1.22; }   // 牌面朝鏡頭；標籤放在牌子上面
@@ -3581,7 +3592,7 @@ function buildTray(){ const card=$('#trayCard'); if(!L.bench){ card.style.displa
   L.tray.forEach(id=>{ const b=document.createElement('button'); b.textContent=stepOf(id).name; if(placed.has(id)) b.className='done'; b.onclick=()=>benchPick(id,b); tray.appendChild(b); }); }
 
 const CARD = {
-  L5:['週一　設計部', '到職第一天。試用期三個月，責任制。', '合約第七條：加班是自願的。', '合約第八條：自願是必須的。', '學長畫的施工圖今天要送出去，你負責跑檢討。'],
+  L5:['週一　設計部', '到職第一天。試用期三個月，責任制。', '合約第七條：加班是自願的。', '合約第八條：自願是必須的。', '公司剛接下一個新案，你負責跟著跑流程。'],
   L1:['週二　早上七點', '打卡機還沒醒，你已經到了。', '打卡機醒了，也不會記錄這一段。', '接下來四天，你要去工地，看圖上畫的東西怎麼變成真的。', '平常，設計是不用自己下來組裝的。'],
   L2:['週三', '三樓出事了。有一排預埋件，灌漿的時候漏埋。', '檢討會開了兩個小時。', '結論是：下次注意。', '沒有人承認是誰的錯。所以是你去補。'],
   L3:['週四　下雨', '外牆停工。', '工期沒有停。薪水也沒有多。', '學姊帶你進工務所。'],
@@ -3878,7 +3889,7 @@ setInterval(()=>{ if(done||!L) return; const s=Math.round((Date.now()-t0)/1000);
 // ===================== 選關、人物、獎盃、名字 =====================
 function openMenu(){ $('#rotHint').style.display = TOUCH && vw()<vh() ? 'block' : 'none';   /* 手機直著拿：提醒可以橫過來 */
   const best=store.get('cwstory_best',{}), list=$('#lvList'); list.innerHTML='';
-  $('#menuSub').textContent=`你是${cname('you')}，設計部新人。週一在辦公室跟著跑施工圖檢討，接下來四天跟著去工地，對著圖，親手裝一次。薪水面議，責任制。`;
+  $('#menuSub').textContent=`你是${cname('you')}，設計部新人。週一在辦公室跟著跑新案承接，接下來四天跟著去工地，對著圖，親手裝一次。薪水面議，責任制。`;
   LEVELS.forEach((lv,i)=>{ const d=document.createElement('div'); d.className='lv'; const info=document.createElement('div');
     const n=document.createElement('div'); n.className='n'; n.textContent=lv.name; const ds=document.createElement('div'); ds.className='d'; ds.textContent=lv.desc; info.append(n,ds);
     if(best[lv.id]){ const b=document.createElement('div'); b.className='best'; b.textContent=`最佳：${best[lv.id].s} 分，異常單 ${best[lv.id].n} 張`; info.append(b); }
