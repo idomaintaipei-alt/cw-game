@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="226e08abc24f", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="ea249cfa2d88", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -2717,6 +2717,34 @@ function makeCommonCar(kind,col){ const g=new THREE.Group(), gl=std(0x161d26,{em
   add(box(2*L2-0.2,0.08,W+0.02, 0,0.45,0, dk));                                                                             // 下面一圈黑色飾條
   [-1,1].forEach(e=>{ add(box(0.06,0.1,0.32, -L2-0.02,0.72,e*(W/2-0.25), mat.lamp)); add(box(0.06,0.1,0.3, L2+0.01,0.82,e*(W/2-0.22), mat.red)); add(box(0.12,0.06,0.04, -0.4,1.0,e*(W/2+0.03), dk)); });   // 大燈、尾燈、後照鏡
   wheels(sedan?1.35:1.2, W/2-0.12, 0.31); return g; }
+function chfKit(g,c){ const u=g.userData, sv=L; let dr; try{ L=Object.assign({},L||{},{office:true}); dr=makePerson({skin:0xe3b48a, shirt:0x1c1f26, hair:0x1d1a18, feat:{}}); } finally{ L=sv; }   /* 豪車司機（他 11-18）：借辦公室造型（不戴安全帽），黑西裝 */
+  const capM=std(0x16181d), gdM=std(0xd7bd8d,{metalness:0.6, roughness:0.35}), top=new THREE.Box3().setFromObject(dr).max.y, cp=new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.3,0.15,24),capM); cp.position.y=top-0.04; dr.add(cp); dr.add(cyl(0.305,0.035,'y',0,top-0.1,0,gdM,24)); dr.add(box(0.38,0.02,0.17,0,top-0.11,0.31,capM));   // 司機帽（戴在大頭頂上：量頭頂高度）＋金色帽帶＋帽簷
+  dr.visible=false; dr.rotation.y=-Math.PI/2; g.add(dr); const hole=new THREE.MeshBasicMaterial({color:0x0b0c0f, side:THREE.DoubleSide});
+  const mk=(sd,d)=>{ const hg=new THREE.Group(), N=12, bot=x=>{ const a=c.arch, dx=x-a.x; return Math.abs(dx)<a.r ? Math.max(d.yb, a.y+Math.sqrt(a.r*a.r-dx*dx)) : d.yb; }, pp=[], gp=[[d.x0,d.yt],[d.x1,d.yt],[d.x1,d.gt[1]],[d.x0,d.gt[0]]];   /* 一扇門：下半車身色（下緣照輪拱挖）＋上半車窗；鉸鏈在前緣 */
+    for(let i=0;i<=N;i++){ const x=d.x0+(d.x1-d.x0)*i/N; pp.push([x,bot(x)]); } pp.push([d.x1,d.yt],[d.x0,d.yt]);
+    const sh=(pts,o)=>{ const sp=new THREE.Shape(); pts.forEach(([x,y],i)=>i?sp.lineTo(x-o,y):sp.moveTo(x-o,y)); return sp; };
+    hg.position.set(d.x0,0,sd*c.bz); g.add(hg); const pm=new THREE.Mesh(new THREE.ExtrudeGeometry(sh(pp,d.x0),{depth:0.012, bevelEnabled:false}),c.paint); pm.position.z = sd>0 ? 0 : -0.012; hg.add(pm);
+    const gm=new THREE.Mesh(new THREE.ExtrudeGeometry(sh(gp,d.x0),{depth:0.012, bevelEnabled:false}),c.glass); gm.position.z = sd>0 ? c.gz-c.bz : c.bz-c.gz-0.012; hg.add(gm);
+    const h1=new THREE.Mesh(new THREE.ShapeGeometry(sh(pp,0)),hole), h2=new THREE.Mesh(new THREE.ShapeGeometry(sh(gp,0)),hole); h1.position.z=sd*(c.bz+0.003); h2.position.z=sd*(c.gz+0.003); h1.visible=h2.visible=false; g.add(h1,h2);   // 門洞（門打開才看得到，黑的）
+    return {hg, sd, holes:[h1,h2]}; };
+  u.chf={dr, c, fd: mk(1,c.front), rd: c.rear ? {'1':mk(1,c.rear), '-1':mk(-1,c.rear)} : null}; }   // 駕駛座在左前（+z）；後門兩邊都做，看主角在哪一邊下車
+function chfOpen(d,a){ if(!d) return; d.hg.rotation.y=-d.sd*a; d.holes.forEach(h=>h.visible=a>0.03); }
+function chfStep(c,dt){ const g=c.g, u=g.userData, K=u.chf, C=K.c, dr=K.dr, me=LV.actors.you, ez=q=>{ q=Math.max(0,Math.min(1,q)); return q*q*(3-2*q); };   /* 下車（他 11-18：要從座位出來，不能直接蹦出來） */
+  const pose=(pp,k)=>{ const pu=pp.userData; pu.legL.rotation.x=pu.legR.rotation.x=-1.45*k; [pu.legL,pu.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=1.25*k; }); pu.armL.rotation.x=pu.armR.rotation.x=-1.05*k; pu.armL.rotation.z=pu.armR.rotation.z=0; },   // k＝1 坐著、0 站著
+    walk=(pp,ph)=>{ const pu=pp.userData, a=Math.sin(ph)*0.55; pu.legL.rotation.x=a; pu.legR.rotation.x=-a; pu.armL.rotation.x=-a*0.8; pu.armR.rotation.x=a*0.8; [pu.legL,pu.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=0; }); };
+  if(!c.al){ g.updateMatrixWorld(true); const v=g.worldToLocal(new THREE.Vector3(g.position.x+1.7,g.position.y,g.position.z+0.3)), sd=v.z<0?-1:1, zo=C.bz+0.45, xF=(C.front.x0+C.front.x1)/2, xR=C.rear ? C.rear.x1+0.6 : 1.7;   /* 主角下車那一側＝原本出現的位置那一側 */
+    c.al={t:0, sd, zo, xF, path: sd>0 ? [[xF,zo],[xR,zo]] : [[xF,zo],[C.nose-0.7,zo],[C.nose-0.7,-zo],[xR,-zo]], s:0, arr:-1, ph:0}; me.g.traverse(o=>{ if(o.userData.blob) o.visible=false; }); }   // 另一側：司機從車頭繞過去
+  const A=c.al, sd=A.sd, t=(A.t+=dt);
+  if(t<1.8) chfOpen(K.fd, 1.1*(ez(t/0.5)-ez((t-1.3)/0.4)));   // 駕駛座門：開 → 司機下車 → 關
+  if(t<1.3){ const q=ez((t-0.4)/0.9); dr.visible=t>0.4; dr.position.set(C.frontX+(A.xF-C.frontX)*q, (C.seatY-0.73)*(1-q), 0.4+(A.zo-0.4)*q); dr.rotation.y=-Math.PI/2*(1-q); pose(dr,1-q); return; }   // 司機從駕駛座起身、轉身、跨出來
+  if(A.arr<0){ let rem=dt*2.6; while(rem>0 && A.path.length>1){ const [a,b]=A.path, d2=Math.hypot(b[0]-a[0],b[1]-a[1]), left=d2-A.s; if(rem<left){ A.s+=rem; rem=0; } else { rem-=left; A.s=0; A.path.shift(); } }   /* 司機走到主角那一側的後門 */
+    if(A.path.length>1){ const [a,b]=A.path, f=A.s/Math.hypot(b[0]-a[0],b[1]-a[1]); dr.position.set(a[0]+(b[0]-a[0])*f, 0, a[1]+(b[1]-a[1])*f); dr.rotation.y=Math.atan2(b[0]-a[0], b[1]-a[1]); A.ph+=dt*10; walk(dr,A.ph); } else { dr.position.set(A.path[0][0],0,A.path[0][1]); A.arr=t; } return; }
+  const ta=t-A.arr, q1=ez(ta/0.5)-ez((ta-2.0)/0.5), xM0=C.rear ? (C.rear.x0+C.rear.x1)/2 : 0.78; dr.rotation.y=Math.atan2(xM0-dr.position.x, sd*(C.bz+0.5)-dr.position.z); pose(dr,0); (sd>0 ? dr.userData.armR : dr.userData.armL).rotation.x=-0.9*q1;   // 司機站在車門後面一點（不擋主角）、面向下車的主角，靠車子那隻手抬起來請
+  if(K.rd) chfOpen(K.rd[sd], 1.15*q1); else { const d=u.doors[sd<0?0:1]; d.rotation.x=(sd<0?1:-1)*1.4*q1; }   // 後門（特斯拉＝那一側的鷗翼門）：開 → 主角下車 → 關
+  if(ta>2.6){ A.fin=true; return; } if(c.alDone || ta<0.5) return;
+  const q=ez((ta-0.5)/1.1), xM=C.rear ? (C.rear.x0+C.rear.x1)/2 : 0.78, lp=new THREE.Vector3(C.rearX+(xM-C.rearX)*q, (C.seatY-0.73)*(1-q), sd*(0.4+(C.bz+0.1)*q)); g.localToWorld(lp);   // 主角：從後座起身、轉身、跨出車門
+  me.g.visible=true; me.g.position.copy(lp); me.g.rotation.y=g.rotation.y-Math.PI/2+sd*Math.PI/2*q; pose(me.g,1-q);
+  if(q>=1){ c.alDone=true; me.g.traverse(o=>{ if(o.userData.blob) o.visible=true; }); c.dp={x:lp.x, z:lp.z}; } }
 function luxRim(w,R,st){ while(w.children.length>1) w.remove(w.children[1]); const f=Math.sign(w.position.z)*0.165, ch=mat.chrome;   /* 豪車專屬輪框（他 11-18：細節不夠）：只留輪胎，其他換掉 */
   if(st==='ev'){ w.add(cyl(R*0.72,0.3,'z',0,0,0,std(0x3a3f47),28)); const lip=new THREE.Mesh(new THREE.TorusGeometry(R*0.7,0.018,6,28),std(0xb8bec6)); lip.position.z=f; w.add(lip);   // 特斯拉空力輪框：深灰盤面、銀色外圈、5 支寬輻
     for(let i=0;i<5;i++){ const a=i/5*Math.PI*2, sp=box(R*0.52,0.11,0.025,Math.cos(a)*R*0.34,Math.sin(a)*R*0.34,f,std(0x5a616b)); sp.rotation.z=a; w.add(sp); } w.add(cyl(R*0.16,0.04,'z',0,0,f,std(0xc9ced6),16)); return; }
@@ -2782,7 +2810,8 @@ function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pic
       g.add(box(0.26,0.08,0.12,-1.55,1.235,sd*0.72,amber)); g.add(box(0.06,0.3,0.14,1.86,0.9,sd*0.78,mat.red)); g.add(ball(0.1,paint,-0.78,1.3,sd*(W/2+0.08),1.2,0.9,0.7)); g.add(box(2.2,0.05,0.05,0.6,2.0,sd*0.72,mat.chrome)); });
     g.add(box(0.16,0.2,W+0.04,-1.93,0.52,0,dk)); g.add(box(0.1,0.1,0.9,-1.97,0.46,0,mat.chrome)); g.add(box(0.16,0.2,W+0.04,1.9,0.52,0,dk));
     g.add(cyl(0.42,0.2,'x',1.99,1.02,0,dk,22)); g.add(cyl(0.3,0.22,'x',2.0,1.02,0,mat.chrome,22)); g.add(cyl(0.2,0.24,'x',2.0,1.02,0,paint,18));       // 車尾備胎
-    wheels(1.22,0.84,mat.chrome,0.47); u.wheels.forEach(w=>luxRim(w,0.47,'benz'));   /* 賓士專屬鋁圈（他 11-18） */ }
+    wheels(1.22,0.84,mat.chrome,0.47); u.wheels.forEach(w=>luxRim(w,0.47,'benz'));   /* 賓士專屬鋁圈（他 11-18） */
+    chfKit(g,{paint, glass:gl, bz:0.92, gz:0.89, seatY:0.92, rearX:1.05, frontX:0.15, nose:-1.98, front:{x0:-0.6,x1:0.36,yb:0.46,yt:1.27,gt:[1.78,1.78]}, rear:{x0:0.38,x1:1.24,yb:0.46,yt:1.27,gt:[1.78,1.78]}, arch:{x:1.22,y:0.44,r:0.6}}); }   // 司機＋可以開的車門
   else if(kind==='bmw'){ const paint=std(0x15161a), W=1.86;                    // X6：高車身、斜背車頂、大雙腎水箱罩、細長頭燈
     g.add(extr(ins([[-1.95,0.42],[-2.0,0.75],['q',-2.0,1.03,-1.7,1.07],[-0.7,1.14],[1.55,1.16],['q',1.96,1.16,1.98,0.92],[1.96,0.42]]),W,paint));
     g.add(extr([[-0.82,1.1],['q',-0.5,1.6,0.0,1.64],[0.5,1.64],['q',1.3,1.57,1.88,1.14]],1.56,gl,0.05));
@@ -2798,9 +2827,11 @@ function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pic
     { const R=0.47, rimD=std(0x2b2f36), ch=mat.chrome; u.wheels.forEach(w=>{ while(w.children.length>1) w.remove(w.children[1]); const f=Math.sign(w.position.z)*0.165;   /* X6 專用輪框（他 11-18：原本是共用的圓餅＋十字）：只留輪胎，其他換掉 */
       w.add(cyl(R*0.7,0.3,'z',0,0,0,rimD,24)); const lip=new THREE.Mesh(new THREE.TorusGeometry(R*0.69,0.022,6,28),ch); lip.position.z=f; w.add(lip);   // 深色輪圈底、電鍍外緣一圈
       for(let i=0;i<10;i++){ const a=Math.floor(i/2)*Math.PI*2/5+(i%2?0.17:-0.17), sp=box(R*0.56,0.045,0.03,Math.cos(a)*R*0.36,Math.sin(a)*R*0.36,f,ch); sp.rotation.z=a; w.add(sp); }   // 10 支輻條（5 組雙輻）
-      w.add(cyl(R*0.15,0.04,'z',0,0,f,ch,16)); w.add(cyl(R*0.09,0.045,'z',0,0,f,std(0x1d4f86),14)); }); } }   // 中心蓋（電鍍＋藍色小圓）
+      w.add(cyl(R*0.15,0.04,'z',0,0,f,ch,16)); w.add(cyl(R*0.09,0.045,'z',0,0,f,std(0x1d4f86),14)); }); }
+    chfKit(g,{paint, glass:gl, bz:0.93, gz:0.78, seatY:0.82, rearX:1.0, frontX:0.15, nose:-2.0, front:{x0:-0.22,x1:0.62,yb:0.56,yt:1.12,gt:[1.52,1.55]}, rear:{x0:0.62,x1:1.3,yb:0.56,yt:1.12,gt:[1.55,1.38]}, arch:{x:1.24,y:0.47,r:0.64}}); }   // 司機＋可以開的車門   // 中心蓋（電鍍＋藍色小圓）
   else { const paint=std(0xf4f5f2,{roughness:0.32, metalness:0.12}), W=1.8, blk=std(0x15171b,{roughness:0.7}), gD=std(0x1a1e24,{roughness:0.06, metalness:0.4}), led=std(0xffffff,{emissive:0xe8f2ff}), rd=std(0xd81e2a,{emissive:0x8a0a12});   /* 特斯拉 Model X（他 11-18：白色糊在一起不及格）：珍珠白有光澤＋黑色玻璃車頂＋黑包邊 */
-    g.add(extr(ins([[-1.85,0.3],[-1.9,0.62],['q',-1.92,0.9,-1.55,0.98],['q',-1.05,1.06,-0.78,1.12],[1.5,1.14],['q',1.86,1.12,1.88,0.95],[1.88,0.3]]),W,paint));   // 車身：只做到窗戶下緣（腰線），上面整個座艙是玻璃
+    g.add(extr(ins([[-1.85,0.3],[-1.9,0.62],['q',-1.92,0.9,-1.55,0.98],['q',-1.05,1.06,-0.78,1.12],[0.36,1.13],[0.36,0.48],[1.34,0.48],[1.34,1.1386],[1.5,1.14],['q',1.86,1.12,1.88,0.95],[1.88,0.3]]),W,paint));   /* 車身：鷗翼門那段挖一個車廂槽（他 11-18：裡面沒挖空會穿幫） */
+    [-1,1].forEach(sd=>{ const sw=extr([[0.83,0.52],[0.83,0.93],[1.17,0.93],[1.17,0.52]],0.1,paint,0.03); sw.position.z=sd*0.85; g.add(sw); });   // 後輪上方那一小塊車身側板（其他地方是門板，門打開就開到門檻）   // 車身：只做到窗戶下緣（腰線），上面整個座艙是玻璃
     { const RQ=[[-0.84,1.08,-0.5,1.56,0.2,1.6],[0.2,1.6,1.08,1.58,1.55,1.1]], qp=(q,t)=>{ const v=1-t; return [v*v*q[0]+2*v*t*q[2]+t*t*q[4], v*v*q[1]+2*v*t*q[3]+t*t*q[5]]; }, rp=t0=>{ const k=Math.min(1,Math.floor(t0)); return qp(RQ[k],t0-k); },   /* 車頂曲線：0～1 前半段、1～2 後半段 */
       sub=(q,ta,tb)=>{ const w0=(1-ta)*(1-tb), w1=(1-ta)*tb+ta*(1-tb), w2=ta*tb; return ['q', w0*q[0]+w1*q[2]+w2*q[4], w0*q[1]+w1*q[3]+w2*q[5], ...qp(q,tb)]; }, tx=x=>{ let lo=0, hi=1; for(let i=0;i<30;i++){ const m=(lo+hi)/2; if(qp(RQ[1],m)[0]<x) lo=m; else hi=m; } return lo; },   /* 切一段曲線；找 x 對應的位置 */
       ta=tx(0.36), tb=tx(1.2), A=qp(RQ[1],ta), B=qp(RQ[1],tb), sa=1+ta, sb=1+tb,   /* 鷗翼門：B 柱（x 0.36）到 C 柱（x 1.2） */
@@ -2810,7 +2841,8 @@ function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pic
       sband=(t0,t1,z,h,dn,m,tg)=>seg(t0,t1,(x,y,L,nx,ny)=>box(L*1.05,h,0.006,x-nx*dn,y-ny*dn,z,m),tg);   /* 貼在側面玻璃上，離上緣 dn */
       g.add(extr([[-0.84,1.08],['q',-0.5,1.56,0.2,1.6],sub(RQ[1],0,ta),[A[0],1.09]],W-0.08,gD,0.04)); g.add(extr([[B[0],1.1],B,sub(RQ[1],tb,1)],W-0.08,gD,0.04));   // 座艙玻璃前段（擋風玻璃＋前門窗）、後段（尾門玻璃＋後側窗）；中段是鷗翼門
       band(0,0.05,0,1.6,frit); band(0.92,1.0,0,1.6,spn,0.016); band(1.0,sb,0,0.12,spn,0.016); seg(1.0,sb,(x,y,L,nx,ny)=>box(L*1.05,0.07,0.1,x+nx*0.01,y+ny*0.01,0,spn)); band(sb+0.035,sb+0.09,0,1.6,spn,0.012); band(1.94,2.0,0,1.6,frit);   /* 橫條不超過玻璃頂面平的部分；後車頂橫樑往後挪，不壓在門跟後段玻璃接縫的圓角上（他 11-18：邊突出車架）；車頂上的尾翼拿掉（Model X 尾翼在尾門玻璃下緣） */   // 擋風玻璃下緣、前車頂飾板、中央脊條（鷗翼門鉸鏈，門打開時看得到的橫樑）、後車頂橫樑、尾翼、尾門玻璃下緣
-      g.add(box(0.86,0.008,1.64,0.78,1.205,0,std(0x1c1f24))); [-1,1].forEach(sd=>{ g.add(box(0.34,0.07,0.42,0.76,1.24,sd*0.4,lea)); g.add(box(0.07,0.22,0.4,0.96,1.34,sd*0.4,lea)); });   // 裡面：黑色地板、第二排兩張座椅（門打開才看得到）
+      { const ih=std(0x2b2e34,{roughness:0.8}), wl=std(0xe6e2da,{roughness:0.5}); g.add(box(0.84,0.01,1.6,0.78,0.556,0,ih)); [-1,1].forEach(sd=>{ g.add(box(0.4,0.42,0.01,1.0,0.745,sd*0.795,ih)); g.add(box(0.4,0.34,0.2,1.0,0.73,sd*0.69,ih));   /* 裡面（門打開才看得到）：深色地板、兩側內牆、後輪拱凸包 */
+        g.add(box(0.12,0.56,0.44,0.43,0.92,sd*0.4,wl)); g.add(box(0.08,0.14,0.26,0.43,1.3,sd*0.4,wl)); g.add(box(0.44,0.12,0.46,0.7,0.66,sd*0.4,wl)); const bk=box(0.12,0.52,0.44,0.97,0.98,sd*0.4,wl); bk.rotation.z=-0.12; g.add(bk); g.add(box(0.08,0.14,0.26,1.02,1.33,sd*0.4,wl)); }); }   // 前排椅背＋頭枕；第二排白色皮椅：椅墊、椅背（往後躺一點）、頭枕
       const H=new THREE.Vector3((A[0]+B[0])/2,(A[1]+B[1])/2+0.04,0), ang=Math.atan2(B[1]-A[1],B[0]-A[0]);   /* 鉸鏈：沿著中央脊條（跟著車頂往後斜） */
       u.doors=[-1,1].map(sd=>{ const hg=new THREE.Group(), d=new THREE.Group(), dc=new THREE.Group(); hg.position.copy(H); hg.rotation.z=ang; hg.updateMatrix(); dc.applyMatrix4(hg.matrix.clone().invert()); hg.add(d); d.add(dc); g.add(hg);   /* dc 裡面用車子座標擺 */
         seg(sa,sb,(x,y,L,nx,ny)=>box(L*1.05,0.02,0.81,x+nx*0.03,y+ny*0.03,sd*0.415,gD),dc); { const sw=new THREE.Mesh(new THREE.ShapeGeometry(shapeOf([[A[0],1.2],A,sub(RQ[1],ta,tb),[B[0],1.2]]),12), std(0x1a1e24,{roughness:0.06, metalness:0.4, side:THREE.DoubleSide})); sw.position.z=sd*0.86; dc.add(sw); }   /* 門是薄殼（不是實心一塊）：半邊車頂玻璃（中間留縫給脊條）＋側窗 */
@@ -2821,7 +2853,7 @@ function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pic
       [-1,1].forEach(sd=>{ const z=sd*0.9065; band(0.05,sa,sd*0.79,0.07,frit); band(sb+0.09,1.97,sd*0.78,0.09,frit); sband(0.25,sa,sd*0.863,0.09,0.05,frit); sband(sb,1.88,sd*0.863,0.09,0.05,frit);   // 擋風玻璃兩側黑框、尾門玻璃兩側黑框、前後側窗上緣黑框
         seg(0.08,sa,(x,y,L,nx,ny)=>box(L,0.04,0.04,x+nx*0.01,y+ny*0.01,sd*0.835,frit)); seg(sb,1.95,(x,y,L,nx,ny)=>box(L,0.04,0.04,x+nx*0.01,y+ny*0.01,sd*0.835,frit));   /* 前段、後段的車頂外側轉角也包黑邊，跟門連成一條（原本圓角反光成一條淺灰） */ g.add(box(0.07,0.14,0.006,1.2,1.27,sd*0.863,std(0x0b0d10,{roughness:0.15, metalness:0.4}))); [[0.012,0.24,1.2,1.08],[0.4,0.012,1.0,0.96],[0.012,0.46,0.8,0.73],[0.44,0.012,0.58,0.5]].forEach(([w,h,x,y])=>g.add(box(w,h,0.004,x,y,z,sm))); }); }   // C 柱；車身上的鷗翼門門框縫
     [-1,1].forEach(sd=>{ const z=sd*(W/2+0.025);
-      g.add(box(2.18,0.03,0.03,0.33,1.075,sd*0.88,blk)); g.add(box(0.07,0.38,0.006,0.33,1.3,sd*0.863,std(0x0b0d10,{roughness:0.15, metalness:0.4})));   // 窗下緣黑飾條（玻璃和車身中間）、B 柱（亮黑，貼在玻璃面上）（他 11-18：側窗要平貼）
+      g.add(box(1.12,0.03,0.03,-0.2,1.075,sd*0.88,blk)); g.add(box(0.22,0.03,0.03,1.31,1.075,sd*0.88,blk)); g.add(box(0.07,0.38,0.006,0.33,1.3,sd*0.863,std(0x0b0d10,{roughness:0.15, metalness:0.4})));   // 窗下緣黑飾條（玻璃和車身中間）、B 柱（亮黑，貼在玻璃面上）（他 11-18：側窗要平貼）
       g.add(box(2.0,0.13,0.03,0.0,0.38,z,blk)); [-1.22,1.22].forEach(x=>{ const ar=new THREE.Mesh(new THREE.TorusGeometry(0.5,0.045,6,22,Math.PI),blk); ar.position.set(x,0.42,z); g.add(ar); });   // 側裙、輪拱（黑色）
       [-0.2,0.36].forEach(x=>g.add(box(0.012,0.5,0.004,x,0.72,sd*0.903,std(0x9aa1aa))));   // 車門縫（貼在車身表面）
       [0.08].forEach(x=>g.add(box(0.2,0.028,0.006,x,0.93,sd*0.905,std(0xc9ced6,{metalness:0.7, roughness:0.25}))));   // 隱藏式門把（銀色，貼平）
@@ -2833,7 +2865,8 @@ function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pic
     g.add(box(0.01,0.012,1.3,-1.25,1.035,0,std(0xb9c0c8))); [-1,1].forEach(sd=>{ const sl=box(0.43,0.012,0.012,-1.475,0.997,sd*0.62,std(0xb9c0c8)); sl.rotation.z=0.207;   /* 照引擎蓋往後升高的斜度（原本放反，前端翹出車頭） */ g.add(sl); });   // 引擎蓋接縫線
     g.add(box(0.02,0.14,1.5,1.885,0.4,0,blk)); g.add(box(0.008,0.015,1.0,1.882,0.98,0,rd));   // 後擴散器、中間細紅條（貼著車尾）
     { const tg=new THREE.Group(); tg.position.set(-1.858,0.81,0); tg.rotation.z=-0.7; tg.add(box(0.006,0.02,0.11,0,0.025,0,mat.chrome)); tg.add(box(0.006,0.07,0.02,0,-0.01,0,mat.chrome)); g.add(tg); }   // 車頭 T 字標誌（貼在斜面上）
-    wheels(1.22,0.8,std(0x3a3f47),0.42); u.wheels.forEach(w=>luxRim(w,0.42,'ev')); }   // 特斯拉空力輪框
+    wheels(1.22,0.8,std(0x3a3f47),0.42); u.wheels.forEach(w=>luxRim(w,0.42,'ev'));
+    chfKit(g,{paint, glass:gD, bz:0.9, gz:0.86, seatY:0.72, rearX:0.84, frontX:0.22, nose:-1.92, front:{x0:-0.2,x1:0.36,yb:0.45,yt:1.2,gt:[1.43,1.49]}, rear:null, arch:{x:-1.22,y:0.42,r:0.55}}); }   // 司機＋駕駛座門（後座是鷗翼門）   // 特斯拉空力輪框
   return g; }
 // 騎機車進場：你坐在坐墊上，腳踩踏板，手握把手（每一格都照車子的位置擺）
 const _rv=new THREE.Vector3();
@@ -2889,9 +2922,9 @@ function stepCut(dt){ if(cut.kind==='pour'){ stepPour(cut,dt); return; }
     if(!c.stage){ u.sp=34; u.rotor.rotation.y+=dt*34; u.tail.rotation.z+=dt*30; u.disc.material.opacity=0.16; } else u.landed=true; u.strobe.visible=(c.t*2.5)%1<0.2; }   /* 降落後：交給 spinDown 慢慢停 */
   else { const e=1-Math.pow(1-k,3); const ps=parkSpot(), P=q=>{ const v=Math.max(0,Math.min(1,(q-0.82)/0.18)); return {x:L.cx+ps.rx-ps.turn*v*v*(3-2*v), z:ps.z-(1-q)*(ps.z-ps.z0)}; }   /* 沿著便道開進來，最後一段往左彎進停車區的空格 */, pa=P(e), pb=P(Math.min(1,e+0.004));   /* 路線：最後一段往左彎進車道旁的空地 */
     g.position.set(pa.x, yardY()+(c.stage?0:Math.abs(Math.sin(c.t*14))*0.03*(1-k)), pa.z); g.rotation.y = e<0.995 ? Math.atan2(pb.z-pa.z, pa.x-pb.x) : (ps.z0>ps.z ? -Math.PI/2 : Math.PI/2);   /* 車頭照行進方向轉，不是橫著平移；停好時車頭朝最後開的方向（週五從南邊大門進來，車頭朝北；原本固定朝南，停好會突然轉 180 度） */ if(!c.stage) u.wheels.forEach(w=>w.rotation.z+=dt*22*(1-k*k));
-    if(c.stage && u.doors) u.doors.forEach((d,i)=>{ d.rotation.x+=((i?-1:1)*1.4-d.rotation.x)*Math.min(1,dt*4); });
-    if(u.bike && c.stage===0) rideOn(g); }
-  if(c.stage===0 && k>=1){ c.stage=1; const me=LV.actors.you; if(heli) heliWelcome(); const dp = u.bike ? rideOff(g) : {x:g.position.x+1.7, z:g.position.z+0.3}; if(L.yard!==undefined) climbIn(dp.x, u.bike ? dp.z : g.position.z+0.4, heli?'heli':'car'); else { const pts=[{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}], go2=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go2 : null; }; me.x=dp.x; me.z=dp.z; me.g.position.set(me.x, gyAt(me.x,me.z), me.z); me.g.visible=true; go2(); } /* 從座駕旁邊下車，走到工作區 */ bubble(L.boss, (L.boss==='kun' ? RIDEB_KUN : RIDEB)[c.kind], true); fan('ride',1); camGoal={theta:0.5,phi:1.08,dist:12}; }
+    if(c.stage && u.doors && !u.chf) u.doors.forEach((d,i)=>{ d.rotation.x+=((i?-1:1)*1.4-d.rotation.x)*Math.min(1,dt*4); });
+    if(u.bike && c.stage===0) rideOn(g); if(u.chf && k>=1 && !(c.al && c.al.fin)) chfStep(c,dt); }   /* 豪車：司機下車開門、主角從後座下車 */
+  if(c.stage===0 && k>=1 && (heli || !u.chf || c.alDone)){ c.stage=1; const me=LV.actors.you; if(heli) heliWelcome(); const dp = u.bike ? rideOff(g) : c.dp || {x:g.position.x+1.7, z:g.position.z+0.3}; if(L.yard!==undefined) climbIn(dp.x, (u.bike || c.dp) ? dp.z : g.position.z+0.4, heli?'heli':'car'); else { const pts=[{x:L.cx-4.1,z:3.6},{x:L.cx,z:2.6}], go2=()=>{ me.dest=pts.shift(); me.onArrive = pts.length ? go2 : null; }; me.x=dp.x; me.z=dp.z; me.g.position.set(me.x, gyAt(me.x,me.z), me.z); me.g.visible=true; go2(); } /* 從座駕旁邊下車，走到工作區 */ bubble(L.boss, (L.boss==='kun' ? RIDEB_KUN : RIDEB)[c.kind], true); fan('ride',1); camGoal={theta:0.5,phi:1.08,dist:12}; }
   else if(c.stage===1 && c.t>=dur+1.9 && !((LV.actors.you.dest || LV.hoisting) && c.t<dur+45)){ c.stage=2; LV.hoisting=false; target.x=L.cx; target.y=L.gy+1.3; const f=c.then; c.then=null; if(f) f(); } }
 
 // ===================== 人物（3D 小人＋頭像） =====================
