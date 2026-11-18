@@ -2793,24 +2793,31 @@ function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pic
       w.add(cyl(R*0.7,0.3,'z',0,0,0,rimD,24)); const lip=new THREE.Mesh(new THREE.TorusGeometry(R*0.69,0.022,6,28),ch); lip.position.z=f; w.add(lip);   // 深色輪圈底、電鍍外緣一圈
       for(let i=0;i<10;i++){ const a=Math.floor(i/2)*Math.PI*2/5+(i%2?0.17:-0.17), sp=box(R*0.56,0.045,0.03,Math.cos(a)*R*0.36,Math.sin(a)*R*0.36,f,ch); sp.rotation.z=a; w.add(sp); }   // 10 支輻條（5 組雙輻）
       w.add(cyl(R*0.15,0.04,'z',0,0,f,ch,16)); w.add(cyl(R*0.09,0.045,'z',0,0,f,std(0x1d4f86),14)); }); } }   // 中心蓋（電鍍＋藍色小圓）
-  else { const paint=std(0xf4f5f2,{roughness:0.32, metalness:0.12}), W=1.8, blk=std(0x15171b,{roughness:0.7}), gD=std(0x10161e,{roughness:0.05, metalness:0.55, emissive:0x04070b}), led=std(0xffffff,{emissive:0xe8f2ff}), rd=std(0xd81e2a,{emissive:0x8a0a12});   /* 特斯拉 Model X（他 11-18：白色糊在一起不及格）：珍珠白有光澤＋黑色玻璃車頂＋黑包邊 */
+  else { const paint=std(0xf4f5f2,{roughness:0.32, metalness:0.12}), W=1.8, blk=std(0x15171b,{roughness:0.7}), gD=std(0x1a1e24,{roughness:0.06, metalness:0.4}), led=std(0xffffff,{emissive:0xe8f2ff}), rd=std(0xd81e2a,{emissive:0x8a0a12});   /* 特斯拉 Model X（他 11-18：白色糊在一起不及格）：珍珠白有光澤＋黑色玻璃車頂＋黑包邊 */
     g.add(extr(ins([[-1.85,0.3],[-1.9,0.62],['q',-1.92,0.9,-1.55,0.98],['q',-1.05,1.06,-0.78,1.12],[1.5,1.14],['q',1.86,1.12,1.88,0.95],[1.88,0.3]]),W,paint));   // 車身：只做到窗戶下緣（腰線），上面整個座艙是玻璃
-    g.add(extr([[-0.84,1.08],['q',-0.5,1.56,0.2,1.6],['q',1.08,1.58,1.55,1.1]],W-0.08,gD,0.04));   // 上半部車窗＋車頂：整片黑色玻璃（全景玻璃車頂），比車身窄一點（往內收）
-    { const rf=new THREE.Mesh(new THREE.PlaneGeometry(0.42,0.06), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.28, depthWrite:false})); rf.position.set(-0.58,1.33,0.18); rf.rotation.set(0,-Math.PI/2,0.9); rf.rotation.order='YXZ'; g.add(rf); }   // 擋風玻璃上一道反光
+    g.add(extr([[-0.84,1.08],['q',-0.5,1.56,0.2,1.6],['q',1.08,1.58,1.55,1.1]],W-0.08,gD,0.04));   // 上半部車窗＋車頂玻璃，比車身窄一點（往內收）
+    { const RQ=[[-0.84,1.08,-0.5,1.56,0.2,1.6],[0.2,1.6,1.08,1.58,1.55,1.1]], rp=t0=>{ const k=Math.min(1,Math.floor(t0)), t=t0-k, u=1-t, q=RQ[k]; return [u*u*q[0]+2*u*t*q[2]+t*t*q[4], u*u*q[1]+2*u*t*q[3]+t*t*q[5]]; },   /* 車頂分條（他 11-18：照 Model X 實車）：沿著車頂曲線一段一段貼；0～1 是前半段曲線、1～2 是後半段 */
+      frit=std(0x08090a,{roughness:0.9}), spn=std(0x050607,{roughness:0.22, metalness:0.3}), sm=std(0x5a6068,{roughness:0.5}),
+      seg=(t0,t1,mk)=>{ const n=Math.max(2,Math.ceil(Math.abs(t1-t0)*14)); for(let i=0;i<n;i++){ const a=rp(t0+(t1-t0)*i/n), b=rp(t0+(t1-t0)*(i+1)/n), dx=b[0]-a[0], dy=b[1]-a[1], L=Math.hypot(dx,dy), bx=mk((a[0]+b[0])/2,(a[1]+b[1])/2,L,-dy/L,dx/L); bx.rotation.z=Math.atan2(dy,dx); g.add(bx); } },
+      band=(t0,t1,z,wz,m,h=0.012)=>seg(t0,t1,(x,y,L,nx,ny)=>box(L*1.05,h,wz,x+nx*(0.04+h/2),y+ny*(0.04+h/2),z,m)),   /* 貼在車頂面上（玻璃頂面＝輪廓往外 4 公分） */
+      sband=(t0,t1,z,h,dn,m)=>seg(t0,t1,(x,y,L,nx,ny)=>box(L*1.05,h,0.006,x-nx*dn,y-ny*dn,z,m));   /* 貼在側面玻璃上，離上緣 dn */
+      band(0,0.05,0,1.66,frit); band(0.92,1.0,0,1.68,spn,0.016); band(1.0,1.64,0,0.12,spn,0.016); band(1.64,1.7,0,1.68,spn,0.016); band(1.66,1.72,0,1.66,paint,0.03); band(1.94,2.0,0,1.66,frit);   // 擋風玻璃下緣、前車頂飾板、中央脊條、後車頂橫樑、尾翼、尾門玻璃下緣
+      [-1,1].forEach(sd=>{ band(0.05,0.92,sd*0.79,0.07,frit); band(1.0,1.64,sd*0.068,0.008,sm,0.018); band(1.0,1.64,sd*0.78,0.09,frit); band(1.72,1.97,sd*0.78,0.09,frit);   // 擋風玻璃兩側黑框、脊條兩側門縫、鷗翼玻璃外側黑框、尾門玻璃兩側黑框
+        sband(0.25,1.88,sd*0.863,0.09,0.05,frit); g.add(box(0.07,0.26,0.006,1.2,1.22,sd*0.863,std(0x0b0d10,{roughness:0.15, metalness:0.4}))); }); }   // 側面：車窗上緣黑框（側窗跟車頂玻璃分開）、C 柱
     [-1,1].forEach(sd=>{ const z=sd*(W/2+0.025);
-      g.add(box(2.18,0.035,0.02,0.33,1.105,z,blk)); g.add(box(0.07,0.42,0.02,0.33,1.3,z,std(0x0b0d10,{roughness:0.15, metalness:0.4})));   // 窗下緣黑飾條、B 柱（亮黑）
+      g.add(box(2.18,0.03,0.03,0.33,1.075,sd*0.88,blk)); g.add(box(0.07,0.38,0.006,0.33,1.3,sd*0.863,std(0x0b0d10,{roughness:0.15, metalness:0.4})));   // 窗下緣黑飾條（玻璃和車身中間）、B 柱（亮黑，貼在玻璃面上）（他 11-18：側窗要平貼）
       g.add(box(2.0,0.13,0.03,0.0,0.38,z,blk)); [-1.22,1.22].forEach(x=>{ const ar=new THREE.Mesh(new THREE.TorusGeometry(0.5,0.045,6,22,Math.PI),blk); ar.position.set(x,0.42,z); g.add(ar); });   // 側裙、輪拱（黑色）
-      [-0.2,0.72].forEach(x=>g.add(box(0.012,0.5,0.012,x,0.72,z,std(0x9aa1aa))));   // 車門縫
-      [0.08,0.95].forEach(x=>g.add(box(0.2,0.028,0.012,x,0.93,z+sd*0.004,std(0xc9ced6,{metalness:0.7, roughness:0.25}))));   // 隱藏式門把（銀色）
-      { const hg=new THREE.Group(); hg.position.set(-1.83,0.9,sd*0.6); hg.rotation.y=sd*0.28; hg.add(box(0.05,0.15,0.56,0,0,0,std(0x1a1d22,{roughness:0.2, metalness:0.3}))); hg.add(box(0.02,0.026,0.54,-0.035,0.06,0,led)); [-0.08,0.08].forEach(d=>{ hg.add(ringX(0.032,0.007,mat.chrome,-0.03,-0.012,d)); hg.add(cyl(0.022,0.01,'x',-0.03,-0.012,d,led,12)); }); g.add(hg); }   // 頭燈：煙燻黑燈殼＋上緣 LED 日行燈＋兩顆投射燈
-      g.add(box(0.05,0.07,0.42,1.875,1.0,sd*0.6,rd)); g.add(box(0.04,0.03,0.4,1.885,0.94,sd*0.6,blk));   // 尾燈（紅色發光）
+      [-0.2,0.72].forEach(x=>g.add(box(0.012,0.5,0.004,x,0.72,sd*0.903,std(0x9aa1aa))));   // 車門縫（貼在車身表面）
+      [0.08,0.95].forEach(x=>g.add(box(0.2,0.028,0.006,x,0.93,sd*0.905,std(0xc9ced6,{metalness:0.7, roughness:0.25}))));   // 隱藏式門把（銀色，貼平）
+      { const hg=new THREE.Group(); hg.position.set(-1.829,0.858,sd*0.58); hg.rotation.z=-Math.PI/4; hg.add(box(0.016,0.15,0.56,0,0,0,std(0x1a1d22,{roughness:0.2, metalness:0.3}))); hg.add(box(0.008,0.026,0.54,-0.011,0.05,0,led)); [-0.1,0.1].forEach(d=>{ hg.add(ringX(0.03,0.006,mat.chrome,-0.012,-0.015,d)); hg.add(cyl(0.021,0.006,'x',-0.011,-0.015,d,led,12)); }); g.add(hg); }   /* 頭燈貼在車頭 45 度斜面上（他 11-18：車燈要浮貼；原本直立浮在斜面前 7 公分）：煙燻黑燈殼＋LED 日行燈＋兩顆投射燈 */
+      g.add(box(0.012,0.07,0.42,1.878,1.0,sd*0.6,rd)); g.add(box(0.008,0.03,0.4,1.878,0.945,sd*0.6,blk));   // 尾燈（紅色發光，貼著車尾）
       g.add(ball(0.09,paint,-0.72,1.08,sd*(W/2+0.06),1.3,0.8,0.7)); g.add(box(0.06,0.03,0.05,-0.72,1.03,sd*(W/2+0.02),blk)); });   // 後照鏡（車身色）＋黑色底座
     g.add(box(0.05,0.12,1.2,-1.88,0.44,0,blk)); g.add(box(0.04,0.03,1.0,-1.9,0.52,0,std(0x2b2f36)));   // 前下巴進氣口
-    [-1,1].forEach(sd=>{ const v=box(0.05,0.24,0.1,-1.86,0.55,sd*0.74,blk); v.rotation.y=sd*0.35; g.add(v); });   // 車頭兩側直立導風口（黑）
-    g.add(box(0.01,0.012,1.3,-1.25,1.035,0,std(0xb9c0c8))); [-1,1].forEach(sd=>{ const sl=box(0.62,0.012,0.012,-1.55,1.0,sd*0.66,std(0xb9c0c8)); sl.rotation.z=-0.13; g.add(sl); });   // 引擎蓋接縫線
-    g.add(box(0.06,0.14,1.5,1.88,0.4,0,blk)); g.add(box(0.03,0.015,1.0,1.91,0.98,0,rd));   // 後擴散器、中間細紅條
-    g.add(box(0.012,0.02,0.11,-1.905,0.86,0,mat.chrome)); g.add(box(0.012,0.07,0.02,-1.905,0.82,0,mat.chrome));   // 車頭 T 字標誌
-    u.doors=[-1,1].map(sd=>{ const d=new THREE.Group(); d.position.set(0.45,1.52,sd*0.86); d.add(box(0.92,0.4,0.04,0,-0.2,0,gD)); d.add(box(0.94,0.34,0.05,0,-0.57,sd*0.045,paint)); g.add(d); return d; });   // 鷗翼門：上半黑色玻璃、下半車身色
+    [-1,1].forEach(sd=>g.add(box(0.012,0.22,0.1,-1.892,0.5,sd*0.72,blk)));   // 車頭兩側直立導風口（黑，貼在車頭）
+    g.add(box(0.01,0.012,1.3,-1.25,1.035,0,std(0xb9c0c8))); [-1,1].forEach(sd=>{ const sl=box(0.43,0.012,0.012,-1.475,0.997,sd*0.62,std(0xb9c0c8)); sl.rotation.z=0.207;   /* 照引擎蓋往後升高的斜度（原本放反，前端翹出車頭） */ g.add(sl); });   // 引擎蓋接縫線
+    g.add(box(0.02,0.14,1.5,1.885,0.4,0,blk)); g.add(box(0.008,0.015,1.0,1.882,0.98,0,rd));   // 後擴散器、中間細紅條（貼著車尾）
+    { const tg=new THREE.Group(); tg.position.set(-1.858,0.81,0); tg.rotation.z=-0.7; tg.add(box(0.006,0.02,0.11,0,0.025,0,mat.chrome)); tg.add(box(0.006,0.07,0.02,0,-0.01,0,mat.chrome)); g.add(tg); }   // 車頭 T 字標誌（貼在斜面上）
+    u.doors=[-1,1].map(sd=>{ const d=new THREE.Group(); d.position.set(0.45,1.52,sd*0.86); d.add(box(0.94,0.32,0.006,0,-0.58,sd*0.044,paint)); g.add(d); return d; });   // 鷗翼門：車窗就是座艙那整片黑玻璃（不另外做一塊會凸出來）；門板是貼在車身表面的一片，打開時往上翻
     wheels(1.22,0.8,std(0x3a3f47),0.42); u.wheels.forEach(w=>luxRim(w,0.42,'ev')); }   // 特斯拉空力輪框
   return g; }
 // 騎機車進場：你坐在坐墊上，腳踩踏板，手握把手（每一格都照車子的位置擺）
