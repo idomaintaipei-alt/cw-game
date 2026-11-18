@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="95bf4a2e3de4", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="ffe0f11bfa2c", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -240,6 +240,30 @@
   #menu .mFoot { color:rgba(27,36,64,.55); }
   @media (max-width:700px){ #menu .mTop { padding:10px 14px; border-radius:0 0 14px 14px; margin-bottom:12px; } }
   @media (max-height:500px) and (orientation:landscape){ #menu .mTop { padding:5px 16px; margin-bottom:8px; border-radius:0 0 12px 12px; } }
+  /* 全畫面大通知：解鎖豪車、直升機、白金獎盃（他 11-18：要明顯、不能一筆帶過） */
+  #bigAward { position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; padding:16px; background:radial-gradient(circle at 50% 42%, rgba(30,44,90,.88), rgba(5,8,16,.96) 68%); overflow:hidden; }
+  #bigAward.on { display:flex; animation:baFade .35s ease-out; }
+  #bigAward.plat { background:radial-gradient(circle at 50% 42%, rgba(40,80,120,.9), rgba(4,8,18,.97) 68%); }
+  @keyframes baFade { from { opacity:0; } to { opacity:1; } }
+  @keyframes baPop { 0% { opacity:0; transform:scale(.6); } 70% { opacity:1; transform:scale(1.06); } 100% { transform:scale(1); } }
+  @keyframes baSpin { to { transform:rotate(360deg); } }
+  @keyframes baFall { 0% { top:-6%; opacity:1; } 100% { top:106%; opacity:.9; } }
+  #bigAward .baCard { position:relative; text-align:center; color:#fff; max-width:min(520px,92vw); animation:baPop .6s cubic-bezier(.2,.9,.3,1.2); }
+  #bigAward .baIcon { position:relative; width:170px; height:170px; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; }
+  #bigAward .baRays { position:absolute; inset:-30px; border-radius:50%; background:repeating-conic-gradient(rgba(255,230,150,.28) 0 10deg, transparent 10deg 30deg); animation:baSpin 12s linear infinite; -webkit-mask-image:radial-gradient(circle, #000 30%, transparent 70%); mask-image:radial-gradient(circle, #000 30%, transparent 70%); }
+  #bigAward.plat .baRays { background:repeating-conic-gradient(rgba(190,240,255,.35) 0 10deg, transparent 10deg 30deg); }
+  #bigAward .baEmoji { position:relative; font-size:110px; line-height:1; filter:drop-shadow(0 6px 14px rgba(0,0,0,.5)); }
+  #bigAward .baIcon svg { position:relative; width:130px; height:130px; color:#e6f7ff; filter:drop-shadow(0 0 18px rgba(159,232,255,.9)) drop-shadow(0 6px 12px rgba(0,0,0,.5)); }
+  #bigAward .baKind { font-size:15px; font-weight:700; letter-spacing:8px; color:#f2c230; }
+  #bigAward.plat .baKind { color:#9fe8ff; }
+  #bigAward .baName { font-size:34px; font-weight:900; margin:6px 0 8px; text-shadow:0 2px 12px rgba(0,0,0,.6); }
+  #bigAward .baDesc { font-size:15px; line-height:1.6; color:#d7deec; white-space:pre-line; }
+  #bigAward .baBtns { margin-top:20px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  #bigAward .baBtns button { min-width:140px; padding:10px 18px; font-size:15px; border-radius:999px; }
+  #bigAward .baFx { position:absolute; inset:0; pointer-events:none; }
+  #bigAward .baFx i { position:absolute; top:-6%; width:9px; height:15px; border-radius:2px; animation:baFall 3s linear infinite; }
+  @media (max-height:500px) and (orientation:landscape){ #bigAward .baIcon { width:110px; height:110px; margin-bottom:4px; } #bigAward .baEmoji { font-size:70px; } #bigAward .baIcon svg { width:84px; height:84px; } #bigAward .baName { font-size:24px; margin:2px 0 4px; } #bigAward .baDesc { font-size:13px; } #bigAward .baBtns { margin-top:10px; } }
+  @media (prefers-reduced-motion:reduce){ #bigAward .baRays, #bigAward .baFx i, #bigAward .baCard { animation:none; } }
   .lv { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px; border:1px solid var(--line); border-radius:6px; margin-top:8px; }
   .lv .n { font-size:15px; } .lv .d { font-size:12px; color:var(--dim); margin-top:3px; line-height:1.4; } .lv .best { font-size:12px; color:var(--ok); margin-top:3px; }
   .lv button { flex:none; padding:8px 14px; }
@@ -2469,9 +2493,20 @@ const toastQ=[]; let toasting=false, actx=null;
 function chime(grade){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); const notes = grade==='platinum'?[523,659,784,1047,1319,1568]:grade==='gold'?[523,784,1047]:[659,988];
   notes.forEach((f,i)=>{ const o=actx.createOscillator(), g=actx.createGain(); o.type='sine'; o.frequency.value=f; const t=actx.currentTime+i*0.11;
     g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.12,t+0.02); g.gain.exponentialRampToValueAtTime(0.001,t+0.5); o.connect(g).connect(actx.destination); o.start(t); o.stop(t+0.55); }); }catch(e){} }
-function award(id){ if(earned[id]||!TROPHY[id]) return false; earned[id]=Date.now(); store.set('cwstory_trophies',earned); toastQ.push(TROPHY[id]); pumpToast(); trCount();
-  if(id!=='plat') checkPlat(); return true; }
+function award(id){ if(earned[id]||!TROPHY[id]) return false; earned[id]=Date.now(); store.set('cwstory_trophies',earned); trCount();
+  if(id==='plat'){ bigAward({plat:true, kind:'白金獎盃', name:TROPHY.plat.name, desc:'恭喜！你已獲得所有獎盃。\n你正式成為一顆螺絲。'}); checkUnlocks(); }   /* 白金：全畫面大通知（他 11-18：要像 PS5，不能一筆帶過）；拿到白金也解鎖直升機 */
+  else { toastQ.push(TROPHY[id]); pumpToast(); checkPlat(); } return true; }
 function checkPlat(){ if(!earned.plat && Object.keys(TROPHY).every(k=>k==='plat' || earned[k])) award('plat'); }   // 白金：其他獎盃全部拿到才給（跟 PSN 一樣）
+const bigQ=[]; let bigOn=false;   // 全畫面大通知（解鎖豪車、直升機、白金獎盃）：一個一個來，要按按鈕才關
+function bigAward(o){ bigQ.push(o); pumpBig(); }
+function pumpBig(){ if(bigOn||!bigQ.length) return; bigOn=true; const o=bigQ.shift(); let el=$('#bigAward'); if(!el){ el=document.createElement('div'); el.id='bigAward'; document.body.append(el); }
+  el.innerHTML=''; el.className='on'+(o.plat?' plat':''); const fx=document.createElement('div'); fx.className='baFx'; const cols=o.plat?['#e8f7ff','#9fe8ff','#c9d6ff','#ffffff','#7fb8ff']:['#f2c230','#ff7a59','#4da3ff','#3ddc84','#ffffff'];
+  for(let i=0;i<40;i++){ const c=document.createElement('i'); c.style.left=(Math.random()*100)+'%'; c.style.background=cols[i%cols.length]; c.style.animationDelay=(Math.random()*0.9).toFixed(2)+'s'; c.style.animationDuration=(2.2+Math.random()*1.6).toFixed(2)+'s'; c.style.transform='rotate('+Math.round(Math.random()*360)+'deg)'; fx.append(c); }   // 彩帶
+  const card=document.createElement('div'); card.className='baCard'; const ic=document.createElement('div'); ic.className='baIcon'; ic.innerHTML='<span class="baRays"></span>'+(o.plat?CUP:'<span class="baEmoji">'+o.icon+'</span>');
+  const k=document.createElement('div'); k.className='baKind'; k.textContent=o.kind; const n=document.createElement('div'); n.className='baName'; n.textContent=o.name; const d=document.createElement('div'); d.className='baDesc'; d.textContent=o.desc; const bt=document.createElement('div'); bt.className='baBtns';
+  const close=()=>{ el.className=''; el.innerHTML=''; bigOn=false; setTimeout(pumpBig,250); };
+  (o.locker ? [['去置物櫃換上',()=>{ close(); openLocker(); },true],['等一下再換',close]] : [['太好了',close,true]]).forEach(([t,f,pri])=>{ const b=document.createElement('button'); b.textContent=t; if(pri) b.className='primary'; b.onclick=e=>{ e.stopPropagation(); f(); }; bt.append(b); });
+  card.append(ic,k,n,d,bt); el.append(fx,card); el.onclick=e=>e.stopPropagation(); chime('platinum'); }
 function pumpToast(){ if(toasting||!toastQ.length) return; toasting=true; const t=toastQ.shift();
   const d=document.createElement('div'); d.className='toast';
   const c=document.createElement('div'); c.className='cup '+t.grade; c.innerHTML=CUP;
@@ -2491,6 +2526,7 @@ function leopardMat(){ if(_leo) return _leo; const c=document.createElement('can
   let sd=7; const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
   for(let i=0;i<34;i++){ const x=rnd()*128, y=rnd()*128, r=5+rnd()*5; g.fillStyle='#2e1c0c'; g.beginPath(); g.ellipse(x,y,r,r*0.7,rnd()*3,0,7); g.fill(); g.fillStyle='#8a5318'; g.beginPath(); g.ellipse(x,y,r*0.45,r*0.3,0,0,7); g.fill(); }
   const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; return _leo=std(0xffffff,{map:t, roughness:.7}); }
+const perfN = b => LEVELS.filter(l=>b[l.id] && b[l.id].s>=100).length;   /* 拿滿分的天數（他 11-18：直升機） */
 const zeroN = b => LEVELS.filter(l=>b[l.id] && b[l.id].n===0).length, doneN = b => LEVELS.filter(l=>b[l.id]).length, hiN = b => LEVELS.filter(l=>b[l.id] && b[l.id].s>=90).length;
 const zeroOn = (b,id) => !!(b[id] && b[id].n===0);
 const SKINS = [
@@ -2517,7 +2553,7 @@ const SKINS = [
   { id:'r_bmw',     slot:'ride', name:'BMW X6', how:'四天拿到 90 分以上', ok:b=>hiN(b)>=4 },
   { id:'r_benz',    slot:'ride', name:'賓士大 G', how:'五天全部過完', ok:b=>doneN(b)>=5 },
   { id:'r_ev',      slot:'ride', name:'特斯拉（白色，鷗翼門）', how:'五天都拿到 90 分以上', ok:b=>hiN(b)>=5 },
-  { id:'r_heli',    slot:'ride', name:'直升機', how:'五天全部零異常', ok:b=>zeroN(b)>=5 },
+  { id:'r_heli',    slot:'ride', name:'直升機', how:'五天都拿 100 分，或拿到全部獎盃（白金）', ok:b=>perfN(b)>=5 || !!earned.plat },   /* 最終破關獎勵（他 11-18：原本五天零異常比特斯拉還好拿） */
 ];
 const TEST=/[?&#]test/.test(location.href);                                            // 測試版：網址帶 ?test，造型和座駕全部解鎖（不影響正式的過關紀錄）
 if(TEST){ SKINS.forEach(k=>{ k.ok=()=>true; }); document.getElementById('testTag').style.display='block'; }
@@ -2528,7 +2564,7 @@ function applySkin(){ const s=skinState(), by=id=>SKINS.find(k=>k.id===id), h=by
   c.feat=Object.assign({ shades:has('a_shades'), chain:has('a_chain'), boots:has('a_boots'), halo:has('a_halo'), tape:has('a_tape'), cape:has('a_cape') }, isF() ? {bangs:true, ponytail:true, lashes:true} : {}); c.hero=true; }   // 女生：瀏海、馬尾、睫毛（換造型也不會不見）
 applySkin();
 function checkUnlocks(){ const b=store.get('cwstory_best',{}), seen=store.get('cwstory_skinseen',[]); let add=false;
-  SKINS.forEach(k=>{ if(k.how && k.ok(b) && !seen.includes(k.id)){ seen.push(k.id); add=true; toastQ.push({name:k.name, grade:'gold', kind:'skin'}); } });
+  SKINS.forEach(k=>{ if(k.how && k.ok(b) && !seen.includes(k.id)){ seen.push(k.id); add=true; if(k.slot==='ride' && (SWAG_LV[k.id.slice(2)]||0)>0 && !TEST) bigAward({icon:k.id==='r_heli'?'🚁':'🚘', kind:'解鎖新座駕', name:k.name, desc:'到「置物櫃・換裝」的「座駕」換上，下次就開它來上班。', locker:true}); else toastQ.push({name:k.name, grade:'gold', kind:'skin'}); } });   /* 豪車、直升機：全畫面大通知（他 11-18：有些人根本不知道已經拿到） */
   if(add){ store.set('cwstory_skinseen',seen); pumpToast(); } }
 function renderLocker(){ const b=store.get('cwstory_best',{}), s=skinState(), list=$('#lkList'); list.innerHTML=''; drawFace($('#lkFace'),'you','smile');
   [['helmet','安全帽'],['vest','衣服'],['acc','配件（可以戴好幾樣）'],['ride','座駕（進場方式）']].forEach(([slot,title])=>{ const h=document.createElement('div'); h.className='lkT'; h.textContent=title; const row=document.createElement('div'); row.className='lkRow'; list.append(h,row);
