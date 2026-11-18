@@ -2793,15 +2793,25 @@ function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pic
       w.add(cyl(R*0.7,0.3,'z',0,0,0,rimD,24)); const lip=new THREE.Mesh(new THREE.TorusGeometry(R*0.69,0.022,6,28),ch); lip.position.z=f; w.add(lip);   // 深色輪圈底、電鍍外緣一圈
       for(let i=0;i<10;i++){ const a=Math.floor(i/2)*Math.PI*2/5+(i%2?0.17:-0.17), sp=box(R*0.56,0.045,0.03,Math.cos(a)*R*0.36,Math.sin(a)*R*0.36,f,ch); sp.rotation.z=a; w.add(sp); }   // 10 支輻條（5 組雙輻）
       w.add(cyl(R*0.15,0.04,'z',0,0,f,ch,16)); w.add(cyl(R*0.09,0.045,'z',0,0,f,std(0x1d4f86),14)); }); } }   // 中心蓋（電鍍＋藍色小圓）
-  else { const paint=std(0xfafafa), W=1.8;                                     // 特斯拉：白色、沒有水箱罩的光滑車頭、全景玻璃車頂、鷗翼門
-    g.add(extr(ins([[-1.85,0.3],[-1.9,0.62],['q',-1.92,0.9,-1.55,0.98],['q',-1.0,1.05,-0.7,1.3],['q',-0.35,1.6,0.3,1.6],['q',1.3,1.58,1.8,1.1],[1.88,0.95],[1.88,0.3]]),W,paint));
-    g.add(extr([[-1.2,1.04],['q',-0.95,1.1,-0.68,1.33],['q',-0.35,1.64,0.3,1.64],['q',1.25,1.62,1.72,1.15],[1.4,1.06]],1.46,std(0x16212c),0.05));
-    g.add(extr([[-0.78,1.12],['q',-0.45,1.5,0.2,1.5],['q',1.0,1.48,1.45,1.12]],W+0.03,gl,0.01));
-    [-0.2,0.72].forEach(x=>g.add(box(0.02,0.56,W+0.02,x,0.7,0,dk)));
-    [-1,1].forEach(sd=>{ { const hg=new THREE.Group(); hg.position.set(-1.82,0.92,sd*0.6); hg.rotation.y=sd*0.25; hg.add(box(0.06,0.11,0.52,0,0,0,std(0x23262c))); hg.add(box(0.02,0.03,0.46,-0.04,0.025,0,std(0xffffff,{emissive:0xe8f2ff}))); hg.add(box(0.02,0.045,0.3,-0.038,-0.02,sd*0.06,std(0xdfe6ee,{emissive:0x6a7888}))); g.add(hg); }   /* 頭燈（他 11-18：燈條被斜放的燈殼擋住）：燈殼、白色 LED 燈條、燈罩一組，跟著斜 */ g.add(ball(0.09,paint,-0.72,1.08,sd*(W/2+0.06),1.3,0.8,0.7)); });
-    g.add(box(0.05,0.07,1.0,-1.9,0.42,0,dk)); g.add(box(0.05,0.07,1.62,1.87,1.0,0,mat.red));
-    u.doors=[-1,1].map(sd=>{ const d=new THREE.Group(); d.position.set(0.45,1.5,sd*0.905); d.add(box(0.92,0.72,0.05,0,-0.37,0,paint)); d.add(box(0.8,0.3,0.06,0,-0.18,0,gl)); g.add(d); return d; });
-    wheels(1.22,0.8,std(0x3a3f47),0.42); u.wheels.forEach(w=>luxRim(w,0.42,'ev')); }   // 特斯拉空力輪框（他 11-18）
+  else { const paint=std(0xf4f5f2,{roughness:0.32, metalness:0.12}), W=1.8, blk=std(0x15171b,{roughness:0.7}), gD=std(0x10161e,{roughness:0.05, metalness:0.55, emissive:0x04070b}), led=std(0xffffff,{emissive:0xe8f2ff}), rd=std(0xd81e2a,{emissive:0x8a0a12});   /* 特斯拉 Model X（他 11-18：白色糊在一起不及格）：珍珠白有光澤＋黑色玻璃車頂＋黑包邊 */
+    g.add(extr(ins([[-1.85,0.3],[-1.9,0.62],['q',-1.92,0.9,-1.55,0.98],['q',-1.05,1.06,-0.78,1.12],[1.5,1.14],['q',1.86,1.12,1.88,0.95],[1.88,0.3]]),W,paint));   // 車身：只做到窗戶下緣（腰線），上面整個座艙是玻璃
+    g.add(extr([[-0.84,1.08],['q',-0.5,1.56,0.2,1.6],['q',1.08,1.58,1.55,1.1]],W-0.08,gD,0.04));   // 上半部車窗＋車頂：整片黑色玻璃（全景玻璃車頂），比車身窄一點（往內收）
+    { const rf=new THREE.Mesh(new THREE.PlaneGeometry(0.42,0.06), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.28, depthWrite:false})); rf.position.set(-0.58,1.33,0.18); rf.rotation.set(0,-Math.PI/2,0.9); rf.rotation.order='YXZ'; g.add(rf); }   // 擋風玻璃上一道反光
+    [-1,1].forEach(sd=>{ const z=sd*(W/2+0.025);
+      g.add(box(2.18,0.035,0.02,0.33,1.105,z,blk)); g.add(box(0.07,0.42,0.02,0.33,1.3,z,std(0x0b0d10,{roughness:0.15, metalness:0.4})));   // 窗下緣黑飾條、B 柱（亮黑）
+      g.add(box(2.0,0.13,0.03,0.0,0.38,z,blk)); [-1.22,1.22].forEach(x=>{ const ar=new THREE.Mesh(new THREE.TorusGeometry(0.5,0.045,6,22,Math.PI),blk); ar.position.set(x,0.42,z); g.add(ar); });   // 側裙、輪拱（黑色）
+      [-0.2,0.72].forEach(x=>g.add(box(0.012,0.5,0.012,x,0.72,z,std(0x9aa1aa))));   // 車門縫
+      [0.08,0.95].forEach(x=>g.add(box(0.2,0.028,0.012,x,0.93,z+sd*0.004,std(0xc9ced6,{metalness:0.7, roughness:0.25}))));   // 隱藏式門把（銀色）
+      { const hg=new THREE.Group(); hg.position.set(-1.83,0.9,sd*0.6); hg.rotation.y=sd*0.28; hg.add(box(0.05,0.15,0.56,0,0,0,std(0x1a1d22,{roughness:0.2, metalness:0.3}))); hg.add(box(0.02,0.026,0.54,-0.035,0.06,0,led)); [-0.08,0.08].forEach(d=>{ hg.add(ringX(0.032,0.007,mat.chrome,-0.03,-0.012,d)); hg.add(cyl(0.022,0.01,'x',-0.03,-0.012,d,led,12)); }); g.add(hg); }   // 頭燈：煙燻黑燈殼＋上緣 LED 日行燈＋兩顆投射燈
+      g.add(box(0.05,0.07,0.42,1.875,1.0,sd*0.6,rd)); g.add(box(0.04,0.03,0.4,1.885,0.94,sd*0.6,blk));   // 尾燈（紅色發光）
+      g.add(ball(0.09,paint,-0.72,1.08,sd*(W/2+0.06),1.3,0.8,0.7)); g.add(box(0.06,0.03,0.05,-0.72,1.03,sd*(W/2+0.02),blk)); });   // 後照鏡（車身色）＋黑色底座
+    g.add(box(0.05,0.12,1.2,-1.88,0.44,0,blk)); g.add(box(0.04,0.03,1.0,-1.9,0.52,0,std(0x2b2f36)));   // 前下巴進氣口
+    [-1,1].forEach(sd=>{ const v=box(0.05,0.24,0.1,-1.86,0.55,sd*0.74,blk); v.rotation.y=sd*0.35; g.add(v); });   // 車頭兩側直立導風口（黑）
+    g.add(box(0.01,0.012,1.3,-1.25,1.035,0,std(0xb9c0c8))); [-1,1].forEach(sd=>{ const sl=box(0.62,0.012,0.012,-1.55,1.0,sd*0.66,std(0xb9c0c8)); sl.rotation.z=-0.13; g.add(sl); });   // 引擎蓋接縫線
+    g.add(box(0.06,0.14,1.5,1.88,0.4,0,blk)); g.add(box(0.03,0.015,1.0,1.91,0.98,0,rd));   // 後擴散器、中間細紅條
+    g.add(box(0.012,0.02,0.11,-1.905,0.86,0,mat.chrome)); g.add(box(0.012,0.07,0.02,-1.905,0.82,0,mat.chrome));   // 車頭 T 字標誌
+    u.doors=[-1,1].map(sd=>{ const d=new THREE.Group(); d.position.set(0.45,1.52,sd*0.86); d.add(box(0.92,0.4,0.04,0,-0.2,0,gD)); d.add(box(0.94,0.34,0.05,0,-0.57,sd*0.045,paint)); g.add(d); return d; });   // 鷗翼門：上半黑色玻璃、下半車身色
+    wheels(1.22,0.8,std(0x3a3f47),0.42); u.wheels.forEach(w=>luxRim(w,0.42,'ev')); }   // 特斯拉空力輪框
   return g; }
 // 騎機車進場：你坐在坐墊上，腳踩踏板，手握把手（每一格都照車子的位置擺）
 const _rv=new THREE.Vector3();
