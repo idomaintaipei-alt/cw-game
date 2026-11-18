@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="ffe0f11bfa2c", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="104d641a92fe", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -2557,6 +2557,7 @@ const SKINS = [
 ];
 const TEST=/[?&#]test/.test(location.href);                                            // 測試版：網址帶 ?test，造型和座駕全部解鎖（不影響正式的過關紀錄）
 if(TEST){ SKINS.forEach(k=>{ k.ok=()=>true; }); document.getElementById('testTag').style.display='block'; }
+if(TEST && /[?&]demo=award/.test(location.href)) setTimeout(()=>{ bigAward({icon:'🚘', kind:'解鎖新座駕', name:'BMW X6', desc:'到「置物櫃・換裝」的「座駕」換上，下次就開它來上班。', locker:true}); bigAward({icon:'🚁', kind:'解鎖新座駕', name:'直升機', desc:'到「置物櫃・換裝」的「座駕」換上，下次就開它來上班。', locker:true}); bigAward({plat:true, kind:'白金獎盃', name:TROPHY.plat.name, desc:'恭喜！你已獲得所有獎盃。\n你正式成為一顆螺絲。'}); }, 1500);   /* 展示用：測試版 ?test&demo=award 依序跳三個大通知（不改存檔） */
 function skinState(){ const s=store.get('cwstory_skin',null)||{}, ok=(id,slot)=>SKINS.some(k=>k.id===id && k.slot===slot);   // 舊存檔裡已經不存在的造型（例如藍白拖）自動丟掉
   return { helmet:ok(s.helmet,'helmet')?s.helmet:'h_yellow', vest:ok(s.vest,'vest')?s.vest:'v_blue', ride:ok(s.ride,'ride')?s.ride:'r_walk', acc:(Array.isArray(s.acc)?s.acc:[]).filter(id=>ok(id,'acc')) }; }
 function applySkin(){ const s=skinState(), by=id=>SKINS.find(k=>k.id===id), h=by(s.helmet)||SKINS[0], v=by(s.vest)||by('v_blue'), c=CAST.you, has=id=>s.acc.includes(id);
