@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="66cb00cad5f9", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="a777c749856d", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -2745,8 +2745,8 @@ function chfStep(c,dt){ const g=c.g, u=g.userData, K=u.chf, C=K.c, dr=K.dr, me=L
     const P2 = sd>0 ? [[xF,zo],[xR,zo]] : [[xF,zo],[C.front.x1+0.4,zo,0.6],[C.nose-0.7,zo],[C.nose-0.7,-zo],[xR,-zo]];   /* 另一側：先退到門後緣外、等門關好，再繞過車頭（他 11-18：原本穿過開著的門） */ c.al={t:0, sd, zo, xF, PD:{seat:[C.frontX,C.seatF-0.73/C.S,0.4], edge:[xF,C.seatF-0.73/C.S,C.bz-0.3], st:[xF,0,zo], y0:-Math.PI/2, y1:0, duck:C.duckF, h:0.73/C.S, thE:C.thF, knE:C.knF}, path:P2, path0:P2.map(q=>q.slice()), s:0, arr:-1, ph:0}; me.g.traverse(o=>{ if(o.userData.blob) o.visible=false; }); }   // 另一側：司機從車頭繞過去
   const A=c.al, sd=A.sd, t=(A.t+=dt);
   { const L1=C.front.x1-C.front.x0; if(A.fc===undefined && t>1.6 && Math.hypot(dr.position.x-C.front.x0, dr.position.z-C.bz)>L1+0.4) A.fc=t; if(A.fc===undefined || t-A.fc<0.6) chfOpen(K.fd, 1.6*ez(t/0.5)*(A.fc===undefined ? 1 : 1-ez((t-A.fc)/0.4))); }   /* 駕駛座門：開到 92 度 → 司機下車 → 走出門掃過的範圍才關（他 11-18：門掃過司機） */
-  if(t<1.6){ dr.visible=t>0.4; chfPose(dr, t<0.75 ? (t-0.4)/0.35 : t<1.1 ? 1+(t-0.75)/0.35 : 2+(t-1.1)/0.5, A.PD); return; }   // 司機：先在座位上轉身朝車門，再彎腰起身跨出來（他 11-18：原本面向車頭就往外滑，頭從前門前緣的車身穿出來）
-  if(A.arr<0){ if(A.wait>0){ A.wait-=dt; pose(dr,0); dr.rotation.x=0; return; } let rem=dt*2.6; while(rem>0 && A.path.length>1){ const [a,b]=A.path, d2=Math.hypot(b[0]-a[0],b[1]-a[1]), left=d2-A.s; if(rem<left){ A.s+=rem; rem=0; } else { rem-=left; A.s=0; A.path.shift(); if(A.path[0][2]){ A.wait=A.path[0][2]; A.path[0]=A.path[0].slice(0,2); break; } } }   /* 司機走到主角那一側的後門 */
+  if(t<1.6){ dr.visible=t>0.4; drSeat(dr, 1-(t-0.4)/1.2, C, A); return; }   /* 司機下車＝上車倒過來：外側腳先跨出去、側身低頭出來、站好（他 11-18） */ dr.rotation.z=0;   // 司機：先在座位上轉身朝車門，再彎腰起身跨出來（他 11-18：原本面向車頭就往外滑，頭從前門前緣的車身穿出來）
+  if(A.arr<0){ if(A.wait>0){ A.wait-=dt; pose(dr,0); dr.rotation.x=0; dr.rotation.z=0; return; } let rem=dt*2.6; while(rem>0 && A.path.length>1){ const [a,b]=A.path, d2=Math.hypot(b[0]-a[0],b[1]-a[1]), left=d2-A.s; if(rem<left){ A.s+=rem; rem=0; } else { rem-=left; A.s=0; A.path.shift(); if(A.path[0][2]){ A.wait=A.path[0][2]; A.path[0]=A.path[0].slice(0,2); break; } } }   /* 司機走到主角那一側的後門 */
     if(A.path.length>1){ const [a,b]=A.path, f=A.s/Math.hypot(b[0]-a[0],b[1]-a[1]); dr.position.set(a[0]+(b[0]-a[0])*f, 0, a[1]+(b[1]-a[1])*f); dr.rotation.y=Math.atan2(b[0]-a[0], b[1]-a[1]); dr.rotation.x=0; A.ph+=dt*10; walk(dr,A.ph); } else { dr.position.set(A.path[0][0],0,A.path[0][1]); A.arr=t; } return; }
   if(t-A.arr>3.15){ chfBack(c,dt,A,K,C,dr,ez,pose,lean,walk); return; }   // 主角下好車、門關好 → 司機回車上
   const ta=t-A.arr, q1=ez(ta/0.5)-ez((ta-2.6)/0.5), xM0=C.rear ? C.rear.x0+(C.rear.x1-C.rear.x0)*C.xm : C.exitX; dr.rotation.y=Math.atan2(xM0-dr.position.x, sd*(C.bz+0.5)-dr.position.z); pose(dr,0); (sd>0 ? dr.userData.armR : dr.userData.armL).rotation.x=-0.9*q1;   // 司機站在車門後面一點（不擋主角）、面向下車的主角，靠車子那隻手抬起來請
@@ -2761,17 +2761,19 @@ function chfPose(pp,u,P){ const cl=x=>Math.max(0,Math.min(1,x)), ez=q=>{ q=cl(q)
     tE=P.thE===undefined?-0.35:P.thE, nE=P.knE===undefined?0.35:P.knE, th = u<2 ? L(-1.45,tE,k2) : L(tE,0,k3), kn = u<2 ? L(1.25,nE,Math.min(1,k2*2)) : L(nE,0,k3), ar = u<2 ? L(-0.6,-0.9,k2) : L(-0.9,0,k3), ln = u<2 ? P.duck*0.7*k2 : Math.min(P.duck, P.duck*(0.7*(1-k3)+0.5*Math.sin(Math.PI*k3)));   // 大腿從水平放下到快垂直（腳踩地）；手往前扶門框；身體前傾
   pp.position.set(x,y,z); pp.rotation.order='YXZ'; pp.rotation.y=yaw; pu.legL.rotation.x=pu.legR.rotation.x=th; [pu.legL,pu.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=kn; }); pu.armL.rotation.x=pu.armR.rotation.x=ar; pu.armL.rotation.z=pu.armR.rotation.z=0;
   pp.rotation.x=ln; const sn=Math.sin(ln)*P.h; pp.position.x-=Math.sin(yaw)*sn; pp.position.z-=Math.cos(yaw)*sn; pp.position.y+=P.h*(1-Math.cos(ln)); }   // 前傾以屁股為軸
+function drSeat(dr,w,C,A){ const cl=x=>Math.max(0,Math.min(1,x)), ez=q=>{ q=cl(q); return q*q*(3-2*q); }, h=0.73/C.S, pu=dr.userData, k1=ez(w/0.4), k2=ez((w-0.4)/0.6), kL=ez((w-0.55)/0.45), sF=C.seatF;   /* 司機坐進駕駛座（他 11-18：要自然，不要跪著塞進去）：w 0 站在門口外朝車頭 → 0.4 右腳抬膝跨進去、貼近門檻 → 1 往車內側低頭、屁股坐進座椅、左腳最後收進來 */
+  const hx = w<0.4 ? A.xF : A.xF+(C.frontX-A.xF)*k2, hy = w<0.4 ? h : h+(sF-h)*k2, hz = w<0.4 ? A.zo+(C.bz+0.1-A.zo)*k1 : C.bz+0.1+(0.4-(C.bz+0.1))*k2;   // 屁股的位置
+  pu.legR.rotation.x = w<0.4 ? -1.0*k1 : -1.0-0.45*k2; pu.legR.rotation.z = w<0.4 ? -0.35*k1 : -0.35*(1-k2); if(pu.legR.userData.knee) pu.legR.userData.knee.rotation.x = w<0.4 ? 1.3*k1 : 1.3-0.05*k2;   // 靠車那隻腳（右腳）：抬膝跨進去
+  pu.legL.rotation.x=-1.45*kL; pu.legL.rotation.z=0; if(pu.legL.userData.knee) pu.legL.userData.knee.rotation.x=1.25*kL; pu.armL.rotation.x=pu.armR.rotation.x=-0.3-0.4*k2; pu.armL.rotation.z=pu.armR.rotation.z=0;   // 外側腳最後收進來；手往前扶
+  dr.rotation.set(0.25*Math.sin(Math.PI*k2), -Math.PI/2, (C.duckS||0.5)*(w<0.4 ? ez(w/0.4) : 1-ez((w-0.75)/0.25)), 'YXZ'); const v=new THREE.Vector3(0,h,0).applyEuler(dr.rotation); dr.position.set(hx-v.x, hy-v.y, hz-v.z); }   // 往車內側低頭＋稍微前傾，以屁股為軸
 function chfBack(c,dt,A,K,C,dr,ez,pose,lean,walk){ if(!A.back){ const pb=A.path0.map(q=>q.slice(0,2)).reverse(); pb[pb.length-1]=[C.front.x1+0.4, A.zo]; A.back={path:pb, s:0, te:-1, ph:0}; } const B=A.back;   /* 走到前門後緣外面等（門開的時候不會掃到） */   /* 司機把主角放下車、關好門，原路走回駕駛座，坐回車上待命（他 11-18：不要留在外面） */
   if(B.te<0){ let rem=dt*2.6; while(rem>0 && B.path.length>1){ const [a,b]=B.path, d2=Math.hypot(b[0]-a[0],b[1]-a[1]), left=d2-B.s; if(rem<left){ B.s+=rem; rem=0; } else { rem-=left; B.s=0; B.path.shift(); } }
     if(B.path.length>1){ const [a,b]=B.path, f=B.s/Math.hypot(b[0]-a[0],b[1]-a[1]); dr.position.set(a[0]+(b[0]-a[0])*f,0,a[1]+(b[1]-a[1])*f); dr.rotation.x=0; dr.rotation.y=Math.atan2(b[0]-a[0],b[1]-a[1]); B.ph+=dt*10; walk(dr,B.ph); } else { dr.position.set(B.path[0][0],0,B.path[0][1]); B.te=0; B.yaw0=dr.rotation.y; pose(dr,0); } return; }
-  const te=(B.te+=dt), xw=C.front.x1+0.4; chfOpen(K.fd, 1.6*(ez(te/0.5)-ez((te-2.1)/0.4)));   // 駕駛座門：等門開到 92 度 → 走進門口坐進去 → 消失後才關
+  const te=(B.te+=dt), xw=C.front.x1+0.4; chfOpen(K.fd, 1.6*(ez(te/0.5)-ez((te-2.2)/0.4)));   // 駕駛座門：等門開到 92 度 → 走進門口坐進去 → 消失後才關
   if(te<0.5){ dr.rotation.y=B.yaw0+(-Math.PI/2-B.yaw0)*ez(te/0.5); pose(dr,0); return; }   // 等門開，轉向車頭（門那一邊）
   if(te<0.9){ const k=ez((te-0.5)/0.4); dr.position.set(xw+(A.xF-xw)*k,0,A.zo); dr.rotation.y=-Math.PI/2; B.ph+=dt*10; walk(dr,B.ph); return; }   // 走到門口
-  if(te<1.15){ dr.position.set(A.xF,0,A.zo); dr.rotation.x=0; dr.rotation.y=-Math.PI/2-Math.PI/2*ez((te-0.9)/0.25); pose(dr,0); return; }   // 在門口轉身面向車內（他 11-18：不要背對背被吸進去）
-  { const D=A.PD, h=0.73/C.S, sy=C.seatF-0.73/C.S, k=ez((te-1.15)/0.45), k2=ez((te-1.6)/0.45), pu=dr.userData; dr.rotation.order='YXZ';
-    if(te<1.6){ dr.position.set(A.xF,0,A.zo+(C.bz-0.3-A.zo)*k); dr.rotation.y=-Math.PI; B.ph+=dt*9; walk(dr,B.ph); lean(dr, C.duckF*Math.sin(Math.PI*0.5*k), -Math.PI, h); return; }   // 低頭跨進車門
-    if(te<2.05){ dr.position.set(A.xF+(C.frontX-A.xF)*k2, sy*k2, C.bz-0.3+(0.4-(C.bz-0.3))*k2); dr.rotation.y=-Math.PI+Math.PI/2*k2; pu.legL.rotation.x=pu.legR.rotation.x=-1.45*k2; [pu.legL,pu.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=1.25*k2; }); pu.armL.rotation.x=pu.armR.rotation.x=-0.6*k2; lean(dr, C.duckF*(1-k2), dr.rotation.y, h); return; } dr.visible=false; }   /* 邊轉向前方邊坐下、腳收進去，坐好就看不見（在車裡待命） */
-  if(te>2.6) A.fin=true; }
+  if(te<2.1){ drSeat(dr, (te-0.9)/1.2, C, A); return; } dr.visible=false;   // 側身朝車頭、右腳跨進去、往車內側低頭坐下、左腳收進來；坐好就看不見（在車裡待命）
+  if(te>2.65) A.fin=true; }
 function luxRim(w,R,st){ while(w.children.length>1) w.remove(w.children[1]); const f=Math.sign(w.position.z)*0.165, ch=mat.chrome;   /* 豪車專屬輪框（他 11-18：細節不夠）：只留輪胎，其他換掉 */
   if(st==='ev'){ w.add(cyl(R*0.72,0.3,'z',0,0,0,std(0x3a3f47),28)); const lip=new THREE.Mesh(new THREE.TorusGeometry(R*0.7,0.018,6,28),std(0xb8bec6)); lip.position.z=f; w.add(lip);   // 特斯拉空力輪框：深灰盤面、銀色外圈、5 支寬輻
     for(let i=0;i<5;i++){ const a=i/5*Math.PI*2, sp=box(R*0.52,0.11,0.025,Math.cos(a)*R*0.34,Math.sin(a)*R*0.34,f,std(0x5a616b)); sp.rotation.z=a; w.add(sp); } w.add(cyl(R*0.16,0.04,'z',0,0,f,std(0xc9ced6),16)); return; }
@@ -2838,7 +2840,7 @@ function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pic
     g.add(box(0.16,0.2,W+0.04,-1.93,0.52,0,dk)); g.add(box(0.1,0.1,0.9,-1.97,0.46,0,mat.chrome)); g.add(box(0.16,0.2,W+0.04,1.9,0.52,0,dk));
     g.add(cyl(0.42,0.2,'x',1.99,1.02,0,dk,22)); g.add(cyl(0.3,0.22,'x',2.0,1.02,0,mat.chrome,22)); g.add(cyl(0.2,0.24,'x',2.0,1.02,0,paint,18));       // 車尾備胎
     wheels(1.22,0.84,mat.chrome,0.47); u.wheels.forEach(w=>luxRim(w,0.47,'benz'));   /* 賓士專屬鋁圈（他 11-18） */
-    chfKit(g,{S:1.15, duckR:0.5, duckF:0.75, seatF:0.65, paint, glass:gl, bz:0.92, gz:0.89, seatY:0.65, rearX:0.85, frontX:-0.12, xm:0.55, nose:-1.98, front:{x0:-0.6,x1:0.36,yb:0.46,yt:1.27,gt:[1.86,1.86]}, rear:{x0:0.38,x1:1.24,yb:0.46,yt:1.27,gt:[1.78,1.78]}, arch:{x:1.22,y:0.44,r:0.6}}); }   // 司機＋可以開的車門
+    chfKit(g,{S:1.15, duckR:0.5, duckF:0.75, duckS:0.45, seatF:0.65, paint, glass:gl, bz:0.92, gz:0.89, seatY:0.65, rearX:0.85, frontX:-0.12, xm:0.55, nose:-1.98, front:{x0:-0.6,x1:0.36,yb:0.46,yt:1.27,gt:[1.86,1.86]}, rear:{x0:0.38,x1:1.24,yb:0.46,yt:1.27,gt:[1.78,1.78]}, arch:{x:1.22,y:0.44,r:0.6}}); }   // 司機＋可以開的車門
   else if(kind==='bmw'){ const paint=std(0x15161a), W=1.86;                    // X6：高車身、斜背車頂、大雙腎水箱罩、細長頭燈
     g.add(extr(ins([[-1.95,0.42],[-2.0,0.75],['q',-2.0,1.03,-1.7,1.07],[-0.7,1.14],[1.55,1.16],['q',1.96,1.16,1.98,0.92],[1.96,0.42]]),W,paint));
     g.add(extr([[-0.82,1.1],['q',-0.5,1.6,0.0,1.64],[0.5,1.64],['q',1.3,1.57,1.88,1.14]],1.56,gl,0.05));
@@ -2855,7 +2857,7 @@ function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pic
       w.add(cyl(R*0.7,0.3,'z',0,0,0,rimD,24)); const lip=new THREE.Mesh(new THREE.TorusGeometry(R*0.69,0.022,6,28),ch); lip.position.z=f; w.add(lip);   // 深色輪圈底、電鍍外緣一圈
       for(let i=0;i<10;i++){ const a=Math.floor(i/2)*Math.PI*2/5+(i%2?0.17:-0.17), sp=box(R*0.56,0.045,0.03,Math.cos(a)*R*0.36,Math.sin(a)*R*0.36,f,ch); sp.rotation.z=a; w.add(sp); }   // 10 支輻條（5 組雙輻）
       w.add(cyl(R*0.15,0.04,'z',0,0,f,ch,16)); w.add(cyl(R*0.09,0.045,'z',0,0,f,std(0x1d4f86),14)); }); }
-    chfKit(g,{S:1.3, duckR:0.95, duckF:0.72, seatF:0.52, paint, glass:gl, bz:0.93, gz:0.78, seatY:0.58, rearX:1.0, frontX:0.10, xm:0.68, nose:-2.0, front:{x0:-0.45,x1:0.45,yb:0.56,yt:1.12,gt:[1.42,1.56]}, rear:{x0:0.45,x1:1.3,yb:0.56,yt:1.12,gt:[1.56,1.38]}, arch:{x:1.24,y:0.47,r:0.64}}); }   // 司機＋可以開的車門   // 中心蓋（電鍍＋藍色小圓）
+    chfKit(g,{S:1.3, duckR:0.95, duckF:0.72, duckS:0.65, seatF:0.52, paint, glass:gl, bz:0.93, gz:0.78, seatY:0.58, rearX:1.0, frontX:0.10, xm:0.68, nose:-2.0, front:{x0:-0.45,x1:0.45,yb:0.56,yt:1.12,gt:[1.42,1.56]}, rear:{x0:0.45,x1:1.3,yb:0.56,yt:1.12,gt:[1.56,1.38]}, arch:{x:1.24,y:0.47,r:0.64}}); }   // 司機＋可以開的車門   // 中心蓋（電鍍＋藍色小圓）
   else { const paint=std(0xf4f5f2,{roughness:0.32, metalness:0.12}), W=1.8, blk=std(0x15171b,{roughness:0.7}), gD=std(0x1a1e24,{roughness:0.06, metalness:0.4}), led=std(0xffffff,{emissive:0xe8f2ff}), rd=std(0xd81e2a,{emissive:0x8a0a12});   /* 特斯拉 Model X（他 11-18：白色糊在一起不及格）：珍珠白有光澤＋黑色玻璃車頂＋黑包邊 */
     g.add(extr(ins([[-1.85,0.3],[-1.9,0.62],['q',-1.92,0.9,-1.55,0.98],['q',-1.05,1.06,-0.78,1.12],[0.36,1.13],[0.36,0.48],[1.34,0.48],[1.34,1.1386],[1.5,1.14],['q',1.86,1.12,1.88,0.95],[1.88,0.3]]),W,paint));   /* 車身：鷗翼門那段挖一個車廂槽（他 11-18：裡面沒挖空會穿幫） */
        // 後輪上方那一小塊車身側板（其他地方是門板，門打開就開到門檻）   // 車身：只做到窗戶下緣（腰線），上面整個座艙是玻璃
@@ -2893,7 +2895,7 @@ function makeRide(kind){ if(BIKES[kind]) return makeBike(kind); if(['sedan','pic
     g.add(box(0.02,0.14,1.5,1.885,0.4,0,blk)); g.add(box(0.008,0.015,1.0,1.882,0.98,0,rd));   // 後擴散器、中間細紅條（貼著車尾）
     { const tg=new THREE.Group(); tg.position.set(-1.858,0.81,0); tg.rotation.z=-0.7; tg.add(box(0.006,0.02,0.11,0,0.025,0,mat.chrome)); tg.add(box(0.006,0.07,0.02,0,-0.01,0,mat.chrome)); g.add(tg); }   // 車頭 T 字標誌（貼在斜面上）
     wheels(1.22,0.8,std(0x3a3f47),0.42); u.wheels.forEach(w=>luxRim(w,0.42,'ev'));
-    chfKit(g,{S:1.35, duckR:0.15, duckF:0.9, seatF:0.5, paint, glass:gD, bz:0.9, gz:0.86, seatY:0.76, rearX:0.76, exitX:0.64, coverLow:0.15, edgeIn:0.05, thE:-1.2, knE:0.6, thF:-1.1, knF:0.7, frontX:-0.01, xm:0.5, nose:-1.92, front:{x0:-0.45,x1:0.36,yb:0.45,yt:1.2,gt:[1.33,1.49]}, rear:null, arch:{x:-1.22,y:0.42,r:0.55}}); }   // 司機＋駕駛座門（後座是鷗翼門）   // 特斯拉空力輪框
+    chfKit(g,{S:1.35, duckR:0.15, duckF:0.9, duckS:0.72, seatF:0.5, paint, glass:gD, bz:0.9, gz:0.86, seatY:0.76, rearX:0.76, exitX:0.64, coverLow:0.15, edgeIn:0.05, thE:-1.2, knE:0.6, thF:-1.1, knF:0.7, frontX:-0.01, xm:0.5, nose:-1.92, front:{x0:-0.45,x1:0.36,yb:0.45,yt:1.2,gt:[1.33,1.49]}, rear:null, arch:{x:-1.22,y:0.42,r:0.55}}); }   // 司機＋駕駛座門（後座是鷗翼門）   // 特斯拉空力輪框
   return g; }
 // 騎機車進場：你坐在坐墊上，腳踩踏板，手握把手（每一格都照車子的位置擺）
 const _rv=new THREE.Vector3();
