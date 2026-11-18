@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="7155687a290d", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="d078e1eed258", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -2354,7 +2354,7 @@ const LEVELS = [
   ] },
 
 // ---------- 週五 ----------
-{ id:'L5', name:'週一　新案承接', short:'週一', office:true, roastAt:3, view:{t:[0.3,0.8,0.9], theta:-0.14, phi:0.8, dist:11},   /* 他 11-18：稍微傾斜一點，原本 0.55 太高 */   /* 他 11-17：固定視角太遠 → 17.5 拉近到 11 */
+{ id:'L5', name:'週一　新案承接', short:'週一', office:true, roastAt:3, view:{t:[0.3,0.8,0.9], theta:-0.14, phi:1.0, dist:11},   /* 他 11-18：稍微傾斜一點，原本 0.55 太高 */   /* 他 11-17：固定視角太遠 → 17.5 拉近到 11 */
   boardAt:[BB.x(SCR.X),BB.z(SCR.Y)], boardCam:{theta:Math.PI, phi:1.15, dist:5.6},   /* 黑板的位置；走到黑板前面時鏡頭轉到北邊看板面 */
   area:{x0:BB.x(0), x1:BB.x(11.71), z0:BB.z(9.75), z1:BB.z(0)},   /* 走得到的範圍：整棟。牆、玻璃、家具各自當障礙物；會議室、老闆辦公室、茶水間都走得進去（他 11-13），左邊的原有廁所門關著 */
   decoyAt:[BB.x(8.55),BB.z(6.85)], teaAt:[BB.x(9.97),BB.z(4.40)],   /* 茶水間那疊也是假的（他 11-17：跟廁所一樣的陷阱） */   /* 假的那疊：廁所洗手台上（原本是立牌，站在廁所中間） */   /* 假的檢討立牌：在廁所裡面，騙人進去（他 11-13） */
