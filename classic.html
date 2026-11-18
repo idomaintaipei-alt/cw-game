@@ -2925,6 +2925,8 @@ function makeActor(who,x,z){ const c=CAST[who], g=makePerson(c); g.rotation.orde
   if(who!=='you') g.traverse(o=>{ if(o.isMesh||o.isSprite){ o.userData.pick={kind:'npc',who}; LV.pick.push(o); } });
   if(!L.office && ['tie','lin','an','kun'].includes(who)){ const cb=new THREE.Group(); cb.add(box(0.24,0.32,0.02, 0,0,0, mat.dark)); cb.add(box(0.2,0.27,0.006, 0,-0.01,0.013, mat.white)); cb.position.set(0.05,-0.28,0.1); cb.rotation.x=-1.25; g.userData.armL.userData.elbow.add(cb); g.userData.clip=cb; }   // 工地的同事手上有板夾
   LV.actors[who]=a; return a; }
+const _hv=new THREE.Vector3();
+function headXZ(a){ if(a.headM===undefined){ let best=null, r=0; a.g.traverse(o=>{ if(o.isMesh && o.geometry && o.geometry.type==='SphereGeometry' && !o.material.transparent){ if(!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); const rr=o.geometry.boundingSphere.radius*o.getWorldScale(_hv).x; if(rr>r){ r=rr; best=o; } } }); a.headM=best; } if(!a.headM) return null; return a.headM.getWorldPosition(_hv); }   /* 人身上最大的那顆球＝頭（坐著回頭時頭會往外偏） */
 const PR=0.22;                                                                       // 人的半徑
 function rectDist(o,x,z){ const dx=x-o.x, dz=z-o.z, ex=dx-Math.max(-o.hx,Math.min(o.hx,dx)), ez=dz-Math.max(-o.hz,Math.min(o.hz,dz)); return {dx,dz,ex,ez,d:Math.hypot(ex,ez)}; }   // 點到方形障礙物的距離
 function blocked(x,z,pad=0.04,skip){ return (LV.obs||[]).some(o=>o!==skip && rectDist(o,x,z).d<PR+pad); }
@@ -4135,6 +4137,7 @@ function crowd(dt,now){ const p=LV.actors.you; if(!p) return;
       else if(Math.hypot(f.x-tx,f.z-tz)>(hj?0.2:0.45)){ const w=plan(f, clampXZ(tx,tz))[0]; if(!f.dest || Math.hypot(f.dest.x-w.x,f.dest.z-w.z)>0.3) f.dest=w; }
       for(const k2 in LV.actors){ const o=LV.actors[k2]; if(o===f||o===p||o.holdAim!==undefined) continue; const dx=f.x-o.x, dz=f.z-o.z, d=Math.hypot(dx,dz)||0.001; if(d<0.55){ f.x+=dx/d*(0.55-d); f.z+=dz/d*(0.55-d); } } const fc=clampXZ(f.x,f.z); f.x=fc.x; f.z=fc.z; pushOut(f); }   // 被擠開之後再確認一次：不出界、不站在牆上、不進障礙物
     for(const k in LV.actors){ const a=LV.actors[k]; if(a===p) continue; const dx=a.x-p.x, dz=a.z-p.z, d=Math.hypot(dx,dz)||0.001;
+      if(L.office && d<1.0){ const hp=headXZ(a); if(hp){ const hx=p.x-hp.x, hz=p.z-hp.z, h=Math.hypot(hx,hz)||0.001; if(h<0.68){ p.x=hp.x+hx/h*0.68; p.z=hp.z+hz/h*0.68; pushOut(p); } } }   /* 週一：離同事的頭至少 0.68（兩顆頭半徑加起來約 0.62；他 11-18：從背後走過去頭會插進頭） */
       if(d<0.55 && (a.helping || L.office) && !(prank && p.hitWho===a.who)){   /* 週一辦公室找圖也一樣（他 11-17） */ const ex=p.x-a.x, ez=p.z-a.z, e=Math.hypot(ex,ez)||0.001; if(e<0.5){ p.x=a.x+ex/e*0.5; p.z=a.z+ez/e*0.5; if(p.dest && p.keyDest){ const tx=-ez/e, tz=ex/e, tp=tx*(p.dest.x-p.x)+tz*(p.dest.z-p.z); let sg=tp>=0 ? 1 : -1; if(Math.abs(tp)<0.01 && p.slideSg) sg=p.slideSg; p.slideSg=sg; p.x+=tx*sg*0.03; p.z+=tz*sg*0.03; }   /* 按著方向鍵被同事擋住：往旁邊推 3 公分繞過去，方向沿用上一次的（他 11-17：原本會卡死在同事前面）。點滑鼠走的路線本來就會繞開同事，不推（推了會左右抖：週四小弟） */ pushOut(p); } continue; }   /* 幫忙的小弟（週四顧雷射、焊接；他 11-16：會一直撞到他）：你走過去只會被擋下來，不推他、不算撞人 */
       if(d<0.55){ const side = a.dest && !moving ? 0.03 : 0;   // 同事走回原位被你擋到：往旁邊滑開，不要卡住
         const ax0=a.x, az0=a.z, c=clampXZ(a.x+dx/d*(0.55-d)-dz/d*side, a.z+dz/d*(0.55-d)+dx/d*side); a.x=c.x; a.z=c.z; pushOut(a,false,a.seated?RS:PR);
