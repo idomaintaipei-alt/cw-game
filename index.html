@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="71012a019492", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="f13978e05be5", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -3131,7 +3131,8 @@ function makePerson0(c){ const off=!!(L && L.office), cf=c.feat||{};            
   // 安全帽，或辦公室的頭髮
   const HY = off ? 0 : (c.hero && !f.shades) ? 0.03 : 0.07;   /* 其他人抬 7 公分：帽簷下緣在眉毛上面，眉毛露得出來 */   /* 安全帽抬高：帽簷不能切到眼皮、眼鏡、墨鏡（主角是小黑點眼睛，抬 3 公分就夠） */
   if(off){ const hd=new THREE.Mesh(new THREE.SphereGeometry(f.buzz?0.203:0.21,24,12,0,Math.PI*2,0,Math.PI*0.5), std(c.hair||0x2a2320)); hd.position.set(0,1.585,0.01); hd.rotation.x = c.hero ? -0.3 : -0.4; hd.castShadow=true; g.add(hd); }   /* 其他人髮際線往後一點，眉毛不貼著頭髮 */
-  else { const DS=1.06,
+  else { { const hd=new THREE.Mesh(new THREE.SphereGeometry(f.buzz?0.203:0.21,24,12,0,Math.PI*2,0,Math.PI*0.5), std(c.hair||0x2a2320)); hd.position.set(0,1.585,0.01); hd.rotation.x = c.hero ? -0.3 : -0.4; hd.castShadow=true; hd.visible=false; hd.userData.carOn=true; g.add(hd); }   /* 安全帽底下的頭髮：拿下安全帽才露出來（他 11-19：下車變禿頭） */
+    const DS=1.06,
     dome=new THREE.Mesh(new THREE.SphereGeometry(0.218,28,14,0,Math.PI*2,0,Math.PI/2),hel); dome.scale.y=DS; dome.position.set(0,1.6+HY,0.01);   /* 主角的帽子抬高 3 公分：眼睛露出來 */ dome.castShadow=true; g.add(dome);   // 帽殼（稍微高一點）
     [[0,0.014],[-0.065,0.008],[0.065,0.008]].forEach(([xo,t])=>{ const A0=0.75, rb=new THREE.Mesh(new THREE.TorusGeometry(Math.sqrt(0.221*0.221-xo*xo),t,6,28,Math.PI-2*A0),hel); rb.rotation.set(0,Math.PI/2,A0); rb.scale.y=DS;   /* 肋只在帽頂（前後各留 43 度），正面空出來給貼紙 */ rb.position.set(xo,1.6+HY,0.01); g.add(rb); });   // 頂上三條加強肋：沿著帽殼彎下來，不會凸出去
     const brim=cyl(0.25,0.018,'y',0,1.605+HY,0.045,hel,32); brim.scale.z=1.12; g.add(brim); { const lip=new THREE.Mesh(new THREE.TorusGeometry(0.25,0.01,6,32),hel); lip.rotation.x=Math.PI/2; lip.scale.y=1.12; lip.position.set(0,1.605+HY,0.045); g.add(lip); }   // 帽簷＋圓角收邊
@@ -4495,8 +4496,9 @@ function tick(now){ const dt=Math.max(0,Math.min(0.05,(now-lastT)/1000)), t=now/
     if(spot.visible){ const s=1+0.08*Math.sin(now/200); spot.scale.set(s,1,s); spot.userData.arrow.position.y=1.0+0.12*Math.sin(now/220);
       const d=Math.hypot(p.x-spot.position.x,p.z-spot.position.z); spot.userData.arrow.visible=d>1.0; if(d>1.1) spotArmed=true; else if(d<0.45 && spotArmed && carry && !dlgOpen){ spotArmed=false; tryInstall(); } }
     if(pingLife>0){ pingLife-=dt*2; const s=1+(1-pingLife)*2.5; ping.scale.set(s,s,s); mat.ping.opacity=Math.max(0,pingLife*0.6); if(pingLife<=0) ping.visible=false; } }
-    { const me=LV.actors.you; if(me){ let off=false; const c=cut, K=c && c.g && c.g.userData.chf; if(K){ const v=c.g.worldToLocal(me.g.getWorldPosition(new THREE.Vector3())); off = Math.abs(v.z)<K.c.bz+0.45 && v.x>-2.4 && v.x<2.6; } else if(c && c.g && c.kind==='heli'){ const b=new THREE.Box3().setFromObject(c.g).expandByScalar(0.8); off=b.containsPoint(me.g.getWorldPosition(new THREE.Vector3())); }   /* 直升機：人在機身範圍內也一樣 */   /* 上下豪車：人在車旁邊就把安全帽、光圈拿下來（他 11-19：戴在頭上的造型會穿出車窗、車頂） */
-      if(off || me.hatOff) me.g.traverse(o=>{ const k=o.userData.fly; if(k==='helmet'||k==='halo'||o.userData.carOff) o.visible=!off; if(o.userData.carOn) o.visible=off; }); me.hatOff=off; } }   /* 放在每格算圖前面：豪車進場那段也會跑 */
+    { const me=LV.actors.you; if(me){ let off=false; const c=cut, K=c && c.g && c.g.userData.chf; if(K){ const v=c.g.worldToLocal(me.g.getWorldPosition(new THREE.Vector3())); off = Math.abs(v.z)<K.c.bz+1.0 && v.x>-2.6 && v.x<2.8; } else if(c && c.g && c.kind==='heli'){ const b=new THREE.Box3().setFromObject(c.g).expandByScalar(0.8); off=b.containsPoint(me.g.getWorldPosition(new THREE.Vector3())); }   /* 直升機：人在機身範圍內也一樣 */   /* 上下豪車：人在車旁邊就把安全帽、光圈拿下來（他 11-19：戴在頭上的造型會穿出車窗、車頂） */
+      if(off || me.hatOff) me.g.traverse(o=>{ const k=o.userData.fly; if(k==='helmet'||k==='halo'||o.userData.carOff) o.visible=!off; if(o.userData.carOn) o.visible=off; }); if(me.hatOff && !off) me.hatT0=performance.now(); me.hatOff=off;   /* 放在每格算圖前面：豪車進場那段也會跑 */
+      if(me.hatT0!==undefined){ const e=Math.min(1,(performance.now()-me.hatT0)/350), y=0.28*(1-e*e*(3-2*e)); me.g.traverse(o=>{ if(o.userData.fly==='helmet'){ if(o.userData.hatY===undefined) o.userData.hatY=o.position.y; o.position.y=o.userData.hatY+y; } }); if(e>=1) me.hatT0=undefined; } } }   /* 走離車子（往電梯的路上）再戴回去：安全帽從頭上 28 公分慢慢落下戴好（他 11-19） */
   placeCam(); renderer.render(scene,camera); requestAnimationFrame(tick); }
 setInterval(()=>{ if(done||!L) return; const s=Math.round((Date.now()-t0)/1000); $('#timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },500);
 
