@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="baad953ab2fe", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="a61b854c6e0a", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -2250,9 +2250,9 @@ function cornerWall(put, staged, fm){   // staged＝從板筋階段開始（樓�
   if(staged) tower(); else if(fm!=='none') ground(-0.25, fm);
   if(!staged) stat(box(0.5,3.6,0.6, -0.35,1.55,-0.15, mat.rc));   /* 工地那一關的轉角柱在下面跟其他柱子一起放 */
   const slab = staged ? box(16.6,0.2,10.8, 4.8,-0.1,-5.4, mat.rc) : box(3.4,0.2,2.2, 1.1,-0.1,-1.1, mat.rc);                                   // 工地那一關：整層樓板一起灌（x -3.5～13.1、z -10.8～0）
-  if(staged){ const CX=[-2.9,-0.6,3.6,6.6,10.2,12.5], CZ=[-0.15,-5.35,-10.15], CW=0.9;   /* 後排往裡退 40 公分：不碰後面樓板邊預埋件的錨筋 */   /* 柱子在每一跨（單元）的正後方 */   // 柱子對齊直料（6.0、9.6 正好是直料的位置；兩端貼樓板邊）
+  if(staged){ LV.cols=[]; const CX=[-2.9,-0.6,3.6,6.6,10.2,12.5], CZ=[-0.15,-5.35,-10.15], CW=0.9;   /* 後排往裡退 40 公分：不碰後面樓板邊預埋件的錨筋 */   /* 柱子在每一跨（單元）的正後方 */   // 柱子對齊直料（6.0、9.6 正好是直料的位置；兩端貼樓板邊）
     CX.forEach(x=>CZ.forEach(z=>{ if(z>-1 && x===3.6) return;                                                                               // 轉角這一跨的右前方不放柱子，留給人繞進室內
-      const zc = z>-1 && x!==-0.6 ? -0.4 : z; stat(box(x===-2.9||x===12.5 ? 0.75 : CW,3.6,0.6, x,1.55,zc, mat.rc));   /* 兩端那跨只有 1.0 公尺：柱子 0.75 寬，不碰預埋件的錨筋 */ [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>stat(cyl(0.016,0.8,'y', x+a*0.36,3.75,zc+b*0.2, mat.rebar,6))); }));   // 前排的柱子退到樓板邊後面，牆從柱子前面過   // 柱子＋柱頭的預留筋
+      const zc = z>-1 && x!==-0.6 ? -0.4 : z; stat(box(x===-2.9||x===12.5 ? 0.75 : CW,3.6,0.6, x,1.55,zc, mat.rc)); LV.cols.push({x, z:zc, hx:(x===-2.9||x===12.5 ? 0.75 : CW)/2, hz:0.3});   /* 灌漿人員避開柱子用 */   /* 兩端那跨只有 1.0 公尺：柱子 0.75 寬，不碰預埋件的錨筋 */ [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>stat(cyl(0.016,0.8,'y', x+a*0.36,3.75,zc+b*0.2, mat.rebar,6))); }));   // 前排的柱子退到樓板邊後面，牆從柱子前面過   // 柱子＋柱頭的預留筋
     add('pour', slab); const rb=new THREE.Group(), rm=mat.rebar; rb.add(box(16.6,0.03,10.8, 4.8,-0.215,-5.4, mat.wood));                       // 底模＋側模＋板筋
     rb.add(box(0.04,0.3,10.8, -3.52,-0.08,-5.4, mat.wood)); rb.add(box(0.04,0.3,10.8, 13.12,-0.08,-5.4, mat.wood)); rb.add(box(16.68,0.3,0.04, 4.8,-0.08,-10.82, mat.wood));
     for(let z=-0.15; z>-10.75; z-=0.3) rb.add(cyl(0.014,16.5,'x', 4.8,-0.12,z, rm,6)); for(let x=-3.35; x<13.05; x+=0.3) rb.add(cyl(0.014,10.7,'z', x,-0.092,-5.4, rm,6));
@@ -3330,7 +3330,8 @@ function stepPour(c,dt){ c.t+=dt; const t=c.t, A1=1.5, A2=1.0, P=5.5, E1=0.8, E2
   const pouring=k>0&&k<1; c.stream.visible=pouring; if(pouring) setSeg(c.stream, he, new THREE.Vector3(he.x,0.02,he.z));
   const xf=nx-0.4, w=Math.max(0.02,X1-xf); slab.visible=k>0; if(k<1){ slab.scale.set(w/16.6,1,1); slab.position.set(X1-w/2,-0.1,-5.4); } else { slab.scale.set(1,1,1); slab.position.copy(slab.userData.home); LV.refs.rebar.visible=false; }   // 灌到哪裡，樓板就蓋到哪裡
   c.workers.forEach((wk,i)=>{ const g=wk.g, sw=Math.sin(t*5+i)*0.25, ud=g.userData; g.visible = i ? (k>0.06 && leave<0.3) : pouring;
-    if(i){ g.position.set(Math.min(12.5, xf+0.9+i*0.6), 0, [-2.4,-5.4,-8.6][i-1]+Math.sin(t*1.3+i)*0.5); wk.rake.position.z=0.35+Math.sin(t*5+i*2)*0.22; } else g.position.set(Math.min(12.7,nx+0.6), 0, nz);
+    if(i){ g.position.set(Math.min(12.5, xf+0.9+i*0.6), 0, [-2.4,-4.4,-7.75][i-1]+Math.sin(t*1.3+i)*(i===2?0.25:0.5)); wk.rake.position.z=0.35+Math.sin(t*5+i*2)*0.22; } else g.position.set(Math.min(12.7,nx+0.6), 0, nz);   /* 推平的三排走在柱子排中間（他 11-19：穿柱子） */
+    (LV.cols||[]).forEach(cl=>{ const dx=g.position.x-cl.x, dz=g.position.z-cl.z, ex=cl.hx+0.35, ez=cl.hz+0.35; if(Math.abs(dx)<ex && Math.abs(dz)<ez){ if(ex-Math.abs(dx) < ez-Math.abs(dz)) g.position.x=cl.x+(dx>=0?ex:-ex); else g.position.z=cl.z+(dz>=0?ez:-ez); } });   /* 碰到柱子：站到柱子旁邊 */
     ud.legL.rotation.x=sw; ud.legR.rotation.x=-sw; });
   if(fold>0) c.wet.color.copy(c.c0).lerp(c.dry.color, Math.min(1,(fold+leave)/2));
   if(!c.said && t>A1){ c.said=true; subtitle(L.boss,'灌漿廠的車到樓下了。臂架伸上來，退後！'); }
@@ -4678,7 +4679,7 @@ function onClick(e){ if(dlgOpen){ advance(); return; } if(LV.animBusy) return; i
   if(LV.restList && !prank && !done && !LV.down){ const R=LV.restList.find(o=>{ let q=o; while(q && q!==LV.group) q=q.parent; if(!q || o.userData.down) return false;   /* 只認這一關裡的師傅（名單會留著上一關的人） */ const c=o.getWorldPosition(new THREE.Vector3()); c.y+=0.75; return ray.ray.distanceToPoint(c)<0.42; }); if(R){ const t=standNear(R.position.x,R.position.z,0.6); moveTo(t.x,t.z,null); LV.actors.you.goal={x:R.position.x, z:R.position.z}; return; } }   /* 點在休息區師傅身上＝走過去推他 */
   const fy=LV.down ? yardY() : L.gy; gplane.constant=-fy; if(ray.ray.intersectPlane(gplane,hitPt) && L.plant && !LV.down && !inWork(hitPt.x,hitPt.z,-0.4) && hitPt.z>0.85 && !done){ const A=OUT(); askOut({x:Math.min(A.x1,Math.max(A.x0,hitPt.x)), z:Math.min(A.z1,Math.max(A.z0,hitPt.z))}); return; }   /* 週五：點工作區外面＝問要不要出去 */
   if(ray.ray.intersectPlane(gplane,hitPt)){ const c=clampXZ(hitPt.x,hitPt.z); moveTo(c.x,c.z,null); ping.position.set(c.x,fy+0.02,c.z); ping.visible=true; pingLife=1; } }
-const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151119 17:30'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
+const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151119 17:32'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
 // 搖桿：手指按在圓裡拖，圓鈕跟著走；往哪推人就往哪走（跟鍵盤 WASD 一樣照鏡頭方向）
 const joy={x:0, y:0, on:false, id:null}; { const J=document.getElementById('joy'), K=document.getElementById('joyKnob'), R=44;
   const mv=e=>{ const b=J.getBoundingClientRect(), k=b.width/(J.offsetWidth||124),   /* k＝資訊框那一層被縮放的倍數（整頁被放大時才不是 1） */ cx=b.left+b.width/2, cy=b.top+b.height/2; let dx=(e.clientX-cx)/k, dy=(e.clientY-cy)/k; const m=Math.hypot(dx,dy); if(m>R){ dx*=R/m; dy*=R/m; }
