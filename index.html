@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="2cfd2a91eb33", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="a71c35d7dc1e", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -2275,13 +2275,13 @@ function cornerWall(put, staged, fm){   // staged＝從板筋階段開始（樓�
   const TD=MD*0.85, jt=(x,e,y)=>{ put('joint', box(0.012,0.006,TD, x+e*(MW/2+0.006),y+0.043,WZ, mat.seal)); put('joint', box(0.01,0.092,0.005, x+e*(MW/2+0.005),y,WZ+TD/2+0.0025, mat.seal)); };   // 接頭防水：橫料兩端跟直料交接的地方，上面一道、正面一道膠
   BAYS.forEach(([a,b])=>TY.forEach(y=>{ jt(a,1,y); jt(b,-1,y); })); if(staged){ jt(2.4,1,TY[1]); jt(4.8,-1,TY[1]); }
   const SH=TY[0]-BOT-0.2, SM=(TY[0]+BOT)/2+0.02;                                                         // 窗間牆這一段的高度與中心
-  XS.forEach(x=>put('spin', box(MW+0.07, SH, 0.07, x, SM, WZ-0.105, mat.wool)));                           // 直料包覆
+  XS.forEach(x=>put('backpan', box(MW+0.07, SH, 0.07, x, SM, WZ-0.105, mat.wool)));                           // 直料包覆
   BAYS.forEach(([a,b])=>{ const cx=(a+b)/2, w=b-a-MW-0.02;
     put('backpan', box(w+0.02, TY[0]-BOT-0.12, 0.014, cx, SM, WZ-0.03, mat.steel));
-    put('spin', box(w, SH, 0.05, cx, SM, WZ-0.066, mat.wool)); put('spin', box(w, 0.045, 0.03, cx, SM, WZ-0.106, mat.steel));        // 窗間牆防火隔熱材＋補強 T 型角鋼
-    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([e,f])=>put('spin', cyl(0.018,0.02,'z', cx+e*(w/2-0.1), SM+f*(SH/2-0.1), WZ-0.097, mat.dark,8)));   // 五金配件
-    put('wool', box(w, 0.17, 0.125, cx, -0.1, 0.064, mat.wool2));                                          // 層間塞防火岩棉：樓板邊和隔熱材之間
-    put('fcoat', box(w, 0.016, 0.125, cx, -0.006, 0.064, mat.fire));                                       // 防火阻煙膠：塗在岩棉上面
+    put('backpan', box(w, SH, 0.05, cx, SM, WZ-0.066, mat.wool)); put('backpan', box(w, 0.045, 0.03, cx, SM, WZ-0.106, mat.steel));        // 窗間牆防火隔熱材＋補強 T 型角鋼
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([e,f])=>put('backpan', cyl(0.018,0.02,'z', cx+e*(w/2-0.1), SM+f*(SH/2-0.1), WZ-0.097, mat.dark,8)));   // 五金配件
+    put('backpan', box(w, 0.17, 0.125, cx, -0.1, 0.064, mat.wool2));                                          // 層間塞防火岩棉：樓板邊和隔熱材之間
+    put('backpan', box(w, 0.016, 0.125, cx, -0.006, 0.064, mat.fire));                                       // 防火阻煙膠：塗在岩棉上面
     put('glass', box(w,TY[1]-TY[0]-0.1,0.012, cx,(TY[0]+TY[1])/2,WZ+0.05, (staged?[-2.9,-0.6,6.6,10.2,12.5]:[-0.35]).some(x=>x>a && x<b) ? (mat.spandrel||(mat.spandrel=std(0x34414d,{metalness:0.35, roughness:0.28}))) : mat.glass));   /* 後面是柱子：不透明的背漆玻璃（他 11-19） */
     put('glass', box(w,TY[0]-BOT-0.1,0.012, cx,(TY[0]+BOT)/2+0.02,WZ+0.05, mat.glass));
   });
@@ -2297,7 +2297,7 @@ const LEVELS = [
 { id:'L1', name:'週二　轉角一跨', short:'週二', desc:'工地第一天。昨天檢討過的那面轉角牆，今天對著圖，親手裝一次。', trDone:'第一天，活下來了',
   gy:-0.25, cx:1.2, yard:-11.05, boss:'tie', npcs:['tie','lin'],          // yard＝地面的高度：這一關在四樓，地面在下面三層樓
   build(){ cornerWall(add,true); }, fx:{ pour(){ runPour(); } },
-  tray:['glass','wool','transom','layout','anchor','fcoat','pour','sealant','joint','backpan','mullion','spin','bracket'],
+  tray:['glass','transom','layout','anchor','pour','sealant','joint','backpan','mullion','bracket'],
   intro:[
     {who:'tie', t:'{P}，來了？昨天在辦公室看的是圖，今天看的是真的。'},
     {who:'tie', t:'你昨天檢討的那面轉角牆，今天自己裝一次。裝得起來，才叫圖。'},
@@ -2333,17 +2333,12 @@ const LEVELS = [
       q:{ title:'直料、橫料都裝好了。接頭的防水，什麼時候做？', body:'直料和橫料交接的地方有接頭。', src:SRC.pkd16, opts:[
         {t:'現在就做，做完才裝玻璃', ok:true, exp:'框架式的順序：直料、橫料、**接頭防水**，然後才裝玻璃或鋁板，最後才是**接縫防水**。'},
         {t:'等玻璃裝好，最後跟外面的膠一起打', ok:false, exp:'接頭防水排在裝玻璃的前面。最後打的那一道是**接縫防水**，是另一件事。'} ] } },
-    { id:'backpan', name:'背襯板', tr:'背後有靠山', spot:[0.6,1.2], hint:'接頭防水好了。樓板這一段，玻璃後面要先裝**背襯板**。' },
-    { id:'spin', name:'窗間牆防火隔熱材', tr:'背後有棉', in:true, spot:[0.6,-0.75], hint:'背襯板好了。繞到室內側，把**窗間牆防火隔熱材**用五金配件固定，加補強 T 型角鋼，直料也要包覆。窗間牆這一段高 **90 公分**。' },
-    { id:'wool', name:'層間塞防火岩棉', tr:'塞好塞滿', in:true, spot:[1.8,-0.75], hint:'隔熱材好了。樓板邊跟它之間還有一道縫。',
-      q:{ title:'層間塞防火岩棉，塞在哪裡？', body:'樓板邊跟帷幕牆之間有一道縫。窗間牆這一段高 90 公分。', src:SRC.ifc90, opts:[
-        {t:'樓板邊和窗間牆防火隔熱材之間', ok:true, exp:'照圖說，**層間塞防火岩棉**就是塞在樓板邊和窗間牆防火隔熱材之間。'},
-        {t:'玻璃和橫料之間', ok:false, exp:'位置不對。照圖說，是塞在樓板邊和窗間牆防火隔熱材之間。'} ] } },
-    { id:'fcoat', name:'防火阻煙膠', tr:'最後一道', in:true, spot:[1.2,-0.75], hint:'岩棉塞好了，還差一道膠。',
-      q:{ title:'防火阻煙膠，塗在哪裡？', body:'層間塞防火岩棉已經塞好。', src:SRC.ifc, opts:[
-        {t:'塗在玻璃外側，擋雨', ok:false, exp:'位置不對。照圖說，防火阻煙膠是塗在層間塞防火岩棉的上面。'},
-        {t:'塗在層間塞防火岩棉的上面', ok:true, exp:'照圖說，**防火阻煙膠**塗在層間塞防火岩棉上面。'} ] } },
-    { id:'glass', name:'玻璃', tr:'玻璃心，輕輕放', spot:[0.6,1.2], hint:'室內側的防火都做好了。回到外面，裝玻璃。' },
+    { id:'backpan', name:'背襯板', tr:'背後有靠山', spot:[0.6,1.2], hint:'接頭防水好了。玻璃後面裝**背襯板**。背襯板後面的**防火岩棉**在工廠就組好了，現場只要鎖固。樓板邊的縫，塞**層間塞防火岩棉**，上面塗**防火阻煙膠**。',   /* 他 11-19：背襯板＋防火岩棉工廠組好；老闆：層間岩棉、阻煙膠也併進這一步 */
+      q:{ title:'背襯板鎖好了，樓板邊那道縫怎麼處理？', body:'背襯板後面的防火岩棉在工廠就組好了。樓板邊跟帷幕牆之間還有一道縫。', src:SRC.ifc90+'；'+SRC.ifc, opts:[
+        {t:'樓板邊和窗間牆防火隔熱材之間塞層間塞防火岩棉，上面再塗防火阻煙膠', ok:true, exp:'照圖說，**層間塞防火岩棉**塞在樓板邊和窗間牆防火隔熱材之間，**防火阻煙膠**塗在岩棉上面。'},
+        {t:'塗在玻璃外側，擋雨就好', ok:false, exp:'位置不對。照圖說，是在樓板邊塞層間塞防火岩棉，上面再塗防火阻煙膠。'},
+        {t:'玻璃和橫料之間塞岩棉', ok:false, exp:'位置不對。照圖說，是塞在樓板邊和窗間牆防火隔熱材之間。'} ] } },
+    { id:'glass', name:'玻璃', tr:'玻璃心，輕輕放', spot:[0.6,1.2], hint:'背襯板鎖好了，裝玻璃。' },
     { id:'sealant', name:'矽利康', tr:'灰黑才是正義', spot:[1.2,1.0], hint:'最後打膠收尾。',
       q:{ title:'膠，你要用什麼顏色？', body:'外側收邊矽利康。', src:SRC.model, opts:[
         {t:'米色，比較溫暖', ok:false, exp:'公司規定膠一律**灰色或黑色**，不用米色。'},
@@ -4525,7 +4520,7 @@ function tryPick(id){ if(done||dlgOpen||placed.has(id)) return; if(prank){ say([
   carry=id; carryT=performance.now(); const spec=ITEM[L.id+'.'+id], me=LV.actors.you, hold=me.g.userData.hold; while(hold.children.length) hold.remove(hold.children[0]);
   if(spec){ const it=makeItem(spec), bb=new THREE.Box3().setFromObject(it.g); me.grip=Math.min(bb.max.x,-bb.min.x); me.gripZ=-bb.min.z;   /* 料的背面離手掌中心多遠（L 型固定片前後不對稱） */   /* 手握的寬度：兩邊比較窄的那邊（矽利康管一頭有尖嘴） */ hold.add(it.g); hold.position.set(...POSE[it.pose]); hold.rotation.set(0, it.pose==='side' ? Math.PI/2 : 0, it.pose==='overhead'||it.pose==='upright' ? Math.PI/2 : 0);   /* 大板立起來夾在身側；直料放倒，跟橫料一樣兩手握兩端 */ me.carry=it.pose; LV.pallets[id].item.visible=false; } else me.carry=null;
   fan('offer',0.4); if(L.office && LV.pallets[id]) LV.pallets[id].g.visible=false; if(L.id==='L1' && id==='layout') carryLaser();   /* 週一：桌上那疊拿走了 */
-  const st=need(); spot.position.set(st.spot[0], gyAt(st.spot[0],st.spot[1]), st.spot[1]); spot.visible=true; spotArmed=true; showGhost(id); setGoal(); if(st.multi) helpStart(st,true);
+  const st=need(); spot.position.set(st.spot[0], gyAt(st.spot[0],st.spot[1]), st.spot[1]); spot.visible=true; spotArmed=true; showGhost(id); setGoal(); if(st.multi) helpStart(st,true); if(L.id==='L1' && id==='backpan') say([{who:L.boss, t:'這片是背襯板，後面的防火岩棉在工廠就裝好了，現場只要鎖上去就好。'}]);   /* 他 11-19：交代一下，新人才知道那是背襯板＋防火岩棉 */
   if(L.office && st.deliver){ courierCome(); say([{who:L.boss, t:'施工圖都在這了！快遞到了，整疊抱去**大門口**交給他，藍圈那邊。'}], ()=>{ talkCam=null; const me=LV.actors.you; target.set(me.x, target.y, me.z); if(camHome) camGoal={theta:camHome.theta, phi:camHome.phi, dist:camHome.dist}; userCamT=performance.now(); }); LV.onPhone=true; }   /* 他 11-17：點了施工圖那疊沒反應（藍圈在很遠的大門口，畫面上看不到）→ 小安講一句，講完鏡頭退回平常的角度、畫面中心放在你和大門口藍圈中間，兩個都看得到；講話時鏡頭不拉去小安那邊 */
   if(st.in) camGoal={theta:2.7, phi:0.95, dist:9.5}; buildSpotOcc(); ensureSpotVisible(); }                                 // 室內側的工作：鏡頭轉到室內看
 let multiN=0;                                                                         // 要放好幾個位置的步驟（預埋件）：現在放到第幾個
@@ -4680,7 +4675,7 @@ function onClick(e){ if(dlgOpen){ advance(); return; } if(LV.animBusy) return; i
   if(LV.restList && !prank && !done && !LV.down){ const R=LV.restList.find(o=>{ let q=o; while(q && q!==LV.group) q=q.parent; if(!q || o.userData.down) return false;   /* 只認這一關裡的師傅（名單會留著上一關的人） */ const c=o.getWorldPosition(new THREE.Vector3()); c.y+=0.75; return ray.ray.distanceToPoint(c)<0.42; }); if(R){ const t=standNear(R.position.x,R.position.z,0.6); moveTo(t.x,t.z,null); LV.actors.you.goal={x:R.position.x, z:R.position.z}; return; } }   /* 點在休息區師傅身上＝走過去推他 */
   const fy=LV.down ? yardY() : L.gy; gplane.constant=-fy; if(ray.ray.intersectPlane(gplane,hitPt) && L.plant && !LV.down && !inWork(hitPt.x,hitPt.z,-0.4) && hitPt.z>0.85 && !done){ const A=OUT(); askOut({x:Math.min(A.x1,Math.max(A.x0,hitPt.x)), z:Math.min(A.z1,Math.max(A.z0,hitPt.z))}); return; }   /* 週五：點工作區外面＝問要不要出去 */
   if(ray.ray.intersectPlane(gplane,hitPt)){ const c=clampXZ(hitPt.x,hitPt.z); moveTo(c.x,c.z,null); ping.position.set(c.x,fy+0.02,c.z); ping.visible=true; pingLife=1; } }
-const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151119 17:54'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
+const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151119 18:01'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
 // 搖桿：手指按在圓裡拖，圓鈕跟著走；往哪推人就往哪走（跟鍵盤 WASD 一樣照鏡頭方向）
 const joy={x:0, y:0, on:false, id:null}; { const J=document.getElementById('joy'), K=document.getElementById('joyKnob'), R=44;
   const mv=e=>{ const b=J.getBoundingClientRect(), k=b.width/(J.offsetWidth||124),   /* k＝資訊框那一層被縮放的倍數（整頁被放大時才不是 1） */ cx=b.left+b.width/2, cy=b.top+b.height/2; let dx=(e.clientX-cx)/k, dy=(e.clientY-cy)/k; const m=Math.hypot(dx,dy); if(m>R){ dx*=R/m; dy*=R/m; }
