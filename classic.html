@@ -3205,6 +3205,7 @@ function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
   const u=a.g.userData, sw=moving?Math.sin(t*10+a.ph)*0.7*a.gait*amp:0, k=Math.min(1,dt*14);
   if(a.squatS){ u.legL.rotation.x=u.legR.rotation.x=-a.squatS; } else   /* 蹲：大腿往前（膝蓋另外彎） */
   u.legL.rotation.x+=(sw-u.legL.rotation.x)*k; u.legR.rotation.x+=(-sw-u.legR.rotation.x)*k;
+  { const KL=u.legL.userData.knee, KR=u.legR.userData.knee; if(KL && KR && !a.squatS && !a.seated && (moving || u.walkKnee)){ const ph=t*10+a.ph, A=moving?0.9*a.gait*amp:0, wl=A*Math.max(0,-Math.cos(ph)), wr=A*Math.max(0,Math.cos(ph)); KL.rotation.x+=(wl-KL.rotation.x)*k; KR.rotation.x+=(wr-KR.rotation.x)*k; u.walkKnee = moving || KL.rotation.x>0.01 || KR.rotation.x>0.01; } }   /* 走路彎膝蓋（他 11-19：大家都沒有膝蓋）：往前跨的那隻腿彎、踩下去伸直；停下來回直後就不再管（不搶坐、蹲、上下車的膝蓋） */
   const c=a.carry, up = false, fa = c==='front'||c==='across' ? -0.32 : c==='upright' ? -1.25 : c==='overhead'||c==='side' ? -0.12 : null, ha = a.holdAim!==undefined && !moving ? a.holdAim : null, asw=sw*0.6, tl = ha!==null?ha : up?-2.9 : fa!==null?fa : -asw, tr = ha!==null?ha : up?-2.9 : fa!==null?fa : asw;   /* 走路擺手：幅度是腿的 6 成（原本跟腿一樣大、手打直，像木頭人） */   /* ha＝小弟扶料：兩手伸向要裝的東西 */   // front＝捧在腰前；club＝拿在手上垂著，手照常擺
   const GRIP = { across:{L:[-0.32,-0.6,-1.3], R:[-0.32,0.6,-1.3]}, upright:{L:[-0.32,-0.6,-1.3], R:[-0.32,0.6,-1.3]}, overhead:{R:[0.28,0.38,-0.6]}, side:{R:[0.28,0.38,-0.6]} };   /* 長料兩手握兩端；大板右手抓內側 */
   const gz = c==='overhead' ? -0.42 : c==='front'||c==='across' ? Math.asin(Math.max(-0.565,Math.min(0.565,(0.26-(a.grip||0.15))/0.31))) : 0;   /* 手張開的寬度＝料的寬度（手掌貼著料的兩側） */                 // 捧著東西：兩手往內（或往外）收到東西的兩側
@@ -3222,7 +3223,7 @@ function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
   if(a.atWork && !moving && u.clip){ u.armL.rotation.x=-1.15; u.armL.rotation.z=0.3; u.armR.rotation.x=-1.0+Math.sin(t*7+a.ph)*0.1; u.armR.rotation.z=-0.38; }   // 在忙：左手拿板夾，右手在上面寫
   else if(u.clip && !a.carry && !a.seated){ u.armL.rotation.x+=(-1.15-u.armL.rotation.x)*k; u.armL.rotation.z+=(0.3-u.armL.rotation.z)*k; const e=u.armL.userData.elbow; if(e) e.rotation.x+=(0-e.rotation.x)*k; }   /* 拿板夾的人：左手一直抱著板夾（走路、講話也是）；原本講話時左手垂下來，板夾跟著插進身體和腿 */
   if(u.clip) u.clip.visible = !a.carry;
-  [u.legL,u.legR].forEach(l=>{ const kn=l.userData.knee; if(kn) kn.rotation.x = a.seated ? Math.PI/2 : (a.squatK||0); });
+  [u.legL,u.legR].forEach(l=>{ const kn=l.userData.knee; if(kn) kn.rotation.x = a.seated ? Math.PI/2 : (a.squatK || (u.walkKnee ? kn.rotation.x : 0)); });   /* 走路中：留著上面算好的走路膝蓋 */
   if(a.seated){ u.legL.rotation.x=u.legR.rotation.x=-Math.PI/2;   /* 坐姿：大腿平放在椅墊上，膝蓋彎下去，小腿垂直踩在地上 */ const typ = a.atDesk && !moving; u.armL.rotation.x = typ ? -1.22+Math.sin(t*11+a.ph)*0.05 : -0.5; u.armR.rotation.x = typ ? -1.22+Math.sin(t*11+a.ph+1.7)*0.05 : -0.5;   /* 打字：手往前伸、放在鍵盤上，兩手往內收到鍵盤的寬度 */
     u.armL.rotation.z = typ ? 0.13 : 0; u.armR.rotation.z = typ ? -0.13 : 0; }   // 坐姿；在位子上就打字
   if(a.swing && a.swing.id==='drink'){ const sw2=a.swing, w=Math.min(1,sw2.t/0.35); sw2.t+=dt; u.armR.rotation.x=-2.0*w; u.armR.rotation.z=-0.3*w; a.g.rotation.x=-0.13*w*(0.6+0.4*Math.sin(sw2.t*9));   // 喝：手舉到嘴邊（不超過頭），仰頭灌
@@ -4065,6 +4066,23 @@ function duoCarry(o, done){ const me=LV.actors.you, h=LV.actors.di, q=LV.pallets
         const fin=()=>{ free(); bubble('di', o.bye||'好了！我回去顧雷射。'); crewWalk(h, h.station.x, h.station.z, ()=>laserPose(h)); done(); }; if(o.after) o.after(fin); else fin(); } }
     if(ph>=1 && ph<5){ grip(me); grip(h); } };
   LV.fx.push(f); }
+function duoPanel(id, done){ const me=LV.actors.you, h=LV.actors.di, q=LV.pallets[id], st=stepOf(id), D=1.1, V=1.1, hx=id==='panel1' ? 0.5 : st.spot[0], CY=L.gy+0.9, ZC=1.6, EX=4.4;   /* 週五兩個人抬三明治板（他 11-19：小弟要幫忙拿，手要自然出力） */
+  const it=makeItem('panel').g, v=new THREE.Vector3(); q.item.children[0].getWorldPosition(v); const x0=q.x, z0=q.z, P = id==='panel1' ? [[EX,z0],[EX,ZC],[hx,ZC]] : [[x0,ZC],[hx,ZC]]; let ph=0, k=0, n=0, leg=0, DT=0.016;   // P：板子中心走的路（一直順著 z 方向：你在 -z 那頭）；第一片在後排要往右繞過打膠棧板，第二片在前排最左邊直接往牆走
+  const tie=id==='panel1' ? LV.actors.tie : null, tie0=tie ? {x:tie.x, z:tie.z} : null; if(tie){ tie.dest={x:6.3, z:2.3}; tie.onArrive=null; }   // 鐵叔站在牆前面的路上：先讓開
+  bubble('di','學長，這片我來抬另一頭！'); h.follower=false; moveTo(x0, z0-D, ()=>n++); crewWalk(h, x0, z0+D, ()=>n++);
+  const grip=(a,sd)=>{ it.updateMatrixWorld(true); const u=a.g.userData, p1=it.localToWorld(new THREE.Vector3(-0.3,-0.045,sd*0.76)), p2=it.localToWorld(new THREE.Vector3(0.3,-0.045,sd*0.76)), sL=u.armL.getWorldPosition(new THREE.Vector3()), PL=sL.distanceTo(p1)<sL.distanceTo(p2) ? p1 : p2, PR=PL===p1 ? p2 : p1, R=a._arm ? a._arm.a+a._arm.b-0.03 : 0.45;   /* 兩手托住自己那頭板子的下緣，左右各一邊 */
+    let need=0; [[u.armL,PL],[u.armR,PR]].forEach(([arm,Q])=>{ const S=arm.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,a.squatDrop||0,0)), hz=Math.hypot(Q.x-S.x,Q.z-S.z); need=Math.max(need, hz<R ? S.y-(Q.y+Math.sqrt(R*R-hz*hz)) : S.y-Q.y); }); setSquat(a, Math.max(0, Math.min(0.42, (a.squatDrop||0)*0.6+Math.max(0,need)*0.4)));   // 手搆不到就蹲低一點（抬起來時先蹲、站直時手微彎）
+    const qL=armReach(a,'L',PL), qR=armReach(a,'R',PR); a.doorPose = qL||qR ? Object.assign({}, qL?{L:qL}:{}, qR?{R:qR}:{}) : null; };
+  const lead=(x,z)=>[[me,-D],[h,D]].forEach(([a,o])=>{ a.speed=V; a.noBob=true; a.dest={x, z:z+o}; a.onArrive=null; });   // 兩個人同一段路、同樣速度，一直面對面
+  const mid=()=>{ const a=nextXZ(me,DT), b=nextXZ(h,DT); return [(a[0]+b[0])/2,(a[1]+b[1])/2]; };
+  const free=()=>[me,h].forEach(a=>{ a.speed=3.0; a.doorPose=null; a.noBob=false; a.faceLock=undefined; setSquat(a,0); });
+  const f=dt=>{ k+=dt; DT=dt;
+    if(ph===0){ if(n>=2 || k>12){ ph=1; k=0; me.faceLock=0; h.faceLock=Math.PI; me.face=0; h.face=Math.PI; q.item.visible=false; q.lb.visible=false; it.position.copy(v); LV.group.add(it); LV.duo=it; } }   // 兩個人都到板子兩頭、面對面
+    else if(ph===1){ const t=Math.max(0,Math.min(1,(k-0.4)/0.8)), e=t*t*(3-2*t); it.position.set(v.x+((me.x+h.x)/2-v.x)*e, v.y+(CY-v.y)*e, v.z+((me.z+h.z)/2-v.z)*e); if(k>1.3){ ph=2; k=0; leg=0; lead(P[0][0],P[0][1]); } }   // 先蹲下抓好 0.4 秒，再一起抬起來
+    if(ph===2){ if(!me.dest && !h.dest){ if(++leg<P.length) lead(P[leg][0],P[leg][1]); else { ph=3; k=0; } } if(ph===2){ const m=mid(); it.position.set(m[0], CY, m[1]); } }
+    else if(ph===3){ LV.group.remove(it); LV.duo=null; LV.fx.splice(LV.fx.indexOf(f),1); free(); h.follower=true; if(tie && tie0){ tie.dest={x:tie0.x, z:tie0.z}; } bubble('di','好了！學長辛苦了！'); done(); return; }   // 到了：放手，板子裝上牆（跟一個人扛的收尾一樣）
+    if(ph===1 || ph===2){ grip(me,-1); grip(h,1); } };
+  LV.fx.push(f); }
 function goDecoy(id){ if(id==='tea'){ const d=LV.tea; if(!d) return; const st=L.docs && L.docs.tea && L.docs.tea.stand; moveTo(st?st[0]:d.x, st?st[1]:d.z, ()=>bubble('you', pickOne(['（第一張寫著：珍奶半糖少冰 ×12……這也要檢討？）','（最下面壓著一張便利貼：「茶水間不是會議室。——人資」）','（下午茶團購檢討……好，那我先在這裡檢討一杯。）']), true)); return; }   /* 茶水間的假圖：走過去才發現被騙；待太久照樣任務失敗 */
   const d=LV.decoy; if(!d) return; const s=standNear(d.x,d.z,0.9,d.obs); moveTo(s.x,s.z,()=>bubble('you', pickOne(['（背面用原子筆寫著：「這塊是假的。」……誰放的？）','（摸魚計畫檢討……原來摸魚也要開會檢討。好，那我先在這裡檢討一下。）','（立牌背面貼著一張便利貼：「上班時間請勿久留。——人資」）']), true)); }   /* 假立牌：走過去才發現被騙；在廁所待太久照樣任務失敗 */
 function goPallet(id){ const q=LV.pallets[id]; if(!q||placed.has(id)) return; if(L.anim && L.anim[id] && need() && need().id===id && !carry && !prank){ tryPick(id); return; }   /* 有小動畫的步驟（週四量 MO、劃間距）：點了直接開始，不用先走到立牌 */ const D=L.docs && L.docs[id], s = D && D.stand ? {x:D.stand[0], z:D.stand[1]} : standNear(q.x,q.z,0.9,q.obs);   /* 週一的圖可以指定站的位置（茶水間流理台東端：四周都被擋住，自動找的站點會落在檯面裡） */ moveTo(s.x,s.z,()=>{ const p=LV.actors.you; if(rectDist(q.obs,p.x,p.z).d<0.9) tryPick(id); }); }   // 真的走到旁邊才拿
@@ -4084,6 +4102,8 @@ function tryPick(id){ if(done||dlgOpen||placed.has(id)) return; if(prank){ say([
   if(id!==need().id){ const a=need(), b=stepOf(id); if(a && b && a.any && b.any===a.any && !placed.has(id)){ L.steps.splice(L.steps.indexOf(b),1); L.steps.splice(cur,0,b); setGoal(); stats(); } else { wrongOrder(id); return; } }   /* 同一組不分先後（他 11-16：老闆說 D1 成本、加工、安裝運送三個檢討沒有順序）：點到的那一步排到現在這一步 */
   if(L.anim && L.anim[id]){ const st=need(), cam0={t:target.toArray(), theta, phi, dist}, go=()=>{ LV.animBusy=true; L.anim[id](()=>{ LV.animBusy=false; doPlace(); camGlide(cam0); }); };   /* 播完鏡頭轉回你點之前看的地方（他 11-16：不然選下一步還要自己轉，會頭暈） */ if(st.q) ask(st, ok=>{ if(ok) go(); }); else go(); return; }   /* 小動畫：有題目先答，答對才播；播完就完成 */
   if(L.boardAt && !need().deliver){ const st=need(); if(st.q) ask(st, ok=>{ if(ok){ boardTalk(); doPlace(); } }); else doPlace(); return; }   /* deliver＝最後一疊（施工圖）：拿起來抱到大門口的藍圈才出題（他 11-17：最後送審） */   /* 北辦：點到正確的立牌，直接出題、答對就完成，不用再走到黑板前（他 11-13：多此一舉）；鏡頭也不動 */   /* 北辦：拿下一塊立牌，鏡頭轉回平常的方向，同事回去做事 */
+  if(L.id==='L4' && (id==='panel1' || id==='panel2') && LV.actors.di && !LV.actors.di.ko){ const st=need(), go=()=>{ LV.animBusy=true; duoPanel(id, ()=>{ LV.animBusy=false; doPlace(); }); }; if(st.q) ask(st, ok=>{ if(ok) go(); }); else go(); return; }   /* 週五有小弟：兩個人一起抬三明治板（他 11-19） */
+  if(L.id==='L4' && (id==='check' || id==='film')){ const st=need(); if(st.q) ask(st, ok=>{ if(ok) doPlace(); }); else doPlace(); return; }   /* 週五放樣、撕保護膜：答對直接完成，不用走到藍圈（他 11-19） */
   carry=id; carryT=performance.now(); const spec=ITEM[L.id+'.'+id], me=LV.actors.you, hold=me.g.userData.hold; while(hold.children.length) hold.remove(hold.children[0]);
   if(spec){ const it=makeItem(spec), bb=new THREE.Box3().setFromObject(it.g); me.grip=Math.min(bb.max.x,-bb.min.x); me.gripZ=-bb.min.z;   /* 料的背面離手掌中心多遠（L 型固定片前後不對稱） */   /* 手握的寬度：兩邊比較窄的那邊（矽利康管一頭有尖嘴） */ hold.add(it.g); hold.position.set(...POSE[it.pose]); hold.rotation.set(0, it.pose==='side' ? Math.PI/2 : 0, it.pose==='overhead'||it.pose==='upright' ? Math.PI/2 : 0);   /* 大板立起來夾在身側；直料放倒，跟橫料一樣兩手握兩端 */ me.carry=it.pose; LV.pallets[id].item.visible=false; } else me.carry=null;
   fan('offer',0.4); if(L.office && LV.pallets[id]) LV.pallets[id].g.visible=false;   /* 週一：桌上那疊拿走了 */
