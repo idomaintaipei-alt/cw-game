@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="aa0e6664f992", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="5629bb1b4b55", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -912,7 +912,7 @@ function siteWorld(){ const cx=L.cx, y0=yardY(), hi=L.yard!==undefined, S=m=>{ m
   [[-40,-46,14,12,22],[-22,-52,10,10,30],[-6,-48,16,10,16],[12,-54,12,12,26],[30,-47,14,10,19],[46,-38,12,14,24],[52,-12,12,16,18],[50,14,14,12,28],[-50,-22,12,16,20],[-54,4,14,14,26],[-46,28,12,12,17],[-20,46,16,10,21],[8,50,12,12,27],[34,42,14,12,18]]
     .forEach(([x,z,w,d,h],k)=>{ const b=box(w,h,d, cx+x,y0+h/2,z, mat.far[k%3]); b.receiveShadow=false; S(b); }); }
 // 週二的那棟樓：這一層是四樓。下面三層已經裝好玻璃帷幕；前面是屋頂平台（料放在這裡），後面是這次要灌漿的樓板
-function restCrew(rx,rz,T){ const list=[], P=[   /* 週二休息區的三個師傅（他 11-19）：白汗衫、兩手臂刺青、安全帽脫下來放地上、手上一粒檳榔、會嚼；主角走近輪流虧他 */
+function restCrew(rx,rz,T){ const list=[], P=[   /* 週二休息區的三個師傅（他 11-19）：白汗衫、兩手臂刺青、安全帽脫下來放地上、嘴裡嚼檳榔；主角走近輪流虧他 */
     {x:rx-1.0, z:rz-0.9, y:T+0.38, ry:0, skin:0xa8714a, hair:0x1d1a18, f:{stubble:true, buzz:true}},
     {x:rx-0.05, z:rz-0.9, y:T+0.38, ry:-0.25, skin:0xb57d52, hair:0x24201c, f:{mustache:true}},
     {x:rx-1.1, z:rz+0.45, y:T+0.44, ry:2.67, skin:0x9c6842, hair:0x1d1a18, f:{grin:true}}];
@@ -920,7 +920,7 @@ function restCrew(rx,rz,T){ const list=[], P=[   /* 週二休息區的三個師�
     p.traverse(o=>{ if(o.userData.fly==='helmet' || o.userData.blob) o.visible=false; if(o.userData.carOn) o.visible=true; if(o.geometry && o.geometry.type==='TorusGeometry' && o.parent===p && (Math.abs(o.position.y-0.98)<0.01 || Math.abs(o.position.y-1.2)<0.01)) o.visible=false; });   // 安全帽脫掉（露頭髮）、背心反光條拿掉＝白汗衫
     [u.armL,u.armR].forEach(a=>{ const el=a.userData.elbow; a.children.forEach(c=>{ if(c.isMesh) c.material=tm; }); el.children[0].material=tm; el.userData.joint.material=tm; });   // 汗衫沒袖子：整隻手臂露出來，都是刺青
     u.legL.rotation.x=u.legR.rotation.x=-1.45; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=1.45; }); u.legL.rotation.z=-0.14; u.legR.rotation.z=0.14; u.armL.rotation.x=-0.55; u.armR.rotation.x=-0.6;   // 坐著、腳開開、手搭在腿上
-    u.armR.userData.elbow.add(ball(0.024,std(0x5e8f38),0,-0.31,0.035,1,1.4,1));   // 右手捏著一粒檳榔
+    { const hd=p.children.find(o=>!o.isMesh && o.children.some(c=>c.userData.lid)); u.lip=ball(0.032,std(0x5e1a17,{roughness:0.9}),0,0.097,0.176,1.2,0.4,0.3); hd.add(u.lip); hd.add(ball(0.016,std(0x5e8f38),0.034,0.099,0.185,1,1.3,1)); u.chk=ball(0.045,std(q.skin),0.1,0.1,0.14); hd.add(u.chk); }   // 嘴裡嚼檳榔：嘴唇被檳榔汁染紅、嘴角露一粒綠檳榔、一邊腮幫子鼓起來（他 11-19：檳榔要在嘴巴，不是拿在手上像在講電話）
     p.position.set(q.x, q.y-0.66, q.z); p.rotation.y=q.ry; u.ry0=q.ry; u.crew={kind:'rest'}; LV.group.add(p); list.push(p); });
   const yl=std(0xffd21f), hm=(x,z,r)=>{ const g=new THREE.Group(); g.add(new THREE.Mesh(new THREE.SphereGeometry(0.17,16,8,0,Math.PI*2,0,Math.PI/2),yl)); g.add(cyl(0.2,0.015,'y',0,0.008,0,yl,16)); g.position.set(x,T,z); g.rotation.y=r; stat(g); };
   hm(rx-1.5,rz-0.45,0.3); hm(rx+0.5,rz-0.55,-0.6); hm(rx-1.55,rz+0.95,1.2);   // 三頂安全帽放在腳邊地上
@@ -935,8 +935,7 @@ function restCrew(rx,rz,T){ const list=[], P=[   /* 週二休息區的三個師�
   LV.fx.push(dt=>{ const me=LV.actors.you; if(!me || !list[0].parent) return; const now=performance.now()/1000, d=Math.hypot(me.x-(rx-0.5), me.z-rz);
     if(d<2.6 && now-last>30){ last=now; TZ[(nT++)%TZ.length].forEach(([i,s],j)=>setTimeout(()=>{ if(list[i].parent) bubble(list[i],s); }, j*2300)); }   // 走近休息區：輪流虧（30 秒內不重複）
     list.forEach((p,i)=>{ const u=p.userData; if(u.down) return; const tg=Math.atan2(me.x-p.position.x, me.z-p.position.z); let df=Math.atan2(Math.sin(tg-u.ry0),Math.cos(tg-u.ry0)); df = d<4 ? Math.max(-0.4,Math.min(0.4,df)) : 0; p.rotation.y+=(u.ry0+df-p.rotation.y)*Math.min(1,dt*3);   // 主角靠近就轉過來看他
-      if(u.talk) return; u.cw=(u.cw===undefined ? 1.5+i*2.2 : u.cw)-dt; let k=0; if(u.cw<0){ const t=-u.cw; k = t<0.4 ? t/0.4 : t<1.2 ? 1 : t<1.6 ? 1-(t-1.2)/0.4 : 0; if(t>=1.6) u.cw=5+Math.random()*5; }
-      const ez=k*k*(3-2*k); u.armR.rotation.x=-0.6-0.9*ez; u.armR.userData.elbow.rotation.x=-1.9*ez; }); });   // 每隔幾秒把檳榔放進嘴裡
+      u.cw=(u.cw||i*0.7)+dt; const sn=Math.sin(u.cw*7); u.chk.scale.setScalar(1+0.15*sn); u.lip.scale.y=0.4*(1+0.3*sn); }); });   // 一直在嚼：腮幫子一鼓一鼓、嘴唇一張一合；手搭在腿上不動
 }
 function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z1=8.5, S=m=>{ m.castShadow=false; return stat(m); };
   const hx0=10.3, hx1=12.9, hz0=4.6, hz1=8.0;                                                                                  // 樓梯間的洞口
