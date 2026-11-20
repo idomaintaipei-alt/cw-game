@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="7169e362e153", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="9cff4a958b6b", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -3574,7 +3574,7 @@ function stepActor(a,dt,t){ let moving=false; a.px0=a.x; a.pz0=a.z;
       think:{R:[-0.96,-0.56,-1.7]},   /* 托腮：右手停在下巴側前方（算過不會插進頭和身體）；左手橫在肚子前怎麼擺都會插進身體，所以左手自然垂著 */
       point:{L:[0.15,-0.4,-1.6], R:[-1.3+s1*0.06,0.05,-0.15]}, nod:{R:[-0.35+s1*0.08,0.1,-0.9]} }[talkGest]||{}; gL=TG.L||null; gR=TG.R||null; }
   else if(!gp && a.pinT>performance.now() && !c && !a.ko && !a.seated){ gR=[-1.5,0.05,-0.2]; }   /* 北辦：右手往前抬高，把圖釘按到牆上的圖 */
-  else if(!gp && a.doorPose && !c && ha===null && !a.ko && !a.seated){ gL=a.doorPose.L||null; gR=a.doorPose.R||null; }   /* 推拉門：一隻手伸到門上、跟著門往旁邊帶（北辦會議室） */
+  else if(!gp && a.doorPose && !c && ha===null && !a.ko && !a.seated){ const na=(cur,t)=>cur+Math.atan2(Math.sin(t-cur),Math.cos(t-cur)), DL=a.doorPose.L, DR=a.doorPose.R; gL=DL ? [na(u.armL.rotation.x,DL[0]), na(u.armL.rotation.z,DL[1]), DL[2]] : null; gR=DR ? [na(u.armR.rotation.x,DR[0]), na(u.armR.rotation.z,DR[1]), DR[2]] : null; }   /* 11-20：角度跨過 180 度時走近的那邊（電焊小弟手臂繞圈） */   /* 推拉門：一隻手伸到門上、跟著門往旁邊帶（北辦會議室） */
   u.armL.rotation.x+=((gL?gL[0]:tl)-u.armL.rotation.x)*k; u.armR.rotation.x+=((gR?gR[0]:tr)-u.armR.rotation.x)*k; u.armL.rotation.z+=((gL?gL[1]:c==='overhead'||c==='side'?0:c?gz:-0.07)-u.armL.rotation.z)*k;   /* 夾板：左手垂著 */ u.armR.rotation.z+=((gR?gR[1]:c?-gz:0.07)-u.armR.rotation.z)*k;   /* 沒拿東西：手臂稍微往外張 */
   const eb = c==='front' ? -1.3 : 0; [u.armL,u.armR].forEach((m,i)=>{ const e=m.userData.elbow, q=i?gR:gL, fw=Math.max(0,-(i?tr:tl)); if(e) e.rotation.x+=((q?q[2]:c||ha!==null?eb:-0.18-0.75*fw)-e.rotation.x)*k; });   /* 沒拿東西：手肘自然彎一點，手往前擺時彎更多 */
   if((c==='front'||c==='across'||c==='upright') && ha===null && u.hold.children.length){ a.g.updateMatrixWorld(true); const hp=[u.armL,u.armR].map(m=>{ const b=m.userData.elbow.children.find(o=>o.geometry && o.geometry.type==='SphereGeometry'); return a.g.worldToLocal(b.getWorldPosition(new THREE.Vector3())); }); u.hold.position.set((hp[0].x+hp[1].x)/2,(hp[0].y+hp[1].y)/2,Math.max((hp[0].z+hp[1].z)/2, 0.27+(a.gripZ||0))); }   /* 厚的東西（水桶、膠條捲）往前推，不插進肚子 */   /* 料放在兩隻手掌正中間，跟著手走（不會浮在手外面） */   // 捧東西：上臂垂著、前臂往前平舉
@@ -4534,7 +4534,7 @@ function duoCarry(o, done){ const me=LV.actors.you, h=LV.actors.di, q=LV.pallets
     else if(ph===4){ const t=Math.min(1,k/1.1), e=t*t*(3-2*t), z0=P[P.length-1][1]+OFF; it.position.z=z0+(o.setZ-z0)*e;   // 再一起往前一步，手往前推，慢慢推進開口
       if(t>=1){ ph=5; it.updateMatrixWorld(true); LV.duoLifters=it.children.filter(c=>c.userData.lifter); LV.duoLifters.forEach(c=>LV.group.attach(c)); LV.group.remove(it); LV.duo=null; o.show();   /* 吸盤留在玻璃上 */ LV.fx.splice(LV.fx.indexOf(f),1);   // 跟裝好的位置完全重疊：換成真的
         const fin=()=>{ free(); bubble('di', o.bye||'好了！我回去顧雷射。'); crewWalk(h, h.station.x, h.station.z, ()=>laserPose(h)); done(); }; if(o.after) o.after(fin); else fin(); } }
-    if(ph>=1 && ph<5){ grip(me); grip(h); } };
+    if(ph>=1 && ph<5) (LV.coopPost=LV.coopPost||[]).push(()=>{ grip(me); grip(h); me._armSmU=h._armSmU=performance.now()+200; }); };   /* 11-20：人走完這一格再抓窗（每格時間不同也不抖） */
   LV.fx.push(f); }
 function duoPanel(id, done){ const me=LV.actors.you, h=LV.actors.di, q=LV.pallets[id], st=stepOf(id), D=1.1, V=1.1, hx=id==='panel1' ? 0.5 : st.spot[0], CY=L.gy+0.9, ZC=1.6, EX=4.4;   /* 週五兩個人抬三明治板（他 11-19：小弟要幫忙拿，手要自然出力） */
   const it=makeItem('panel').g, v=new THREE.Vector3(); q.item.children[0].getWorldPosition(v); const x0=q.x, z0=q.z, P = id==='panel1' ? [[EX,z0],[EX,ZC],[hx,ZC]] : [[x0,ZC],[hx,ZC]]; let ph=0, k=0, n=0, leg=0, DT=0.016;   // P：板子中心走的路（一直順著 z 方向：你在 -z 那頭）；第一片在後排要往右繞過打膠棧板，第二片在前排最左邊直接往牆走
@@ -4545,13 +4545,13 @@ function duoPanel(id, done){ const me=LV.actors.you, h=LV.actors.di, q=LV.pallet
     const qL=armReach(a,'L',PL), qR=armReach(a,'R',PR); a.doorPose = qL||qR ? Object.assign({}, qL?{L:qL}:{}, qR?{R:qR}:{}) : null; };
   const lead=(x,z)=>[[me,-D],[h,D]].forEach(([a,o])=>{ a.speed=V; a.noBob=true; a.dest={x, z:z+o}; a.onArrive=null; });   // 兩個人同一段路、同樣速度，一直面對面
   const mid=()=>{ const a=nextXZ(me,DT), b=nextXZ(h,DT); return [(a[0]+b[0])/2,(a[1]+b[1])/2]; };
-  const free=()=>[me,h].forEach(a=>{ a.speed=3.0; a.doorPose=null; a.noBob=false; a.faceLock=undefined; setSquat(a,0); });
+  const free=()=>[me,h].forEach(a=>{ a.speed=3.0; a.doorPose=null; a.noBob=false; a.noObs=false; a.faceLock=undefined; setSquat(a,0); });
   const f=dt=>{ k+=dt; DT=dt;
-    if(ph===0){ if(n>=2 || k>12){ ph=1; k=0; me.faceLock=0; h.faceLock=Math.PI; me.face=0; h.face=Math.PI; q.item.visible=false; q.lb.visible=false; it.position.copy(v); LV.group.add(it); LV.duo=it; } }   // 兩個人都到板子兩頭、面對面
+    if(ph===0){ if(n>=2 || k>12){ ph=1; k=0; me.faceLock=0; h.faceLock=Math.PI; me.face=0; h.face=Math.PI; if(q.obs){ q.obs.hx=Math.min(q.obs.hx,0.425); q.obs.hz=Math.min(q.obs.hz,0.425); } me.noObs=h.noObs=true;   /* 11-20：板子抬起來了，擋路範圍縮回棧板（小弟原本被卡住） */ q.item.visible=false; q.lb.visible=false; it.position.copy(v); LV.group.add(it); LV.duo=it; } }   // 兩個人都到板子兩頭、面對面
     else if(ph===1){ const t=Math.max(0,Math.min(1,(k-0.4)/0.8)), e=t*t*(3-2*t); it.position.set(v.x+((me.x+h.x)/2-v.x)*e, v.y+(CY-v.y)*e, v.z+((me.z+h.z)/2-v.z)*e); if(k>1.3){ ph=2; k=0; leg=0; lead(P[0][0],P[0][1]); } }   // 先蹲下抓好 0.4 秒，再一起抬起來
     if(ph===2){ if(!me.dest && !h.dest){ if(++leg<P.length) lead(P[leg][0],P[leg][1]); else { ph=3; k=0; } } if(ph===2){ const m=mid(); it.position.set(m[0], CY, m[1]); } }
     else if(ph===3){ LV.group.remove(it); LV.duo=null; LV.fx.splice(LV.fx.indexOf(f),1); free(); h.follower=true; if(tie && tie0){ tie.dest={x:tie0.x, z:tie0.z}; } bubble('di','好了！學長辛苦了！'); done(); return; }   // 到了：放手，板子裝上牆（跟一個人扛的收尾一樣）
-    if(ph===1 || ph===2){ grip(me,-1); grip(h,1); } };
+    if(ph===1 || ph===2) (LV.coopPost=LV.coopPost||[]).push(()=>{ grip(me,-1); grip(h,1); me._armSmU=h._armSmU=performance.now()+200; }); };   /* 11-20：人走完這一格再托板 */
   LV.fx.push(f); }
 function goDecoy(id){ if(id==='tea'){ const d=LV.tea; if(!d) return; const st=L.docs && L.docs.tea && L.docs.tea.stand; moveTo(st?st[0]:d.x, st?st[1]:d.z, ()=>bubble('you', pickOne(['（第一張寫著：珍奶半糖少冰 ×12……這也要檢討？）','（最下面壓著一張便利貼：「茶水間不是會議室。——人資」）','（下午茶團購檢討……好，那我先在這裡檢討一杯。）']), true)); return; }   /* 茶水間的假圖：走過去才發現被騙；待太久照樣任務失敗 */
   const d=LV.decoy; if(!d) return; const s=standNear(d.x,d.z,0.9,d.obs); moveTo(s.x,s.z,()=>bubble('you', pickOne(['（背面用原子筆寫著：「這塊是假的。」……誰放的？）','（摸魚計畫檢討……原來摸魚也要開會檢討。好，那我先在這裡檢討一下。）','（立牌背面貼著一張便利貼：「上班時間請勿久留。——人資」）']), true)); }   /* 假立牌：走過去才發現被騙；在廁所待太久照樣任務失敗 */
@@ -4833,7 +4833,7 @@ function onClick(e){ if(dlgOpen){ advance(); return; } if(LV.animBusy) return; i
   if(LV.restList && !prank && !done && !LV.down){ const R=LV.restList.find(o=>{ let q=o; while(q && q!==LV.group) q=q.parent; if(!q || o.userData.down) return false;   /* 只認這一關裡的師傅（名單會留著上一關的人） */ const c=o.getWorldPosition(new THREE.Vector3()); c.y+=0.75; return ray.ray.distanceToPoint(c)<0.42; }); if(R){ const t=standNear(R.position.x,R.position.z,0.6); moveTo(t.x,t.z,null); LV.actors.you.goal={x:R.position.x, z:R.position.z}; return; } }   /* 點在休息區師傅身上＝走過去推他 */
   const fy=LV.down ? yardY() : L.gy; gplane.constant=-fy; if(ray.ray.intersectPlane(gplane,hitPt) && L.plant && !LV.down && !inWork(hitPt.x,hitPt.z,-0.4) && hitPt.z>0.85 && !done){ const A=OUT(); askOut({x:Math.min(A.x1,Math.max(A.x0,hitPt.x)), z:Math.min(A.z1,Math.max(A.z0,hitPt.z))}); return; }   /* 週五：點工作區外面＝問要不要出去 */
   if(ray.ray.intersectPlane(gplane,hitPt)){ const c=clampXZ(hitPt.x,hitPt.z); moveTo(c.x,c.z,null); ping.position.set(c.x,fy+0.02,c.z); ping.visible=true; pingLife=1; } }
-const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151120 17:04'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
+const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151120 17:21'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
 // 搖桿：手指按在圓裡拖，圓鈕跟著走；往哪推人就往哪走（跟鍵盤 WASD 一樣照鏡頭方向）
 const joy={x:0, y:0, on:false, id:null}; { const J=document.getElementById('joy'), K=document.getElementById('joyKnob'), R=44;
   const mv=e=>{ const b=J.getBoundingClientRect(), k=b.width/(J.offsetWidth||124),   /* k＝資訊框那一層被縮放的倍數（整頁被放大時才不是 1） */ cx=b.left+b.width/2, cy=b.top+b.height/2; let dx=(e.clientX-cx)/k, dy=(e.clientY-cy)/k; const m=Math.hypot(dx,dy); if(m>R){ dx*=R/m; dy*=R/m; }
