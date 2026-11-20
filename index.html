@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="9ff144a5928a", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
+<script>/* 一推就更新：打開時看 version.txt，跟自己不一樣就重新整理一次 */ (function(){ var me="6b39b65d36d0", k="cwVerTried"; if(!window.fetch) return; var c=window.AbortController?new AbortController():null; if(c) setTimeout(function(){c.abort();},4000); fetch("version.txt?t="+Date.now(),{cache:"no-store",signal:c?c.signal:undefined}).then(function(r){return r.ok?r.text():"";}).then(function(v){ v=(v||"").trim(); if(!/^[0-9a-f]{12}$/.test(v)||v===me) return; try{ if(sessionStorage.getItem(k)===v) return; sessionStorage.setItem(k,v); }catch(e){ return; } var q=new URLSearchParams(location.search); q.set("v",v); location.replace(location.pathname+"?"+q.toString()+location.hash); }).catch(function(){}); })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <title>外牆菜鳥的五天</title>
 <meta name="description" content="帷幕牆、三明治板組裝小遊戲。設計部菜鳥的第一週：一天在辦公室，四天在工地。內容純屬虛構，如有雷同，你也辛苦了。">
@@ -3828,7 +3828,7 @@ function makePallet(st,x,z){ const g=new THREE.Group(); g.position.set(x,L.gy,z)
   const lb=label(st.pal||st.name, spec?'#374151':'#1d4f86', 0, ly, 0, 0.2); g.add(lb); if(L.office){ lb.material.depthTest=false; lb.renderOrder=30; }   /* 週一的圖：名牌畫在最上面。牆不會變透明，圖被牆、門上框擋住時至少看得到名牌 */
   g.traverse(o=>{ if(o.isMesh||o.isSprite){ o.userData.pick={kind:'pallet',id:st.id}; LV.pick.push(o); } });
   LV.group.add(g); LV.pallets[st.id]={g,item,lb,x,z}; const ob={x,z,hx:0.18,hz:0.18};                           // 立牌的底座
-  if(item){ const bb=new THREE.Box3().setFromObject(item); ob.hx=Math.max(0.425,Math.abs(bb.min.x),Math.abs(bb.max.x)); ob.hz=Math.max(0.425,Math.abs(bb.min.z),Math.abs(bb.max.z)); }   // 棧板，或比棧板還長的料
+  if(item){ const bb=new THREE.Box3().setFromObject(item); ob.hx=Math.max(0.425,Math.abs(bb.min.x),Math.abs(bb.max.x)); ob.hz=Math.max(0.425,Math.abs(bb.min.z),Math.abs(bb.max.z)); if(item.children[0] && item.children[0].userData.caulk){ ob.hx=ob.hz=0.425; } }   /* 矽利康槍：障礙只算木板 */   // 棧板，或比棧板還長的料
   if(L.id==='L1' && st.id==='pour'){ ob.hx=0.2; ob.hz=0.2; ob.x=9.35; ob.z=3.05; LV.pallets[st.id].obs=ob; LV.pallets[st.id].fixed=true; return; }   /* 手機在水桶桌上：擋路的就是水桶桌那一格（休息區本來就有） */
   if((L.id==='L1' && st.id==='layout') || (L.id==='L4' && st.id==='check')){ ob.hx=0.25; ob.hz=0.25; }
   if(L.id==='L3' && (st.id==='mo' || st.id==='mark')){ ob.hx=0.425; ob.hz=0.425; }   /* 週四捲尺、記號筆：棧板大小 */   /* 三腳架腳張開約 25 公分 */   /* 三腳架腳張開約 25 公分 */
@@ -4823,7 +4823,7 @@ function onClick(e){ if(dlgOpen){ advance(); return; } if(LV.animBusy) return; i
   if(LV.restList && !prank && !done && !LV.down){ const R=LV.restList.find(o=>{ let q=o; while(q && q!==LV.group) q=q.parent; if(!q || o.userData.down) return false;   /* 只認這一關裡的師傅（名單會留著上一關的人） */ const c=o.getWorldPosition(new THREE.Vector3()); c.y+=0.75; return ray.ray.distanceToPoint(c)<0.42; }); if(R){ const t=standNear(R.position.x,R.position.z,0.6); moveTo(t.x,t.z,null); LV.actors.you.goal={x:R.position.x, z:R.position.z}; return; } }   /* 點在休息區師傅身上＝走過去推他 */
   const fy=LV.down ? yardY() : L.gy; gplane.constant=-fy; if(ray.ray.intersectPlane(gplane,hitPt) && L.plant && !LV.down && !inWork(hitPt.x,hitPt.z,-0.4) && hitPt.z>0.85 && !done){ const A=OUT(); askOut({x:Math.min(A.x1,Math.max(A.x0,hitPt.x)), z:Math.min(A.z1,Math.max(A.z0,hitPt.z))}); return; }   /* 週五：點工作區外面＝問要不要出去 */
   if(ray.ray.intersectPlane(gplane,hitPt)){ const c=clampXZ(hitPt.x,hitPt.z); moveTo(c.x,c.z,null); ping.position.set(c.x,fy+0.02,c.z); ping.visible=true; pingLife=1; } }
-const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151120 15:16'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
+const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151120 15:20'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
 // 搖桿：手指按在圓裡拖，圓鈕跟著走；往哪推人就往哪走（跟鍵盤 WASD 一樣照鏡頭方向）
 const joy={x:0, y:0, on:false, id:null}; { const J=document.getElementById('joy'), K=document.getElementById('joyKnob'), R=44;
   const mv=e=>{ const b=J.getBoundingClientRect(), k=b.width/(J.offsetWidth||124),   /* k＝資訊框那一層被縮放的倍數（整頁被放大時才不是 1） */ cx=b.left+b.width/2, cy=b.top+b.height/2; let dx=(e.clientX-cx)/k, dy=(e.clientY-cy)/k; const m=Math.hypot(dx,dy); if(m>R){ dx*=R/m; dy*=R/m; }
@@ -5046,7 +5046,7 @@ function liftPose(a){ const u=a.g.userData, g=a.g, L=a.liftLean||0;   /* 蹲下�
   if(a._liftPts) coopGrip(a, a._liftPts, true); }   // 身體擺好了，手再抓回料上
 function caulkGun(g){ const m=std(0x9aa0a8), r=std(0xc62828), dk=std(0x2b2f36);   /* 矽利康槍（膠管沿 x，槍嘴在 +x）：下面兩條槍架、前後擋板、推桿＋拉環、紅色握把、扳機 */
   [-1,1].forEach(e=>g.add(box(0.28,0.008,0.008, 0,-0.03,e*0.026, m))); g.add(box(0.01,0.075,0.075, 0.137,0,0, m)); g.add(box(0.012,0.085,0.07, -0.146,0,0, m));
-  g.add(cyl(0.005,0.24,'x',-0.27,0,0,m,6)); { const ring=new THREE.Mesh(new THREE.TorusGeometry(0.022,0.005,6,16), m); ring.rotation.y=Math.PI/2; ring.position.set(-0.4,0,0); g.add(ring); }
+  g.add(cyl(0.005,0.16,'x',-0.23,0,0,m,6)); { const ring=new THREE.Mesh(new THREE.TorusGeometry(0.022,0.005,6,16), m); ring.rotation.y=Math.PI/2; ring.position.set(-0.31,0,0); g.add(ring); } g.userData.caulk=true;   /* 11-20：推桿短一點（整把槍放得進木板，不擋路） */
   { const hd=box(0.03,0.13,0.026, -0.175,-0.09,0, r); hd.rotation.z=0.25; g.add(hd); const tg=box(0.018,0.11,0.02, -0.128,-0.085,0, dk); tg.rotation.z=0.4; g.add(tg); } }
 function trestles(len){ const t=new THREE.Group(), w=mat.wood, xs=Math.max(0.3, (len||1.6)/2-0.18); [-xs,xs].forEach(x=>{ t.add(box(0.1,0.06,0.5, x,0.49,0, w)); [-1,1].forEach(sz=>[-1,1].forEach(sx=>{ const l=box(0.05,0.5,0.05, x+sx*0.06, 0.23, sz*0.2, w); l.rotation.z=-sx*0.2; t.add(l); })); });   /* 橫木 50 公分、四支腳往外斜（對齊料的中心） */ t.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); return t; }   /* 木馬架：上面一根橫木、四支斜腳（料擱在上面，離地約 60 公分） */
 function palTop(x,z){ let t=-99; Object.values(LV.pallets||{}).forEach(q=>{ const p=q.g.position; if(Math.abs(x-p.x)<0.43 && Math.abs(z-p.z)<0.43) t=Math.max(t, p.y+0.1); }); return t; }   /* 11-20 照片：小弟扛料踩過棧板，腳陷進木板 → 站在棧板上＝踩在木板面上 */
