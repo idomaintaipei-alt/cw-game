@@ -4818,7 +4818,7 @@ function onClick(e){ if(dlgOpen){ advance(); return; } if(LV.animBusy) return; i
   if(LV.restList && !prank && !done && !LV.down){ const R=LV.restList.find(o=>{ let q=o; while(q && q!==LV.group) q=q.parent; if(!q || o.userData.down) return false;   /* 只認這一關裡的師傅（名單會留著上一關的人） */ const c=o.getWorldPosition(new THREE.Vector3()); c.y+=0.75; return ray.ray.distanceToPoint(c)<0.42; }); if(R){ const t=standNear(R.position.x,R.position.z,0.6); moveTo(t.x,t.z,null); LV.actors.you.goal={x:R.position.x, z:R.position.z}; return; } }   /* 點在休息區師傅身上＝走過去推他 */
   const fy=LV.down ? yardY() : L.gy; gplane.constant=-fy; if(ray.ray.intersectPlane(gplane,hitPt) && L.plant && !LV.down && !inWork(hitPt.x,hitPt.z,-0.4) && hitPt.z>0.85 && !done){ const A=OUT(); askOut({x:Math.min(A.x1,Math.max(A.x0,hitPt.x)), z:Math.min(A.z1,Math.max(A.z0,hitPt.z))}); return; }   /* 週五：點工作區外面＝問要不要出去 */
   if(ray.ray.intersectPlane(gplane,hitPt)){ const c=clampXZ(hitPt.x,hitPt.z); moveTo(c.x,c.z,null); ping.position.set(c.x,fy+0.02,c.z); ping.visible=true; pingLife=1; } }
-const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151123 14:22'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
+const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151123 14:35'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
 // 搖桿：手指按在圓裡拖，圓鈕跟著走；往哪推人就往哪走（跟鍵盤 WASD 一樣照鏡頭方向）
 const joy={x:0, y:0, on:false, id:null}; { const J=document.getElementById('joy'), K=document.getElementById('joyKnob'), R=44;
   const mv=e=>{ const b=J.getBoundingClientRect(), k=b.width/(J.offsetWidth||124),   /* k＝資訊框那一層被縮放的倍數（整頁被放大時才不是 1） */ cx=b.left+b.width/2, cy=b.top+b.height/2; let dx=(e.clientX-cx)/k, dy=(e.clientY-cy)/k; const m=Math.hypot(dx,dy); if(m>R){ dx*=R/m; dy*=R/m; }
@@ -5305,8 +5305,9 @@ function ffJump(id){ const li2=LEVELS.findIndex(l=>l.steps.some(s=>s.id===id)); 
   const finish=()=>{ ov.remove(); __ff=false; window.__JUMP=false; delete window.__JUMP_FANS; lastT=performance.now(); bubble('you','（快轉到「'+nm+'」了，點料開始。）',true); };
   const chunk=()=>{ const t1=performance.now();
     while(performance.now()-t1<120){ const me=LV.actors.you, nd=need(), busy=['di','hao'].some(k=>{ const a=LV.actors[k]; return a && (a.job || (a.jobQ && a.jobQ.length)); });
-      if(nd && nd.id===id && !dlgOpen && !cut && !LV.animBusy && !busy && !carry && me && !me.job && !me.dest){ finish(); return; }
-      if(dlgOpen){ if(++hold>3){ hold=0; answer(); } } else if(me && !cut && !LV.animBusy && !me.dest && !me.job && nd && nd.id!==id){ if(carry) goSpot(); else goPallet(nd.id); }
+      const inC = cut && (cut.kind==='pour' || cut.stage<2);   /* 11-23：直升機／豪車進場播完後 cut 會一直留著（stage 2），跟遊戲一樣算播完 */
+      if(nd && nd.id===id && !dlgOpen && !inC && !LV.animBusy && !busy && !carry && me && !me.job && !me.dest){ finish(); return; }
+      if(dlgOpen){ if(++hold>3){ hold=0; answer(); } } else if(me && !inC && !LV.animBusy && !me.dest && !me.job && nd && nd.id!==id){ if(carry) goSpot(); else goPallet(nd.id); }
       ck+=1000/60; __ff=true; try{ tick(ck); }catch(e){ console.error(e); } __ff=false;
       if(performance.now()-T0>120000){ finish(); return; } }
     ov.innerHTML='快轉到「'+nm+'」…<br><span style="font-size:16px;opacity:.75">第 '+cur+' / '+L.steps.length+' 步'+(busy2()?'，等小弟做完':'')+'</span>'; setTimeout(chunk,0); };
