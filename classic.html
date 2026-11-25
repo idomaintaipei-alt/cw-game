@@ -1201,7 +1201,15 @@ function tower(){ const Y=L.yard, T=-0.25, HH=T-Y, x0=-3.5, x1=13.1, z0=-10.8, z
     cg.add(box(0.36,0.42,0.36, 0.62,0.21,0.0, dk)); cg.add(box(0.16,0.3,0.1, 1.05,1.15,-0.42, dk)); cg.add(box(0.1,0.05,0.02, 1.05,1.2,-0.47, std(0x38e06a,{emissive:0x0a7a2a})));   // 阿姨的小板凳、操作盤（綠燈）
     { const ay=makePerson({skin:0xf1c9a5, vest:0x2f8f6f, helmet:0xffd21f, hair:0x3a2a20, feat:{bob:true, bangs:true}}), u=ay.userData; ay.position.set(0.62,0.02-SIT,0.0); ay.rotation.y=-Math.PI/2; ay.scale.setScalar(0.92);   // 電梯阿姨：坐在板凳上，面向門
       u.legL.rotation.x=u.legR.rotation.x=-Math.PI/2; [u.legL,u.legR].forEach(l=>{ if(l.userData.knee) l.userData.knee.rotation.x=Math.PI/2; }); u.armL.rotation.x=-0.5; u.armR.rotation.x=-0.9; u.armR.rotation.z=-0.2;
-      ay.traverse(o=>{ if(o.userData.blob) o.visible=false; }); cg.add(ay); }
+      ay.traverse(o=>{ if(o.userData.blob) o.visible=false; }); cg.add(ay);
+      { const steel=std(0x8a9099), pb=std(0x2b2f36), V3=THREE.Vector3;   /* 11-25 他：電梯阿姨要控制樓層 → 右手握操縱桿、前面一座立式操作台 */
+        u.armR.rotation.set(-0.95,0,0.32); u.armR.userData.elbow.rotation.x=-0.45; cg.updateMatrixWorld(true);   // 右手往前、稍微往外伸
+        const K=cg.worldToLocal(u.armR.userData.elbow.localToWorld(new V3(0,-0.29,0.03))), px=K.x, pz=K.z, top=K.y-0.15, cy=top-0.1;   // K＝手心（操縱桿球頭放這裡）
+        cg.add(box(0.06,cy-0.1,0.06, px,(cy-0.1)/2,pz, steel)); cg.add(box(0.16,0.03,0.16, px,0.015,pz, steel));   // 立柱、底座
+        cg.add(box(0.12,0.2,0.28, px,cy,pz+0.06, std(0xf2b01e))); cg.add(box(0.005,0.17,0.25, px+0.061,cy,pz+0.06, pb));   // 操作盒（黃）＋黑色面板（面向阿姨）
+        [[0.05,0x38e06a,0x0a7a2a],[0,0xf2cf1d,0x5a4a00],[-0.05,0xe0443a,0x6a1010]].forEach(([dy,c,e])=>cg.add(cyl(0.014,0.012,'x', px+0.068,cy+dy,pz+0.13, std(c,{emissive:e}),12)));   // 上（綠）／停（黃）／下（紅）三顆按鈕
+        cg.add(cyl(0.026,0.02,'y', px,top+0.01,pz+0.15, std(0xd8312e,{emissive:0x4a0a0a}),16));   // 頂上紅色緊急停止鈕
+        cg.add(cyl(0.008,0.13,'y', px,top+0.065,pz, steel,8)); const kb=new THREE.Mesh(new THREE.SphereGeometry(0.024,12,10), pb); kb.position.set(px,K.y,pz); cg.add(kb); kb.userData.ayiKnob=true; } }   /* 操縱桿：桿子從操作盒頂伸到手心，黑色球頭在手裡 */
     stat(cg);
     S(box(1.2,0.04,0.3, hx,T-0.025,8.62, dk));
     // 電機箱：立在電梯東邊的地上（寬 0.9、深 1.2、高 1.8 公尺），兩扇門朝南；頂上一台排風扇會轉；一條電纜從箱子接到桁架
@@ -1686,11 +1694,11 @@ function excavator(x,y,z,ry,pile=true){ const g=new THREE.Group(); g.position.se
   up.add(add(box(0.3,0.3,0.4, -1.02,0.25,-0.36, yl))); b1.add(add(box(0.2,0.16,0.3, -1.35,0.2,0, yl))); b1.add(add(box(0.2,0.2,0.3, -1.3,0.68,0, yl))); b2.add(add(box(0.2,0.14,0.26, -0.35,0.35,0, yl)));   /* 耳座：油壓缸的固定座凸在手臂表面（他 11-19：連桿斷的、沒接到手臂） */ mkH(up,[-1.1,0.2,-0.36], b1,[-1.35,0.14,0]);   /* 大臂油壓缸：下端在車身前緣下面的耳座，上端在大臂下面的耳座（原本懸在大臂下 45 公分的空中） */ mkH(b1,[-1.3,0.8,0], b2,[0.34,0.3,0]); mkH(b2,[-0.35,0.44,0], bk,[0.12,0.3,0]);   /* 小臂缸、挖斗缸：接在手臂上面的耳座（原本埋在手臂裡） */   // 大臂、小臂、挖斗三支
   const hUp=()=>{ g.updateMatrixWorld(true); hyd.forEach(h=>{ const A=up.worldToLocal(h.oa.localToWorld(h.pa.clone())), B=up.worldToLocal(h.ob.localToWorld(h.pb.clone())), d=B.clone().sub(A), L=d.length(); d.normalize(); if(!h.lb){ h.lb=L*0.62; h.lr=L*0.62; h.bar.scale.y=h.lb; h.rod.scale.y=h.lr; } const q=new THREE.Quaternion().setFromUnitVectors(new V3(0,1,0),d); h.bar.quaternion.copy(q); h.bar.position.copy(A).addScaledVector(d,h.lb/2); h.rod.quaternion.copy(q); h.rod.position.copy(B).addScaledVector(d,-h.lr/2); }); };   /* 每格：兩端照銷的位置重新對準，缸筒從一端伸、活塞桿從另一端伸，中間重疊 */
   g.userData.smash='dig'; stat(g); if(pile){ const pl=ball(1.4,std(0x8a6a45),x+Math.cos(ry)*-4.6,y,z-Math.sin(ry)*-4.6,1.3,0.55,1.1); pl.castShadow=false; stat(pl); }   // 前面一堆土
-  const ph=Math.random()*7, K=[[0,0,-0.7,0.95,-0.6],[1.3,0,-0.25,1.0,-0.6],[2.8,0,-0.3,1.4,0.7],[3.8,0,-0.7,1.15,0.75],[5.0,0.9,-0.7,1.1,0.75],[5.8,0.9,-0.65,1.0,-1.3],[7.0,0,-0.7,0.95,-0.6]],   /* 11-24 他：斗沒有開、沒有挖土的感覺 → 一個 7 秒的挖土循環 [秒, 轉台, 大臂, 小臂, 挖斗] */
-    dirt=ball(0.3,std(0x7a5a3a),0.28,-0.2,0,1,0.6,1.3); dirt.visible=false; bk.add(add(dirt)); let clod=null, dropped=-1;   // 斗裡的一團土
+  const ph=Math.random()*7, K=[[0,0,-0.7,0.95,-0.6],[1.3,0,-0.25,1.0,-0.6],[2.8,0,-0.3,1.4,0.45],[3.8,0,-0.7,1.15,0.45],[5.0,0.9,-0.7,1.1,0.45],[5.8,0.9,-0.65,1.0,-1.3],[7.0,0,-0.7,0.95,-0.6]],   /* 11-24 他：斗沒有開、沒有挖土的感覺 → 一個 7 秒的挖土循環 [秒, 轉台, 大臂, 小臂, 挖斗] */
+    dirt=ball(0.2,std(0x7a5a3a),0.3,-0.45,0,1,0.6,1.5);   /* 11-25 他：土跟手臂彎起來會干涉 → 量過收斗超過 0.5 小臂就伸進斗口：最多收到 0.45、土放斗底（離小臂 6～8 公分） */ dirt.visible=false; bk.add(add(dirt)); let clod=null, dropped=-1;   // 斗裡的一團土
     anim=(dt,t)=>{ const c=((t+ph)%7+7)%7, cyc=Math.floor((t+ph)/7); let i=0; while(i<K.length-2 && c>=K[i+1][0]) i++; const A=K[i], B=K[i+1], u0=Math.min(1,Math.max(0,(c-A[0])/(B[0]-A[0]))), e=u0*u0*(3-2*u0), L=(j)=>A[j]+(B[j]-A[j])*e;
       up.rotation.y=L(1); b1.rotation.z=L(2); b2.rotation.z=L(3); bk.rotation.z=L(4); hUp(); dirt.visible = c>2.2 && c<5.4;
-      if(c>=5.4 && dropped!==cyc){ dropped=cyc; if(clod && clod.parent) clod.parent.remove(clod); g.updateMatrixWorld(true); clod=ball(0.26,std(0x7a5a3a),0,0,0,1,0.7,1.2); clod.castShadow=false; bk.localToWorld(clod.position.set(0.28,-0.2,0)); LV.group.add(clod); clod.userData.v=0; }   // 倒土：土團掉下去
+      if(c>=5.4 && dropped!==cyc){ dropped=cyc; if(clod && clod.parent) clod.parent.remove(clod); g.updateMatrixWorld(true); clod=ball(0.26,std(0x7a5a3a),0,0,0,1,0.7,1.2); clod.castShadow=false; bk.localToWorld(clod.position.set(0.3,-0.45,0)); LV.group.add(clod); clod.userData.v=0; }   // 倒土：土團掉下去
       if(clod && clod.parent){ const gy0=y+0.18; if(clod.position.y>gy0){ clod.userData.v+=dt*9.8; clod.position.y=Math.max(gy0, clod.position.y-clod.userData.v*dt); } else { clod.scale.multiplyScalar(Math.max(0,1-dt*1.5)); if(clod.scale.x<0.05) clod.parent.remove(clod); } } };   // 落地後慢慢縮掉（併進土堆）
     g.userData.anim=anim;   /* 挖斗收的角度變小（他 11-19：斗不能縮到這麼裡面） */ anim(0,0); LV.fx.push(anim); }
 // 剪刀式高空作業車：底盤＋輪子、交叉的剪刀臂、平台＋欄杆，平台上一個工人；平台慢慢升上去、停一下、再降下來
@@ -4845,7 +4853,7 @@ function onClick(e){ if(dlgOpen){ advance(); return; } if(LV.animBusy) return; i
   if(LV.restList && !prank && !done && !LV.down){ const R=LV.restList.find(o=>{ let q=o; while(q && q!==LV.group) q=q.parent; if(!q || o.userData.down) return false;   /* 只認這一關裡的師傅（名單會留著上一關的人） */ const c=o.getWorldPosition(new THREE.Vector3()); c.y+=0.75; return ray.ray.distanceToPoint(c)<0.42; }); if(R){ const t=standNear(R.position.x,R.position.z,0.6); moveTo(t.x,t.z,null); LV.actors.you.goal={x:R.position.x, z:R.position.z}; return; } }   /* 點在休息區師傅身上＝走過去推他 */
   const fy=LV.down ? yardY() : L.gy; gplane.constant=-fy; if(ray.ray.intersectPlane(gplane,hitPt) && L.plant && !LV.down && !inWork(hitPt.x,hitPt.z,-0.4) && hitPt.z>0.85 && !done){ const A=OUT(); askOut({x:Math.min(A.x1,Math.max(A.x0,hitPt.x)), z:Math.min(A.z1,Math.max(A.z0,hitPt.z))}); return; }   /* 週五：點工作區外面＝問要不要出去 */
   if(ray.ray.intersectPlane(gplane,hitPt)){ const c=clampXZ(hitPt.x,hitPt.z); moveTo(c.x,c.z,null); ping.position.set(c.x,fy+0.02,c.z); ping.visible=true; pingLife=1; } }
-const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151124 16:31'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
+const keys={}; { const d=document.createElement('div'); d.id='verTag'; d.textContent='版本 1151125 13:23'; d.style.cssText='position:fixed;right:6px;bottom:4px;z-index:40;font-size:11px;color:#fff;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:4px;pointer-events:none'; document.body.appendChild(d); }   /* 他 11-19：畫面上看得到是哪一版 */
 // 搖桿：手指按在圓裡拖，圓鈕跟著走；往哪推人就往哪走（跟鍵盤 WASD 一樣照鏡頭方向）
 const joy={x:0, y:0, on:false, id:null}; { const J=document.getElementById('joy'), K=document.getElementById('joyKnob'), R=44;
   const mv=e=>{ const b=J.getBoundingClientRect(), k=b.width/(J.offsetWidth||124),   /* k＝資訊框那一層被縮放的倍數（整頁被放大時才不是 1） */ cx=b.left+b.width/2, cy=b.top+b.height/2; let dx=(e.clientX-cx)/k, dy=(e.clientY-cy)/k; const m=Math.hypot(dx,dy); if(m>R){ dx*=R/m; dy*=R/m; }
